@@ -317,6 +317,112 @@ input.otomatik{border-color:#3fa66a!important}
 .yoneri{max-height:216px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line)}
 .yoneri:empty{display:none}
 .kteshis{margin-top:6px;font-size:11.5px;color:var(--muted)}
+/* ================= Yeni görünüm ================= */
+:root{--bg:#f5f3ef;--surface:#ffffff;--fg:#1b2530;--muted:#6b7682;--line:#e6e2db;--ink:#1f5570;--ink-soft:#e8f0f4;--accent:#e2553a;--accent-soft:#fde9e4;--ok:#2f8a57;
+  --golge:0 1px 2px rgba(27,37,48,.04),0 6px 20px rgba(27,37,48,.06);--r:18px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1418;--surface:#182128;--fg:#e9eef2;--muted:#94a2ae;--line:#26323b;--ink:#8fc7e0;--ink-soft:#1b2c37;--accent:#ff7a5c;--accent-soft:#3a1f19;--ok:#5fcf8f;--golge:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25)}}
+body{background:var(--bg);padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.wrap{gap:14px}
+header{padding-top:18px;gap:2px}
+h1{font-size:clamp(26px,7.5vw,34px);letter-spacing:-.02em}
+.sub{font-size:14px}
+.logo{display:flex;align-items:center;gap:10px}.lgi{font-size:30px;line-height:1}
+/* Kartlar */
+.card,.day,.hava,.grup-kart,.gkart,.baslat,.karsila{border:0!important;border-radius:var(--r);box-shadow:var(--golge);background:var(--surface)}
+.day.today{box-shadow:0 0 0 2px var(--accent),var(--golge)}
+/* Gezilerim */
+.yeni-gezi{border-radius:16px;padding:16px;font-size:17px;box-shadow:0 6px 18px rgba(226,85,58,.28)}
+.gkart{position:relative;padding:16px 18px 16px 22px;gap:4px;overflow:hidden}
+.gkart::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--ink)}
+.gkart.suruyor::before{background:var(--accent)}.gkart.bitti::before{background:var(--line)}
+.gkart.suruyor{box-shadow:var(--golge)}
+.gsay{position:absolute;top:14px;right:16px;background:var(--ink-soft);padding:3px 10px;border-radius:99px;font-size:12px!important}
+.karsila{padding:16px;display:flex;flex-direction:column;gap:12px}
+.karsila .bos{text-align:left;padding:0;color:var(--fg);font-weight:600}
+.adimk{display:flex;gap:12px;align-items:flex-start}.adimk div{display:flex;flex-direction:column}.adimk small{color:var(--muted);font-size:13px}
+.adno{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ink-soft);color:var(--ink);display:grid;place-items:center;font-weight:700;font-size:14px}
+/* Üst çubuk */
+.ubar button{border:0;background:var(--surface);box-shadow:var(--golge);border-radius:12px}
+/* Alt menü */
+nav.altnav{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:6px max(8px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom,0px));
+  background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+nav.altnav button{display:flex;flex-direction:column;align-items:center;gap:2px;border:0!important;background:transparent!important;color:var(--muted)!important;padding:6px 2px;font:600 11.5px var(--body);border-radius:12px}
+nav.altnav .ni{font-size:21px;line-height:1.1;filter:grayscale(1);opacity:.7}
+nav.altnav button[aria-selected="true"]{color:var(--ink)!important;background:var(--ink-soft)!important}
+nav.altnav button[aria-selected="true"] .ni{filter:none;opacity:1}
+@media (min-width:700px){nav.altnav{left:50%;transform:translateX(-50%);max-width:640px;bottom:12px;border-radius:20px;border:1px solid var(--line);box-shadow:var(--golge)}}
+/* Araçlar satırı */
+.araclar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px 4px;-webkit-overflow-scrolling:touch}
+.araclar::-webkit-scrollbar{display:none}
+.arac{flex:none;font:600 13.5px var(--body);text-decoration:none;white-space:nowrap;padding:9px 14px;border-radius:99px;border:0;background:var(--surface);color:var(--fg);box-shadow:var(--golge);cursor:pointer}
+.arac.vurgu{background:var(--ink);color:var(--surface)}
+/* AI ve durak */
+.aibar{grid-template-columns:1fr 1fr}
+.aibar button{border-radius:14px;border:0;box-shadow:var(--golge);padding:13px}
+.baslat{padding:18px;display:flex;flex-direction:column;gap:6px}
+.baslat b{font-family:var(--display);font-size:20px}.baslat small{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+.baslat .aibar button{box-shadow:none;border:1px solid var(--line)}
+/* Gün kartı */
+.day{padding:16px 16px 10px;gap:10px}
+.dhead{align-items:center!important}
+.dbaslik{display:flex;flex-direction:column;gap:0}
+.gno{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.dtoggle h2{font-size:18px;font-family:var(--display);font-weight:600}
+.dtoggle .ok{align-self:center}
+.tag{background:var(--ink-soft);color:var(--ink)}
+.dduz{border:0!important;background:var(--ink-soft)!important;color:var(--ink)!important}
+.dduz.ana{background:var(--ink)!important;color:var(--surface)!important}
+.yerbtn{border:0;background:var(--ink-soft);padding:6px 12px}
+.cta{border-radius:12px;background:var(--ink);font-size:14.5px;padding:11px}
+.wx{display:none}
+/* Zaman çizgisi */
+ol{gap:0}
+li.stop{grid-template-columns:46px 1fr auto;border-top:0!important;padding:0;align-items:stretch}
+li.stop .t{padding-top:10px;font-size:13.5px;color:var(--muted);font-weight:600}
+li.stop .n{position:relative;border-left:2px solid var(--line);padding:9px 0 14px 16px;gap:2px}
+li.stop .n::before{content:"";position:absolute;left:-7px;top:13px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--ink)}
+li.stop.vardi .n::before{background:var(--ok);border-color:var(--ok)}
+li.stop:last-child .n{border-left-color:transparent}
+li.stop .n b{font-size:15.5px}
+li.stop .n small{font-size:13px;line-height:1.4}
+.sagbtn{padding-top:8px}
+.go{border-radius:10px;padding:7px 12px}
+.telbtn{border:0;background:var(--ink-soft);opacity:.6}.telbtn.var{opacity:1}
+li.stop.ekle,li.stop.bosgun{padding:6px 0}
+.near a{background:var(--bg)}
+.gunluk{border-top:1px solid var(--line);padding:10px 0 4px}
+/* Sıradaki durak */
+.sirada{background:linear-gradient(140deg,#1f5570,#2b7593)!important;border-radius:22px;box-shadow:0 10px 30px rgba(31,85,112,.35)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sirada{background:linear-gradient(140deg,#173f53,#1f5a72)!important}}
+/* Hava: sade */
+.hava{padding:12px 16px;gap:6px}
+.hico{font-size:32px}.htmp{font-size:30px}
+.hmeta{font-size:12.5px}
+.hsehir button{background:var(--bg);border:0}
+/* Bütçe, listeler, modal */
+.mform select,.mform input,.add input,.dform input{background:var(--bg)!important;border-color:transparent!important}
+.mform button,.add button{border-radius:12px}
+.seg{background:var(--surface);box-shadow:var(--golge);border-radius:14px}
+.seg button[aria-selected="true"]{background:var(--ink);color:var(--surface);box-shadow:none}
+.mkutu{border-radius:22px 22px 0 0}
+.mbtn{border:0;box-shadow:var(--golge)}
+.acilic .tlist{padding:0}
+.grup-kart{padding:16px}
+/* Taşma düzeltmesi ve açılır öneri listesi */
+html,body{overflow-x:hidden}
+.panel,.day,main,.wrap{min-width:0}
+li.stop{grid-template-columns:46px minmax(0,1fr) auto!important}
+li.stop .n{min-width:0}li.stop .n b,li.stop .n small{overflow-wrap:anywhere}
+.aibar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+.yersec{position:relative}
+.yoneri{position:absolute;left:0;right:0;top:calc(100% - 2px);z-index:30;max-height:none!important;border:1px solid var(--line)!important;border-radius:12px;background:var(--surface);box-shadow:0 10px 30px rgba(0,0,0,.18);overflow:hidden}
+.yoneri button{flex-direction:row!important;align-items:baseline!important;gap:8px!important;padding:11px 12px!important;white-space:nowrap;overflow:hidden}
+.yoneri button b{flex:none;max-width:60%;overflow:hidden;text-overflow:ellipsis}
+.yoneri button small{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.yoneri button:last-child{border-bottom:0!important}
+.yoneri .yok{display:block;padding:10px 12px}
+main#ana{width:100%;max-width:none;margin:0!important}
+.ysecili[hidden]{display:none!important}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -439,17 +545,19 @@ let cizErtele=false;
 
 /* ===== Gezilerim ===== */
 function evEkrani(){
-  ust.append(el("h1",null,"Gezinti"),el("p","sub","Gezilerin, planların ve listelerin tek yerde"));
+  const lg=el("div","logo");lg.append(el("span","lgi","🧭"),el("h1",null,"Gezinti"));ust.append(lg,el("p","sub","Gezilerin, planların ve listelerin tek yerde"));
   const liste=Object.entries(GEZI.items).filter(([,g])=>g&&g.ad&&g.bas);
   const sira={suruyor:0,yaklasan:1,bitti:2};
   liste.sort((a,b)=>sira[durum(a[1])]-sira[durum(b[1])]||(durum(a[1])==="bitti"?b[1].bas.localeCompare(a[1].bas):a[1].bas.localeCompare(b[1].bas)));
   ana.append(btn("+ Yeni gezi","yeni-gezi",()=>geziFormu()));
-  if(!liste.length)ana.append(el("p","bos","Henüz gezi yok. Yeni bir gezi oluştur: ad ve tarihleri gir, durakları elle ya da AI ile ekle."));
+  if(!liste.length){const k=el("div","karsila");k.append(el("p","bos","Henüz gezi yok. Üç adımda başla:"));
+    [["1","Gezini oluştur","Ad, tarih ve gideceğin şehir."],["2","Durakları ekle","Elle ya da kendi AI'ınla (Claude, ChatGPT, Gemini)."],["3","Yolda kullan","Sıradaki durak, yol tarifi, masraf, bavul listesi."]]
+      .forEach(([n,b,t])=>{const r=el("div","adimk");r.append(el("span","adno",n));const x=el("div");x.append(el("b",null,b),el("small",null,t));r.append(x);k.append(r)});ana.append(k)}
   liste.forEach(([id,g])=>{
     const k=el("button","gkart "+durum(g));k.type="button";k.onclick=()=>geziAc(id);
     const n=gunFark(g.bas,g.son)+1;
     const yerler=[...new Set(gunler(g).map(d=>yerOf(g,d)?.ad).filter(Boolean))].slice(0,4).join(" · ");
-    k.append(el("span","gdurum",{suruyor:"Şu an",yaklasan:"Yaklaşan",bitti:"Bitti"}[durum(g)]),el("b",null,g.ad),
+    k.append(el("span","gdurum",{suruyor:"● Şu an",yaklasan:"Yaklaşan",bitti:"Bitti"}[durum(g)]),el("b",null,g.ad),
       el("small",null,tarihKisa(g.bas)+(n>1?" – "+tarihKisa(g.son):"")+" · "+n+" gün"+(yerler?" · "+yerler:"")));
     if(durum(g)==="yaklasan"){const f=gunFark(bugunStr(),g.bas);k.append(el("small","gsay",f===1?"Yarın":f+" gün sonra"))}
     ana.append(k)});
@@ -464,9 +572,9 @@ function geziEkrani(g){
   const ub=el("div","ubar");ub.append(btn("‹ Gezilerim","geri",eveDon),btn("⋯","menu",()=>geziMenu(g)));ust.append(ub);
   const n=gunFark(g.bas,g.son)+1;
   ust.append(el("h1",null,g.ad),el("p","sub",tarihKisa(g.bas)+(n>1?" – "+tarihKisa(g.son):"")+" · "+n+" gün"));
-  const nav=el("nav");nav.setAttribute("role","tablist");
-  [["plan","Program"],["butce","Bütçe"],["bavul","Bavul"],["ev","Ev kontrol"]].forEach(([k,t])=>{
-    const b=btn(t,null,()=>{sekme=k;LS.set("sekme",k);ciz()});b.setAttribute("role","tab");b.setAttribute("aria-selected",sekme===k);nav.append(b)});
+  const nav=el("nav","altnav");nav.setAttribute("role","tablist");
+  [["plan","🗺️","Program"],["butce","💰","Bütçe"],["bavul","🧳","Bavul"],["ev","🏠","Ev kontrol"]].forEach(([k,i,t])=>{
+    const b=btn("",null,()=>{sekme=k;LS.set("sekme",k);window.scrollTo(0,0);ciz()});b.append(el("span","ni",i),el("span","nt",t));b.setAttribute("role","tab");b.setAttribute("aria-selected",sekme===k);nav.append(b)});
   ana.append(nav);
   const p=el("section","panel");ana.append(p);
   if(sekme==="plan")programPanel(g,p);
@@ -511,7 +619,6 @@ function geziFormu(id){
       aktif=yid;LS.set("aktif",yid);sekme="plan";LS.set("sekme","plan");
       if(c)D("plan").koy("p"+yeniId(),{d:bas.value,t:c.t,n:c.n,s:"Yola çıkış",q:c.n,c:true});
       modalKapat();ciz();
-      setTimeout(async ()=>{if(await onay("Gezi hazır. Planı AI ile oluşturmak ister misin? (Sonra da yapabilirsin.)"))aiModal()},300);
     };
     m.append(f);setTimeout(()=>ad.focus(),50);
   });
@@ -541,17 +648,21 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&modalAcik())modalKa
 function yerSecici(ph,secildi,ops={}){
   const k=el("div","yersec");const inp=el("input");inp.placeholder=ph;inp.autocomplete="off";
   const sec=el("div","ysecili");const ol=el("div","yoneri");k.append(inp,ol,sec);
+  inp.addEventListener("blur",()=>setTimeout(()=>{ol.textContent=""},250));
+  inp.addEventListener("keydown",e=>{if(e.key==="Escape")ol.textContent=""});
   let zam=null,son=0;
   const goster_=v=>{sec.textContent="";if(!v){sec.hidden=true;return}sec.hidden=false;
     sec.append(el("span",null,"✓ "+v.ad+(v.alt?" · "+v.alt:"")),btn("Değiştir","kucuk",()=>{secildi(null);goster_(null);inp.hidden=false;inp.focus()}));inp.hidden=true};
-  if(ops.baslangic){goster_(ops.baslangic)}
-  inp.onfocus=()=>setTimeout(()=>inp.scrollIntoView({block:"start",behavior:"smooth"}),300);
-  inp.oninput=()=>{clearTimeout(zam);const q=inp.value.trim();if(q.length<2){ol.textContent="";return}
+  goster_(ops.baslangic||null)
+  inp.oninput=()=>{clearTimeout(zam);const q=inp.value.trim();if(q.length<3){ol.textContent="";return}
     zam=setTimeout(async()=>{const no=++son;
-      try{let u="https://photon.komoot.io/api/?limit=5&q="+encodeURIComponent(q);
+      try{let u="https://photon.komoot.io/api/?limit=4&q="+encodeURIComponent(q);
         if(ops.yakin&&ops.yakin.la)u+="&lat="+ops.yakin.la+"&lon="+ops.yakin.lo;
         if(ops.yerlesim)u+="&osm_tag=place";
-        const r=await (await fetch(u)).json();if(no!==son)return;ol.textContent="";
+        /* Önce Türkiye içinde ara; sonuç yoksa (yurt dışı gezisi) her yerde */
+        let r=await (await fetch(u+"&bbox=25.6,35.8,44.9,42.2")).json();if(no!==son)return;
+        if(!(r.features||[]).length){r=await (await fetch(u)).json();if(no!==son)return}
+        ol.textContent="";
         (r.features||[]).forEach(f=>{const p=f.properties||{},[lo,la]=f.geometry.coordinates;
           const ilce=p.county||p.district||p.city||"",il=p.state||"";
           const alt=[p.street&&(p.street+(p.housenumber?" "+p.housenumber:"")),p.district,p.city!==p.name?p.city:null,il].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).join(", ");
@@ -575,20 +686,26 @@ const siraliListe=()=>duraklarOf().filter(([,s])=>s.t).map(([id,s])=>({id,s,z:za
 function gunBitti(d,ds){if(d<bugunStr())return true;if(!ds.length)return false;return Date.now()>Math.max(...ds.map(([,s])=>zamanOf(s).getTime()))+2*3600e3}
 
 function programPanel(g,p){
-  /* Yakınımda + park */
-  const qb=el("div","quick");qb.append(el("p",null,"Şu an yakınımda"));const box=el("div","qgrid");
-  YAKIN.forEach(([l,w])=>box.append(link(HERE(w),null,l)));
-  const nb=link("https://www.eczaneler.gen.tr/",null,"🌙 Nöbetçi eczane");nb.id="nobetci";box.append(nb);qb.append(box);
-  qb.append(parkKutu());p.append(qb);if(window.nobetciYenile)nobetciYenile();
-  p.append(acilKutu());
-  const ai=el("div","aibar");ai.append(btn("🤖 AI ile plan oluştur","ana",()=>aiModal()),btn("+ Durak ekle",null,()=>durakFormu(null,gunler(g).find(d=>d>=bugunStr())||g.bas)));p.append(ai);
+  /* Araçlar: yakındaki yerler, park, acil — tek kaydırılabilir satır */
+  const ar=el("div","araclar");
+  const pk=D("park").items.araba,pv=pk&&(pk.la||pk.gl);
+  ar.append(btn(pv?"🚗 Arabam":"🅿️ Park yerim","arac"+(pv?" vurgu":""),()=>modal("🚗 Park yerim",m=>m.append(parkKutu()))),
+    btn("📞 Acil","arac",()=>acilAc()));
+  YAKIN.forEach(([l,w])=>ar.append(link(HERE(w),"arac",l)));
+  const nb=link("https://www.eczaneler.gen.tr/","arac","🌙 Nöbetçi");nb.id="nobetci";ar.append(nb);
+  p.append(ar);if(window.nobetciYenile)nobetciYenile();
+  const ilkGun=gunler(g).find(d=>d>=bugunStr())||g.bas;
+  const ai=el("div","aibar");ai.append(btn("🤖 AI ile planla","ana",()=>aiModal()),btn("+ Durak ekle",null,()=>durakFormu(null,ilkGun)));
+  if(!duraklarOf().some(([,s])=>!cikisMi(s))){const k=el("div","baslat");k.append(el("b",null,"Planını oluştur"),
+      el("small",null,"Durakları kendin ekleyebilir ya da kendi AI'ına hazırlatabilirsin. İstediğin zaman değiştirirsin."),ai);p.append(k)}
+  else p.append(ai);
   const bugun=bugunStr(),tum=duraklarOf();
   gunler(g).forEach((d,gi)=>{
     const ds=tum.filter(([,s])=>s.d===d).sort((a,b)=>gece(dk(a[1].t))-gece(dk(b[1].t)));
     const bitti=gunBitti(d,ds),acik=gunAcik[d]!==undefined?gunAcik[d]:!bitti,duz=duzenle===d;
     const c=el("article","day"+(d===bugun?" today":"")+(bitti?" bitti":"")+(acik?"":" kapali"));c.dataset.d=d;
     const h=el("div","dhead");const bas=btn("","dtoggle",()=>{gunAcik[d]=!acik;if(!gunAcik[d]&&duz)duzenle=null;ciz()});bas.setAttribute("aria-expanded",acik);
-    bas.append(el("span","ok",acik?"▾":"▸"),el("h2",null,(gi+1)+". gün · "+gunUzun(d)));
+    const bt=el("span","dbaslik");bt.append(el("small","gno",(gi+1)+". gün"),el("h2",null,gunUzun(d)));bas.append(el("span","ok",acik?"▾":"▸"),bt);
     const sag=el("div","dsag");sag.append(el("span","tag",d===bugun?"Bugün":bitti?"Bitti ✓":ds.length+" durak"));
     if(acik)sag.append(btn(duz?"✓ Bitti":"✏️ Düzenle","dduz"+(duz?" ana":""),()=>{duzenle=duz?null:d;ciz()}));
     h.append(bas,sag);c.append(h);
@@ -605,7 +722,7 @@ function programPanel(g,p){
       const n=el("span","n");n.append(el("b",null,s.n));if(s.s)n.append(el("small",null,s.s));
       const r=saatRozeti(s);if(r)n.append(r);
       if(!duz&&d===bugun&&!cikisMi(s))n.append(btn(s.v?"↶ Vardım işaretini kaldır":"✓ Vardım","vchip"+(s.v?" geri":""),()=>s.v?D("plan").koy(id,{v:null}):varis(id)));
-      if(!duz&&d===bugun&&haritaVar(s)){const nr=el("span","near");const q=(s.la&&s.lo)?s.la+","+s.lo:(s.q||s.n);YAKIN.forEach(([l,w])=>nr.append(link(NEAR(w,q),null,l)));n.append(nr)}
+      if(false){const nr=el("span","near");const q=(s.la&&s.lo)?s.la+","+s.lo:(s.q||s.n);YAKIN.forEach(([l,w])=>nr.append(link(NEAR(w,q),null,l)));n.append(nr)}
       li.append(el("span","t",s.t||"—"),n);
       if(duz){const x=el("span","dact");x.append(btn("✎",null,()=>durakFormu(id,d)),btn("×",null,async ()=>{if(await onay(s.n+" plandan silinsin mi?"))D("plan").sil(id)}));li.append(x)}
       else{const sag=el("span","sagbtn");sag.append(cikisMi(s)?el("span","go cik","Çıkış"):haritaVar(s)?link(hedefURL(s),"go","Git"):el("span"));
@@ -794,7 +911,8 @@ function parkLinkFormu(kaydet){
   return f}
 /* ===== Park ===== */
 function parkKutu(){
-  const k=el("div","park"),P=D("park"),a=P.items.araba;
+  const P0=D("park"),bitir=()=>{if(modalAcik())modalKapat()},P={items:P0.items,koy:(x,v)=>{P0.koy(x,v);bitir()},sil:x=>{P0.sil(x);bitir()}};
+  const k=el("div","park"),a=P.items.araba;
   if(a&&(a.la||a.gl)){
     const b=el("div","pbilgi");b.append(el("b",null,"🚗 Arabam burada"),el("small",null,sure(Date.now()-a.t)+" önce kaydedildi"+(a.n?" · "+a.n:"")));k.append(b);
     const r=el("div","pbtns");r.append(link(a.la?"https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+a.la+","+a.lo:a.gl,"ana","➜ Arabama dön"),
@@ -809,9 +927,11 @@ function parkKutu(){
   return k}
 
 /* ===== Acil ve telefonlar ===== */
+function acilAc(){modal("📞 Acil durum ve telefonlar",m=>{const d=acilKutu();d.open=true;d.querySelector("summary").remove();d.className="acilic";m.append(d)})}
 let acilAcik=false;
 function acilKutu(){
-  const T=D("telefon"),det=el("details","card acil");det.open=acilAcik;det.ontoggle=()=>acilAcik=det.open;
+  const T0=D("telefon"),yen=()=>{if(modalAcik())acilAc()},T={get items(){return T0.items},koy:(x,v)=>{T0.koy(x,v);yen()},sil:x=>{T0.sil(x);yen()}};
+  const det=el("details","card acil");det.open=acilAcik;det.ontoggle=()=>acilAcik=det.open;
   det.append(el("summary",null,"📞 Acil durum ve telefonlar"));const k=el("div","tlist");
   const sat=(ad,no,alt)=>{const r=el("div","trow");const a=el("div","tad");a.append(el("b",null,ad));if(alt)a.append(el("small",null,alt));r.append(a);if(no)r.append(link("tel:"+no.replace(/[^\d+]/g,""),"tara","📞 "+no));return r};
   k.append(sat("112 Acil","112","Ambulans, polis, jandarma, itfaiye"));
