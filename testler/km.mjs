@@ -1,0 +1,23 @@
+import { spawn } from "node:child_process";import { mkdtempSync, writeFileSync } from "node:fs";import { tmpdir } from "node:os";import { join } from "node:path";
+const S=process.argv[2],wait=ms=>new Promise(r=>setTimeout(r,ms)),port=9451;
+const p=spawn("C:/Program Files/Google/Chrome/Application/chrome.exe",["--headless=new","--disable-gpu",`--remote-debugging-port=${port}`,`--user-data-dir=${mkdtempSync(join(tmpdir(),"km-"))}`,"about:blank"],{stdio:"ignore"});
+for(let i=0;i<50;i++){try{if((await fetch(`http://127.0.0.1:${port}/json/version`)).ok)break}catch{}await wait(200)}
+const t=(await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find(t=>t.type==="page");const ws=new WebSocket(t.webSocketDebuggerUrl);await new Promise(r=>ws.addEventListener("open",r));
+let id=0;const pend=new Map(),errs=[];ws.addEventListener("message",e=>{const m=JSON.parse(e.data);if(m.method==="Runtime.exceptionThrown")errs.push(m.params.exceptionDetails.exception?.description);if(m.id&&pend.has(m.id)){pend.get(m.id)(m);pend.delete(m.id)}});
+const send=(method,params={})=>new Promise(r=>{const i=++id;pend.set(i,r);ws.send(JSON.stringify({id:i,method,params}))});
+const ev=async x=>{const r=await send("Runtime.evaluate",{expression:x,returnByValue:true});return r.result?.exceptionDetails?"EXC "+r.result.exceptionDetails.exception?.description:r.result?.result?.value};
+await send("Page.enable");await send("Runtime.enable");await send("Emulation.setDeviceMetricsOverride",{width:390,height:1500,deviceScaleFactor:1,mobile:true});
+await send("Page.navigate",{url:"http://127.0.0.1:8765/gezi/index.html"});await wait(1500);
+await ev(`{GEZI.koy("gk",{ad:"Test",bas:"2026-12-01",son:"2026-12-03",s:1});geziAc("gk");sekme="butce";LS.set("sekme","butce");ciz();true}`);await wait(400);
+const yaz=(i,v)=>ev(`{const x=[...document.querySelectorAll(".card")].find(c=>c.textContent.includes("Kilometre")).querySelectorAll("input")[${i}];x.focus();x.value="${v}";x.dispatchEvent(new Event("input"));x.dispatchEvent(new Event("change"));true}`);
+const sonuc=()=>ev(`document.querySelector(".kmsonuc").innerText.split(String.fromCharCode(10)).join(" | ")`);
+console.log("boş:",await sonuc());
+await yaz(0,"84250");console.log("çıkış:",await sonuc());
+await yaz(1,"86560");console.log("dönüş:",await sonuc());
+await yaz(2,"50");console.log("fiyat:",await sonuc());
+console.log("yazarken odak kaldı mı:",await ev(`document.activeElement.tagName+" "+document.activeElement.value`));
+await yaz(4,"160");console.log("alınan litre:",await sonuc());
+console.log("yol maliyeti kartı duruyor:",await ev(`[...document.querySelectorAll("h3")].map(h=>h.textContent).join(" | ")`));
+await send("Page.reload");await wait(1500);console.log("yenileyince:",await sonuc());
+const r=await send("Page.captureScreenshot",{format:"png"});writeFileSync(`${S}/km.png`,Buffer.from(r.result.data,"base64"));
+console.log("hatalar:",errs.join(" || ")||"yok");ws.close();p.kill();process.exit(0);
