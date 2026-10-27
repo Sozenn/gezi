@@ -423,6 +423,8 @@ li.stop .n{min-width:0}li.stop .n b,li.stop .n small{overflow-wrap:anywhere}
 .yoneri .yok{display:block;padding:10px 12px}
 main#ana{width:100%;max-width:none;margin:0!important}
 .ysecili[hidden]{display:none!important}
+.kmsonuc{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.card .grid{align-items:end}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -493,6 +495,7 @@ function depo(id,varsayilan){
     koy(k,v){items[k]=Object.assign(items[k]||{},v);yaz({[k]:v})},
     toplu(d){Object.entries(d).forEach(([k,v])=>{if(v===null)delete items[k];else items[k]=Object.assign(items[k]||{},v)});yaz(d)},
     sil(k){delete items[k];yaz({[k]:null})},
+    sessiz(k,v){items[k]=Object.assign(items[k]||{},v);sakla();if(SYNC.yaz)SYNC.yaz(id,{[k]:v})},
     hepsi:()=>items,
     tamYaz(v){items=v;yaz(null,items)},
     uzak(v){items=v&&typeof v==="object"?v:{};sakla();cizNazik()}};
@@ -996,6 +999,26 @@ function butcePanel(g,p){
       ic.forEach(([id,x])=>{const r=el("div","mrow");const a=el("span");a.append(el("span",null,katAd(x.k)));if(x.n)a.append(el("small",null," · "+x.n));
         r.append(a,el("b",null,para(x.tl)),btn("×","del",async ()=>{if(await onay(para(x.tl)+" silinsin mi?"))MAS.sil(id)}));det.append(r)});k.append(det)})}
   k.append(el("p","note",SYNC.kod?"👥 Masraflar grupla ortak.":"Harcadıkça ekle. Grup kurarsan eşinle ortak olur."));
+  /* Kilometre takibi (grupla ortak) */
+  {const K=D("km"),v=Object.assign({bas:"",son:"",lf:"",tk:"",lt:""},K.items.k||{});const kk=el("div","card");p.append(kk);
+    kk.append(el("h3",null,"🚗 Kilometre takibi"));
+    const gr=el("div","grid");const sonuc=el("div","kmsonuc");
+    const alan=(lbl,key,ph,dec)=>{const l=el("label",null,lbl);const i=el("input");i.type="number";i.inputMode=dec?"decimal":"numeric";i.min="0";if(dec)i.step="0.01";i.placeholder=ph;i.value=v[key]||"";
+      i.oninput=()=>{v[key]=i.value;hesap()};i.onchange=()=>K.sessiz("k",{[key]:i.value});l.append(i);return l};
+    gr.append(alan("Çıkışta km","bas","örn. 84250"),alan("Dönüşte km","son","eve varınca"),alan("Litre fiyatı ₺ (isteğe bağlı)","lf","örn. 50",1),
+      alan("Tüketim L/100 km","tk",(LS.get(aktif+"_yol")||{}).tk||"7",1),alan("Alınan benzin L (isteğe bağlı)","lt","toplam",1));
+    kk.append(gr,sonuc);
+    const hesap=()=>{sonuc.textContent="";const b=+v.bas,s_=+v.son,lf=+String(v.lf).replace(",","."),tk=+(v.tk||(LS.get(aktif+"_yol")||{}).tk||7),lt=+v.lt;
+      if(!b){sonuc.append(el("p","note","Yola çıkarken aracın kilometresini yaz, dönünce son kilometreyi."));return}
+      if(!s_){sonuc.append(el("p","note","Çıkış kaydedildi ("+b.toLocaleString("tr-TR")+" km). Dönünce son kilometreyi yaz."));return}
+      if(s_<=b){sonuc.append(el("p","uyari","Dönüş kilometresi çıkıştan büyük olmalı."));return}
+      const km=s_-b,L=lt>0?lt:km*tk/100,satir=(a,x)=>{const r=el("div","krow");r.append(el("span",null,a),el("b",null,x));sonuc.append(r)};
+      satir("Yapılan yol",km.toLocaleString("tr-TR")+" km");
+      if(lt>0)satir("Gerçek tüketim",(lt/km*100).toFixed(1).replace(".",",")+" L/100 km");
+      satir(lt>0?"Alınan benzin":"Tahmini benzin",L.toFixed(1).replace(".",",")+" L");
+      if(lf>0){const t=el("div","tot");t.append(el("span",null,"Benzin masrafı"),el("b",null,para(L*lf)));sonuc.append(t)}
+      else sonuc.append(el("p","note","Litre fiyatını yazarsan benzin masrafını da hesaplarım."))};
+    hesap();}
   /* Yol maliyeti tahmini */
   const y=LS.get(aktif+"_yol")||{km:"",tk:"7",lf:"",oy:""};const yk=el("div","card");p.append(yk);yk.append(el("h3",null,"Yol maliyeti tahmini"));
   const gr=el("div","grid");const alan=(lbl,key,ph)=>{const l=el("label",null,lbl);const i=el("input");i.type="number";i.inputMode="decimal";i.min="0";i.placeholder=ph;i.value=y[key]||"";
