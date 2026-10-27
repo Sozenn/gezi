@@ -305,6 +305,18 @@ li.stop.edit,li.stop.ekle{display:block}
 .tara.buyuk{text-align:center;padding:13px;font-size:17px}
 a.mbtn{text-decoration:none;display:block}
 input.otomatik{border-color:#3fa66a!important}
+/* Uygulama içi pencere */
+.dlg{position:fixed;inset:0;z-index:70;background:rgba(10,15,20,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.dkutu{background:var(--surface);color:var(--fg);border-radius:16px;padding:18px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.dkutu p{margin:0;font-size:16px;line-height:1.45;white-space:pre-line}
+.dkutu input{font:400 16px var(--body);padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.dbtns{display:flex;gap:8px;justify-content:flex-end}
+.dbtns button{font:600 15px var(--body);padding:11px 18px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+.dbtns .evet{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.dbtns .evet.tehlike{background:var(--accent);border-color:var(--accent);color:#fff}
+.yoneri{max-height:216px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line)}
+.yoneri:empty{display:none}
+.kteshis{margin-top:6px;font-size:11.5px;color:var(--muted)}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -325,6 +337,19 @@ const M=q=>"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent
 const NEAR=(w,q)=>M(w+" near "+q);
 const HERE=w=>"https://www.google.com/maps/search/"+encodeURIComponent(w)+"/";
 const YAKIN=[["⛽ Benzin","benzin istasyonu"],["🅿️ Otopark","otopark"],["💊 Eczane","eczane"],["🏥 Hastane","hastane"],["🛒 Market","market"]];
+
+/* ---------- Uygulama içi pencereler (tarayıcının onay/soru pencereleri bazı uygulama içi tarayıcılarda açılmıyor) ---------- */
+function dialog({mesaj,girdi,deger,evet="Tamam",hayir="Vazgeç",tehlike}){return new Promise(ok=>{
+  const d=el("div","dlg");const k=el("div","dkutu");k.setAttribute("role","alertdialog");k.append(el("p",null,mesaj));let i=null;
+  if(girdi){i=el("input");i.value=deger||"";k.append(i)}
+  const b=el("div","dbtns");const kapat=v=>{d.remove();ok(v)};
+  if(hayir!==null)b.append(btn(hayir,"hayir",()=>kapat(girdi?null:false)));
+  b.append(btn(evet,"evet"+(tehlike?" tehlike":""),()=>kapat(girdi?i.value:true)));
+  k.append(b);d.append(k);document.body.append(d);
+  if(i){i.onkeydown=e=>{if(e.key==="Enter")kapat(i.value)};setTimeout(()=>i.focus(),30)}})}
+const onay=window.onay=(m,o={})=>dialog(Object.assign({mesaj:m,evet:"Evet",tehlike:/sil|kaldır|ayrıl/i.test(m)},o));
+const soru=window.soru=(m,v)=>dialog({mesaj:m,girdi:true,deger:v});
+const uyar=window.uyar=m=>dialog({mesaj:m,hayir:null});
 const yeniId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const dk=t=>{if(!t)return null;const [h,m]=t.split(":").map(Number);return h*60+m};
 const gece=m=>m!=null&&m<300?m+1440:m;
@@ -429,7 +454,7 @@ function evEkrani(){
     if(durum(g)==="yaklasan"){const f=gunFark(bugunStr(),g.bas);k.append(el("small","gsay",f===1?"Yarın":f+" gün sonra"))}
     ana.append(k)});
   const gk=el("div","grup-kart");ana.append(gk);if(window.grupCiz)grupCiz();
-  if(v1Var()&&!GEZI.items[V1ID])ana.append(btn("Eski uygulamadaki gezini aktar","reset",()=>{v1Aktar(true);ciz()}));
+  if(v1Var()&&!GEZI.items[V1ID])ana.append(btn("Eski uygulamadaki gezini aktar","reset",()=>{LS.del("v1Silindi");v1Aktar(true);ciz()}));
 }
 function geziAc(id){aktif=id;LS.set("aktif",id);duzenle=null;gunAcik={};window.scrollTo(0,0);ciz()}
 function eveDon(){aktif=null;LS.set("aktif",null);window.scrollTo(0,0);ciz()}
@@ -452,7 +477,7 @@ function geziEkrani(g){
 function geziMenu(g){
   modal("Gezi",m=>{
     m.append(btn("✏️ Adı ve tarihleri düzenle","mbtn",()=>{modalKapat();geziFormu(aktif)}),
-      btn("🗑 Geziyi sil","mbtn tehlike",()=>{if(!confirm(g.ad+" silinsin mi? Plan, masraf ve günlük bu gezide kaybolur."))return;GEZI.sil(aktif);modalKapat();eveDon()}))});
+      btn("🗑 Geziyi sil","mbtn tehlike",async ()=>{if(!await onay(g.ad+" silinsin mi? Plan, masraf ve günlük bu gezide kaybolur."))return;if(aktif===V1ID)LS.set("v1Silindi",true);GEZI.sil(aktif);modalKapat();eveDon()}))});
 }
 
 /* ---------- Gezi formu (yeni / düzenle) ---------- */
@@ -474,8 +499,8 @@ function geziFormu(id){
       cik=()=>ck.value.trim()?{n:ck.value.trim(),t:cs.value||"08:00"}:null;
     }
     const kay=el("button","ana",g?"Kaydet":"Geziyi oluştur");kay.type="submit";f.append(kay);
-    f.onsubmit=e=>{e.preventDefault();if(son.value<bas.value)return alert("Bitiş, başlangıçtan önce olamaz.");
-      if(gunFark(bas.value,son.value)>59)return alert("En fazla 60 günlük gezi.");
+    f.onsubmit=e=>{e.preventDefault();if(son.value<bas.value)return uyar("Bitiş, başlangıçtan önce olamaz.");
+      if(gunFark(bas.value,son.value)>59)return uyar("En fazla 60 günlük gezi.");
       if(g){geziTarihDegistir(id,g,bas.value,son.value);GEZI.koy(id,{ad:ad.value.trim()});modalKapat();return}
       const yid="g"+yeniId();const c=cik&&cik();
       GEZI.koy(yid,{ad:ad.value.trim(),bas:bas.value,son:son.value,yer:yer||null,s:Date.now()});
@@ -486,7 +511,7 @@ function geziFormu(id){
       aktif=yid;LS.set("aktif",yid);sekme="plan";LS.set("sekme","plan");
       if(c)D("plan").koy("p"+yeniId(),{d:bas.value,t:c.t,n:c.n,s:"Yola çıkış",q:c.n,c:true});
       modalKapat();ciz();
-      setTimeout(()=>{if(confirm("Gezi hazır. Planı AI ile oluşturmak ister misin? (Sonra da yapabilirsin.)"))aiModal()},300);
+      setTimeout(async ()=>{if(await onay("Gezi hazır. Planı AI ile oluşturmak ister misin? (Sonra da yapabilirsin.)"))aiModal()},300);
     };
     m.append(f);setTimeout(()=>ad.focus(),50);
   });
@@ -520,9 +545,10 @@ function yerSecici(ph,secildi,ops={}){
   const goster_=v=>{sec.textContent="";if(!v){sec.hidden=true;return}sec.hidden=false;
     sec.append(el("span",null,"✓ "+v.ad+(v.alt?" · "+v.alt:"")),btn("Değiştir","kucuk",()=>{secildi(null);goster_(null);inp.hidden=false;inp.focus()}));inp.hidden=true};
   if(ops.baslangic){goster_(ops.baslangic)}
+  inp.onfocus=()=>setTimeout(()=>inp.scrollIntoView({block:"start",behavior:"smooth"}),300);
   inp.oninput=()=>{clearTimeout(zam);const q=inp.value.trim();if(q.length<2){ol.textContent="";return}
     zam=setTimeout(async()=>{const no=++son;
-      try{let u="https://photon.komoot.io/api/?limit=6&q="+encodeURIComponent(q);
+      try{let u="https://photon.komoot.io/api/?limit=5&q="+encodeURIComponent(q);
         if(ops.yakin&&ops.yakin.la)u+="&lat="+ops.yakin.la+"&lon="+ops.yakin.lo;
         if(ops.yerlesim)u+="&osm_tag=place";
         const r=await (await fetch(u)).json();if(no!==son)return;ol.textContent="";
@@ -581,7 +607,7 @@ function programPanel(g,p){
       if(!duz&&d===bugun&&!cikisMi(s))n.append(btn(s.v?"↶ Vardım işaretini kaldır":"✓ Vardım","vchip"+(s.v?" geri":""),()=>s.v?D("plan").koy(id,{v:null}):varis(id)));
       if(!duz&&d===bugun&&haritaVar(s)){const nr=el("span","near");const q=(s.la&&s.lo)?s.la+","+s.lo:(s.q||s.n);YAKIN.forEach(([l,w])=>nr.append(link(NEAR(w,q),null,l)));n.append(nr)}
       li.append(el("span","t",s.t||"—"),n);
-      if(duz){const x=el("span","dact");x.append(btn("✎",null,()=>durakFormu(id,d)),btn("×",null,()=>{if(confirm(s.n+" plandan silinsin mi?"))D("plan").sil(id)}));li.append(x)}
+      if(duz){const x=el("span","dact");x.append(btn("✎",null,()=>durakFormu(id,d)),btn("×",null,async ()=>{if(await onay(s.n+" plandan silinsin mi?"))D("plan").sil(id)}));li.append(x)}
       else{const sag=el("span","sagbtn");sag.append(cikisMi(s)?el("span","go cik","Çıkış"):haritaVar(s)?link(hedefURL(s),"go","Git"):el("span"));
         if(!cikisMi(s)){const tb=btn("📞","telbtn"+(s.tel?" var":""),()=>telModal(id));tb.setAttribute("aria-label",s.n+" telefonu");sag.append(tb)}li.append(sag)}
       ol.append(li)});
@@ -614,10 +640,10 @@ function durakFormu(id,d){
     const gli=el("input");gli.placeholder="ya da Google Maps linki yapıştır";gli.value=gl;
     gli.oninput=()=>{const o=googleLink(gli.value);gl=o?o.gl:"";gli.classList.toggle("hata",!!gli.value.trim()&&!o);
       if(o&&o.ad&&!n.value.trim())n.value=o.ad;if(o&&o.la){yer={ad:o.ad||n.value||"Google konumu",alt:"Google Maps",la:o.la,lo:o.lo}}};
-    const bur=btn("📍 Şu an buradayım",null,()=>{bur.textContent="Konum alınıyor…";navigator.geolocation.getCurrentPosition(p=>{
+    const bur=btn("📍 Şu an buradayım",null,()=>{bur.textContent="Konum alınıyor…";konumAl(p=>{
         yer={ad:n.value.trim()||"Bulunduğum yer",alt:"Şu anki konum",la:+p.coords.latitude.toFixed(5),lo:+p.coords.longitude.toFixed(5)};
         ys.replaceWith(el("div","ysecili","✓ Şu anki konum kaydedildi"));bur.textContent="✓ Konum alındı"},
-      e=>{bur.textContent=e.code===1?"Konum izni kapalı":"Konum alınamadı"},{enableHighAccuracy:true,timeout:20000})});
+      e=>{bur.textContent=e.code===1?"Konum izni kapalı":"Konum alınamadı"},{enableHighAccuracy:true,timeout:12000})});
     const hr=el("div","hsatir");hr.append(gli,bur);hb.append(hr);
     hb.append(el("small","note","Eşleştirmezsen \"Git\" yer adını Google Maps'te arar; şehir adını da yazmak işe yarar."));
     f.append(hb);
@@ -645,7 +671,7 @@ function telModal(id){
   modal("📞 "+s.n,m=>{
     if(s.tel){m.append(el("p","telno",s.tel));
       const r=el("div","telbtns");r.append(link("tel:"+s.tel.replace(/[^\d+]/g,""),"tara buyuk","📞 Ara"),
-        btn("Kopyala",null,async()=>{try{await navigator.clipboard.writeText(s.tel);alert("Numara kopyalandı.")}catch(e){prompt("Numara:",s.tel)}}));m.append(r)}
+        btn("Kopyala",null,async ()=>{try{await navigator.clipboard.writeText(s.tel);uyar("Numara kopyalandı.")}catch(e){await soru("Numara:",s.tel)}}));m.append(r)}
     else m.append(el("p","note","Bu mekanın numarası kayıtlı değil. Google Maps'te yerin sayfasında numara yazar; bulunca aşağıya kaydet."));
     m.append(link(hedefURL(s),"mbtn","🔎 Google Maps'te numarayı bul"));
     const f=el("form","plsatir");const i=el("input");i.type="tel";i.placeholder=s.tel?"Numarayı değiştir":"Numarayı yaz";i.value=s.tel||"";
@@ -680,8 +706,8 @@ function siradaCiz(){
   sirada.hidden=false;sirada.textContent="";
   const u=el("div","sust");u.append(el("span","setk",gec>10?"Gecikmeli":fark<=0?"Şimdi":cik?"İlk mola":"Sıradaki durak"),el("span","ssay",gec>10?gec+" dk geride":fark<=0?"varış saati":sure(fark)+" sonra"));sirada.append(u);
   if(cik){const cf=cik.z-now,row=el("div","scik");row.append(el("span",null,"🚗 Yola çıkış "+cik.s.t+" · "+cik.s.n+(cf>0?" · "+sure(cf)+" sonra":" · şimdi")));
-    row.append(btn("Değiştir",null,()=>{const v=prompt("Yeni yola çıkış saati (örn. 06:15). Günün bütün durakları aynı farkla kayar.",cik.s.t);if(v===null)return;
-      const m=v.trim().match(/^(\d{1,2})[:.]?(\d{2})$/);if(!m||+m[1]>23||+m[2]>59)return alert("Saati 06:15 gibi yaz.");
+    row.append(btn("Değiştir",null,async ()=>{const v=await soru("Yeni yola çıkış saati (örn. 06:15). Günün bütün durakları aynı farkla kayar.",cik.s.t);if(v===null)return;
+      const m=v.trim().match(/^(\d{1,2})[:.]?(\d{2})$/);if(!m||+m[1]>23||+m[2]>59)return uyar("Saati 06:15 gibi yaz.");
       const d=gece(+m[1]*60+ +m[2])-gece(dk(cik.s.t));if(d)kaydirGun(cik.s.d,cik.z,d)}));sirada.append(row)}
   const once=list.slice(0,i).filter(x=>x.z<=now).pop();
   if(once&&!cik){const yol=now-(once.s.v||once.z);if(yol>=2*3600e3&&fark>20*60e3&&yol<8*3600e3){const m=el("div","smola");m.append(el("span",null,"☕ Son moladan beri "+sure(yol)+" geçti. Yorgunsan mola ver."),link(HERE("dinlenme tesisi"),null,"En yakın tesis →"));sirada.append(m)}}
@@ -690,8 +716,8 @@ function siradaCiz(){
   const gb=el("div","sgec");gb.append(btn("✓ Vardım","vard",()=>varis(id)));
   if(gec>10){const yv=Math.max(5,Math.round(gec/5)*5);gb.append(btn("Kalanı +"+yv+" dk kaydır",null,()=>kaydir(list,i,yv)))}
   else{gb.append(el("small",null,"Gecikme:"));[15,30,60].forEach(x=>gb.append(btn("+"+x,null,()=>kaydir(list,i,x))))}
-  gb.append(btn("Diğer…",null,()=>{const v=prompt("Bugünün kalanı kaç dakika kaydırılsın? Geç kaldıysan artı (örn. 90), erken gittiysen eksi yaz (örn. -20).","");if(v===null)return;
-    const x=Math.round(+String(v).replace(",",".").replace(/[^\d.-]/g,""));if(!x||Math.abs(x)>720)return alert("Geçerli bir dakika yaz (en fazla 12 saat).");kaydir(list,i,x)}));
+  gb.append(btn("Diğer…",null,async ()=>{const v=await soru("Bugünün kalanı kaç dakika kaydırılsın? Geç kaldıysan artı (örn. 90), erken gittiysen eksi yaz (örn. -20).","");if(v===null)return;
+    const x=Math.round(+String(v).replace(",",".").replace(/[^\d.-]/g,""));if(!x||Math.abs(x)>720)return uyar("Geçerli bir dakika yaz (en fazla 12 saat).");kaydir(list,i,x)}));
   if(sonKaydirma())gb.append(btn("↶ Geri al","geri",geriAl));
   sirada.append(gb);
   const sonra=list.slice(i+1).find(hedefMi);if(sonra)sirada.append(el("small","ssonra","Sonra: "+sonra.s.t+" "+sonra.s.n));
@@ -704,13 +730,13 @@ function kaydirGun(gun,bas,d){
   const ids=duraklarOf().filter(([,s])=>s.d===gun&&s.t&&!s.v&&zamanOf(s).getTime()>=bas).map(([id])=>id);if(!ids.length)return;
   const P=D("plan"),y={};ids.forEach(k=>y[k]={t:saatEkle(P.items[k].t,d)});LS.set("sonKaydirma",{t:Date.now(),g:aktif,ids,d});P.toplu(y)}
 function geriAl(){const x=sonKaydirma();if(!x)return;const P=D("plan"),y={};x.ids.forEach(k=>{if(P.items[k])y[k]={t:saatEkle(P.items[k].t,-x.d)}});LS.del("sonKaydirma");P.toplu(y)}
-function varis(id){
+async function varis(id){
   const list=siraliListe(),i=list.findIndex(x=>x.id===id);const P=D("plan");
   if(i<0){P.koy(id,{v:Date.now()});return}
   const x=list[i],now=Date.now(),fark=Math.round((now-x.z)/60000);
   const d={};list.slice(0,i).forEach(y=>{if(y.s.d===x.s.d&&!y.s.v)d[y.id]={v:y.z}});d[id]={v:now};P.toplu(d);
   if(Math.abs(fark)>10&&Math.abs(fark)<=240){const yv=Math.round(fark/5)*5,m=Math.abs(yv);
-    if(confirm(`Plandan ${m} dk ${yv>0?"geç":"erken"} vardın. Bugünün kalan durakları da ${m} dk ${yv>0?"ileri kaydırılsın":"öne çekilsin"} mi?`))kaydirGun(x.s.d,x.z+1,yv)}
+    if(await onay(`Plandan ${m} dk ${yv>0?"geç":"erken"} vardın. Bugünün kalan durakları da ${m} dk ${yv>0?"ileri kaydırılsın":"öne çekilsin"} mi?`))kaydirGun(x.s.d,x.z+1,yv)}
 }
 setInterval(()=>{if(gezi()&&!modalAcik())ciz()},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)ciz()});
@@ -731,7 +757,8 @@ function konumYardim(kod,tekrar){
   const p=t=>{const x=document.createElement("p");x.textContent=t;k.append(x)};
   const ol=document.createElement("ol");const li=t=>{const x=document.createElement("li");x.textContent=t;ol.append(x)};
   if(kod===2){p("Telefonun konumu (GPS) kapalı görünüyor.");li(ios?"Ayarlar → Gizlilik ve Güvenlik → Konum Servisleri'ni aç.":"Ekranın üstünden bildirim panelini aşağı çek, Konum'u aç.");li("Sonra \"Tekrar dene\"ye bas.")}
-  else if(kod===3){p("Konum zamanında alınamadı. Kapalı bir yerdeysen açık havada tekrar dene.")}
+  else if(kod===3){p("Konum alınamadı (cevap gelmedi).");li("Telefonun Konum'u açık mı? Bildirim panelini aşağı çekip Konum'u aç.");
+    li(uygulamaIci||!ios?"Link WhatsApp, Instagram gibi bir uygulamanın içinden açıldıysa sağ üstteki ⋮ menüden \"Chrome'da aç\" de.":"Link bir uygulamanın içinden açıldıysa \"Safari'de Aç\" de.");li("Kapalı bir yerdeysen pencereye yaklaş, sonra \"Tekrar dene\"ye bas.")}
   else if(uygulamaIci){p("Sayfa bir uygulamanın (WhatsApp, Instagram vb.) içindeki tarayıcıda açılmış; orada konum çalışmayabilir.");
     li(ios?"Alttaki Safari simgesine ya da ⋯ menüsünden \"Safari'de Aç\"a dokun.":"Sağ üstteki ⋮ menüden \"Chrome'da aç\" (ya da \"Tarayıcıda aç\") de.");li("Açılan tarayıcıda konum sorulunca \"İzin ver\"e dokun.")}
   else if(ios){p("iPhone'da konum izni üç yerden açılır:");li("Ayarlar → Gizlilik ve Güvenlik → Konum Servisleri: açık olsun.");
@@ -743,7 +770,15 @@ function konumYardim(kod,tekrar){
     li("Telefon Ayarları → Uygulamalar → Chrome → İzinler → Konum → \"Uygulamayı kullanırken izin ver\".");li("Bildirim panelinden telefonun Konum'unun açık olduğuna bak, sonra \"Tekrar dene\"ye bas.")}
   if(ol.children.length)k.append(ol);
   if(tekrar){const b=document.createElement("button");b.type="button";b.className="ktekrar";b.textContent="↻ Tekrar dene";b.onclick=tekrar;k.append(b)}
+  /* Teşhis: ekran görüntüsü atılırsa sorunun yeri anlaşılsın */
+  const tr=/SamsungBrowser/.test(ua)?"Samsung Internet":/CriOS/.test(ua)?"Chrome":/FxiOS|Firefox/.test(ua)?"Firefox":/EdgA|Edg\//.test(ua)?"Edge":/OPR|Opera/.test(ua)?"Opera":/; wv\)/.test(ua)?"uygulama içi tarayıcı":/Chrome/.test(ua)?"Chrome":ios?"Safari":"bilinmeyen tarayıcı";
+  const ts=document.createElement("small");ts.className="kteshis";ts.style.display="block";
+  ts.textContent="Teşhis: "+tr+(ios?" · iPhone":/Android/.test(ua)?" · Android":"")+" · kod "+kod+(window.isSecureContext?"":" · güvensiz bağlantı");k.append(ts);
+  navigator.permissions?.query({name:"geolocation"}).then(x=>{ts.textContent+=" · izin: "+({granted:"verildi",denied:"engelli",prompt:"sorulacak"}[x.state]||x.state)}).catch(()=>{});
   return k}
+/* Konum al; tarayıcı hiç cevap vermezse (bazı uygulama içi tarayıcılar) süre dolunca hata ver */
+function konumAl(ok,hata,ops){let b=false;const t=setTimeout(()=>{if(!b){b=true;hata({code:3})}},((ops&&ops.timeout)||15000)+2000);
+  try{navigator.geolocation.getCurrentPosition(x=>{if(!b){b=true;clearTimeout(t);ok(x)}},e=>{if(!b){b=true;clearTimeout(t);hata(e)}},ops)}catch(e){if(!b){b=true;clearTimeout(t);hata({code:1})}}}
 /* Google Maps paylaşım linkinden konum (kısa linklerde yalnız link saklanır) */
 function haritaLinki(u){u=String(u||"").trim();if(!/^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|(www\.)?google\.[a-z.]+\/maps|maps\.google\.)/i.test(u))return null;
   const o={gl:u};const m=u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||u.match(/[?&](?:q|query|destination|ll)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
@@ -755,7 +790,7 @@ function parkLinkFormu(kaydet){
   const i=document.createElement("input");i.placeholder="Google Maps linkini yapıştır";i.inputMode="url";
   const b=document.createElement("button");b.type="submit";b.textContent="Kaydet";
   const r=document.createElement("div");r.className="plsatir";r.append(i,b);f.append(s,r);
-  f.onsubmit=e=>{e.preventDefault();const o=haritaLinki(i.value);if(!o){alert("Bu bir Google Maps linki gibi görünmüyor.");return}kaydet(Object.assign(o,{t:Date.now(),n:""}))};
+  f.onsubmit=e=>{e.preventDefault();const o=haritaLinki(i.value);if(!o){uyar("Bu bir Google Maps linki gibi görünmüyor.");return}kaydet(Object.assign(o,{t:Date.now(),n:""}))};
   return f}
 /* ===== Park ===== */
 function parkKutu(){
@@ -764,12 +799,12 @@ function parkKutu(){
     const b=el("div","pbilgi");b.append(el("b",null,"🚗 Arabam burada"),el("small",null,sure(Date.now()-a.t)+" önce kaydedildi"+(a.n?" · "+a.n:"")));k.append(b);
     const r=el("div","pbtns");r.append(link(a.la?"https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+a.la+","+a.lo:a.gl,"ana","➜ Arabama dön"),
       link(a.la?"https://www.google.com/maps/search/?api=1&query="+a.la+","+a.lo:a.gl,null,"📍 Harita"),
-      btn(a.n?"Notu değiştir":"Not ekle",null,()=>{const v=prompt("Not (örn. 2. kat, B blok):",a.n||"");if(v!==null)P.koy("araba",{n:v.trim()})}),
-      btn("Sil",null,()=>{if(confirm("Park yeri silinsin mi?"))P.sil("araba")}));k.append(r);
+      btn(a.n?"Notu değiştir":"Not ekle",null,async ()=>{const v=await soru("Not (örn. 2. kat, B blok):",a.n||"");if(v!==null)P.koy("araba",{n:v.trim()})}),
+      btn("Sil",null,async ()=>{if(await onay("Park yeri silinsin mi?"))P.sil("araba")}));k.append(r);
   }else{const m=el("div","pmesaj");
     const kb=btn("🅿️ Park yerimi kaydet","pkaydet",()=>{m.textContent="Konum alınıyor…";
-      navigator.geolocation.getCurrentPosition(p=>P.koy("araba",{la:+p.coords.latitude.toFixed(6),lo:+p.coords.longitude.toFixed(6),t:Date.now(),n:""}),
-        e=>{m.textContent="";m.append(konumYardim(e.code,()=>kb.click()))},{enableHighAccuracy:true,timeout:20000,maximumAge:0})});
+      konumAl(p=>P.koy("araba",{la:+p.coords.latitude.toFixed(6),lo:+p.coords.longitude.toFixed(6),t:Date.now(),n:""}),
+        e=>{m.textContent="";m.append(konumYardim(e.code,()=>kb.click()))},{enableHighAccuracy:true,timeout:12000,maximumAge:0})});
     k.append(kb,m,parkLinkFormu(v=>P.koy("araba",v)))}
   return k}
 
@@ -785,7 +820,7 @@ function acilKutu(){
     if(!x.no){const f=el("form","tno");const i=el("input");i.type="tel";i.placeholder="Numara";f.append(i,btn("Kaydet"));f.lastChild.type="submit";
       f.onsubmit=e=>{e.preventDefault();if(i.value.trim())T.koy(id,{no:i.value.trim()})};r.append(f);
       r.append(link(M(x.n+(gezi()&&gezi().yer?" "+gezi().yer.ad:"")),"tbul","🔎 Numarayı haritada bul"))}
-    r.append(btn("×","del",()=>{if(confirm(x.n+" silinsin mi?"))T.sil(id)}));k.append(r)});
+    r.append(btn("×","del",async ()=>{if(await onay(x.n+" silinsin mi?"))T.sil(id)}));k.append(r)});
   const f=el("form","add");const a=el("input");a.placeholder="Kişi / yer";const n=el("input");n.type="tel";n.placeholder="Numara";
   const b=btn("Ekle");b.type="submit";f.append(a,n,b);f.onsubmit=e=>{e.preventDefault();if(a.value.trim())T.koy("t"+yeniId(),{n:a.value.trim(),no:n.value.trim(),s:Date.now()})};
   k.append(f);det.append(k);return det}
@@ -796,7 +831,7 @@ function gunlukKutu(d){
   const G=D("gunluk"),det=el("details","gunluk");det.open=gunlukAcik.has(d);det.ontoggle=()=>det.open?gunlukAcik.add(d):gunlukAcik.delete(d);
   const notlar=Object.entries(G.items).filter(([,x])=>x&&x.d===d&&x.m).sort((a,b)=>(a[1].s||0)-(b[1].s||0));
   det.append(el("summary",null,"📝 Günlük"+(notlar.length?" · "+notlar.length+" not":"")+fotoSay(d)));
-  notlar.forEach(([id,x])=>{const r=el("div","gnot");r.append(el("small",null,new Date(x.s).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})),el("span",null,x.m),btn("×","del",()=>{if(confirm("Not silinsin mi?"))G.sil(id)}));det.append(r)});
+  notlar.forEach(([id,x])=>{const r=el("div","gnot");r.append(el("small",null,new Date(x.s).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})),el("span",null,x.m),btn("×","del",async ()=>{if(await onay("Not silinsin mi?"))G.sil(id)}));det.append(r)});
   det.append(fotoKutu(d));
   const f=el("form","add");const t=el("textarea");t.rows=2;t.maxLength=500;t.placeholder="Ne yediniz, neyi beğendiniz?";const b=btn("Ekle");b.type="submit";f.append(t,b);
   f.onsubmit=e=>{e.preventDefault();const v=t.value.trim();if(!v)return;gunlukAcik.add(d);t.blur();G.koy("n"+yeniId(),{d,m:v,s:Date.now()})};
@@ -839,7 +874,7 @@ function butcePanel(g,p){
     [...gunler(g),"diger"].forEach((d,i)=>{const ic=liste.filter(([,x])=>(x.g||"diger")===d);if(!ic.length)return;
       const det=el("details","mgun");const sm=el("summary");sm.append(el("span",null,d==="diger"?"Gezi dışı":(i+1)+". gün · "+tarihKisa(d)),el("b",null,para(ic.reduce((a,[,x])=>a+ +x.tl,0))));det.append(sm);if(d===b)det.open=true;
       ic.forEach(([id,x])=>{const r=el("div","mrow");const a=el("span");a.append(el("span",null,katAd(x.k)));if(x.n)a.append(el("small",null," · "+x.n));
-        r.append(a,el("b",null,para(x.tl)),btn("×","del",()=>{if(confirm(para(x.tl)+" silinsin mi?"))MAS.sil(id)}));det.append(r)});k.append(det)})}
+        r.append(a,el("b",null,para(x.tl)),btn("×","del",async ()=>{if(await onay(para(x.tl)+" silinsin mi?"))MAS.sil(id)}));det.append(r)});k.append(det)})}
   k.append(el("p","note",SYNC.kod?"👥 Masraflar grupla ortak.":"Harcadıkça ekle. Grup kurarsan eşinle ortak olur."));
   /* Yol maliyeti tahmini */
   const y=LS.get(aktif+"_yol")||{km:"",tk:"7",lf:"",oy:""};const yk=el("div","card");p.append(yk);yk.append(el("h3",null,"Yol maliyeti tahmini"));
@@ -872,8 +907,8 @@ function listePanel(p,ad,baslik,bolumler){
       f.onsubmit=e=>{e.preventDefault();const v=i.value.trim();if(!v)return;listeOdak=ad+bi;i.blur();L.koy("k"+yeniId(),{t:v,b,ok:false,s:Date.now()})};g.append(f);
       if(listeOdak===ad+bi)setTimeout(()=>{i.focus();listeOdak=null})}
     k.append(g)});
-  const acts=el("div","acts");acts.append(btn("İşaretleri sıfırla","reset",()=>{if(!confirm("Tüm işaretler kaldırılsın mı?"))return;const d={};hepsi.forEach(([id,x])=>{if(x.ok)d[id]={ok:false}});L.toplu(d)}));
-  if(oneri)acts.append(btn("Önerilen listeyi baştan yükle","reset",()=>{if(confirm("Önerilen liste ilk haline dönsün mü?"))L.tamYaz(VARSAYILAN[ad+"Oneri"]())}));
+  const acts=el("div","acts");acts.append(btn("İşaretleri sıfırla","reset",async ()=>{if(!await onay("Tüm işaretler kaldırılsın mı?"))return;const d={};hepsi.forEach(([id,x])=>{if(x.ok)d[id]={ok:false}});L.toplu(d)}));
+  if(oneri)acts.append(btn("Önerilen listeyi baştan yükle","reset",async ()=>{if(await onay("Önerilen liste ilk haline dönsün mü?"))L.tamYaz(VARSAYILAN[ad+"Oneri"]())}));
   k.append(acts);
 }
 
@@ -919,18 +954,18 @@ function aiModal(gunSecili){
     m.append(el("h4","adim","2. Tercihler"));const tr=el("textarea");tr.rows=2;tr.placeholder="örn. yemek ağırlıklı, çok yürümeyelim, akşam 22'de otelde olalım, otelimiz X";tr.value=LS.get("aiTercih")||"";m.append(tr);
     let tempo="Normal";const sg=el("div","seg");["Sakin","Normal","Dolu"].forEach(t=>{const b=btn(t,null,()=>{tempo=t;[...sg.children].forEach(x=>x.setAttribute("aria-selected",x===b))});b.setAttribute("aria-selected",t===tempo);sg.append(b)});m.append(sg);
     m.append(el("h4","adim","3. AI'ını seç"));
-    const istek=()=>{LS.set("aiTercih",tr.value);const s=cbs.filter(c=>c.checked).map(c=>c.value);if(!s.length){alert("En az bir gün seç.");return null}return aiIstek(g,s,tr.value.trim(),tempo)};
+    const istek=()=>{LS.set("aiTercih",tr.value);const s=cbs.filter(c=>c.checked).map(c=>c.value);if(!s.length){uyar("En az bir gün seç.");return null}return aiIstek(g,s,tr.value.trim(),tempo)};
     const kopyala=async t=>{try{await navigator.clipboard.writeText(t);return true}catch(e){return false}};
     const ag=el("div","aisec");
     /* Pencere önce açılır (telefon tarayıcıları beklemeden sonra açılan pencereyi engeller), istek ayrıca panoya da kopyalanır */
     ag.append(btn("Claude","aib",()=>{const t=istek();if(!t)return;window.open("https://claude.ai/new?q="+encodeURIComponent(t),"_blank");kopyala(t);adim4("Claude açıldı; istek kutuda hazır, gönder. Kutu boşsa yapıştır (istek panoda).")}),
       btn("ChatGPT","aib",()=>{const t=istek();if(!t)return;window.open("https://chatgpt.com/?q="+encodeURIComponent(t),"_blank");kopyala(t);adim4("ChatGPT açıldı; istek kutuda hazır, gönder. Kutu boşsa yapıştır (istek panoda).")}),
       btn("Gemini","aib",()=>{const t=istek();if(!t)return;window.open("https://gemini.google.com/app","_blank");kopyala(t).then(ok=>adim4(ok?"İstek panoya kopyalandı; Gemini'de kutuya yapıştırıp gönder.":"Gemini açıldı; isteği Kopyala ile alıp yapıştır."))}),
-      btn("Kopyala","aib",async()=>{const t=istek();if(!t)return;const ok=await kopyala(t);if(!ok)prompt("Kopyala:",t);adim4("İstek kopyalandı; istediğin AI'a yapıştır.")}));
+      btn("Kopyala","aib",async ()=>{const t=istek();if(!t)return;const ok=await kopyala(t);if(!ok)await soru("Kopyala:",t);adim4("İstek kopyalandı; istediğin AI'a yapıştır.")}));
     m.append(ag);const bilgi=el("small","note");m.append(bilgi);
     m.append(el("h4","adim","4. Cevabı yapıştır"));
     const ce=el("textarea");ce.rows=4;ce.placeholder="AI'ın cevabının tamamını buraya yapıştır";m.append(ce);
-    const pb=el("div","acts");pb.append(btn("📋 Panodan yapıştır",null,async()=>{try{ce.value=await navigator.clipboard.readText();onizle()}catch(e){alert("Pano okunamadı; kutuya uzun basıp Yapıştır de.")}}));m.append(pb);
+    const pb=el("div","acts");pb.append(btn("📋 Panodan yapıştır",null,async()=>{try{ce.value=await navigator.clipboard.readText();onizle()}catch(e){uyar("Pano okunamadı; kutuya uzun basıp Yapıştır de.")}}));m.append(pb);
     const on=el("div","onizle");m.append(on);let sonuc=null;
     function adim4(t){bilgi.textContent=t||"AI cevap verince cevabın tamamını kopyalayıp aşağıya yapıştır.";ce.scrollIntoView({behavior:"smooth",block:"center"})}
     function onizle(){on.textContent="";sonuc=null;if(!ce.value.trim())return;
@@ -971,7 +1006,7 @@ function fotoKutu(d){
 async function fotoEkle(d,dosyalar){
   if(!dosyalar.length)return;yukleniyor.add(d);gunlukAcik.add(d);ciz();
   for(const f of dosyalar){try{const th=await kucult(f,320,0.72,90000),b=await kucult(f,1600,0.82,950000),id="f"+yeniId(),meta={d,s:Date.now(),th,g:aktif,up:false};
-      await idb.put("buyuk",id,b);await idb.put("foto",id,meta);FOTO[id]=meta;ciz();fotoGonder(id)}catch(e){alert("Bir fotoğraf eklenemedi: "+(e&&e.message||e))}}
+      await idb.put("buyuk",id,b);await idb.put("foto",id,meta);FOTO[id]=meta;ciz();fotoGonder(id)}catch(e){uyar("Bir fotoğraf eklenemedi: "+(e&&e.message||e))}}
   yukleniyor.delete(d);ciz()}
 async function fotoGonder(id){const f=SYNC.f,kod=SYNC.kod,m=FOTO[id];if(!f||!kod||!m||m.up)return;
   try{const b=await idb.get("buyuk",id);if(!b)return;await f.setDoc(f.doc(f.db,"gruplar",kod,"fotoBuyuk",id),{b});
@@ -992,7 +1027,7 @@ function lbKapat(){lb.hidden=true;delete lb.dataset.acik;document.body.style.ove
 async function lbCiz(){const l=fotoListe(lbGun);if(!l.length)return lbKapat();if(lbSira>=l.length)lbSira=l.length-1;const [id,x]=l[lbSira];lb.textContent="";
   const im=el("img","lbimg");im.src=x.th;im.alt="";lb.append(im);
   const u=el("div","lbust");u.append(el("span",null,gunAdi(x.d)+" · "+new Date(x.s).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})+" · "+(lbSira+1)+"/"+l.length),
-    btn("🗑 Sil",null,()=>{if(confirm("Fotoğraf silinsin mi?"+(x.up?" Gruptakilerden de silinir.":"")))fotoSil(id).then(()=>{if(lb.dataset.acik)lbCiz()})}),btn("✕",null,lbKapat));lb.append(u);
+    btn("🗑 Sil",null,async ()=>{if(await onay("Fotoğraf silinsin mi?"+(x.up?" Gruptakilerden de silinir.":"")))fotoSil(id).then(()=>{if(lb.dataset.acik)lbCiz()})}),btn("✕",null,lbKapat));lb.append(u);
   if(l.length>1){lb.append(btn("‹","lbok sol",e=>{e.stopPropagation();lbSira=(lbSira-1+l.length)%l.length;lbCiz()}),btn("›","lbok sag",e=>{e.stopPropagation();lbSira=(lbSira+1)%l.length;lbCiz()}))}
   let b=await idb.get("buyuk",id);
   if(!b&&SYNC.f&&SYNC.kod){const y=el("span","lbyuk","Büyük hali indiriliyor…");lb.append(y);try{const s=await SYNC.f.getDoc(SYNC.f.doc(SYNC.f.db,"gruplar",SYNC.kod,"fotoBuyuk",id));if(s.exists()){b=s.data().b;await idb.put("buyuk",id,b)}}catch(e){}y.remove()}
@@ -1035,8 +1070,8 @@ lb.addEventListener("touchend",e=>{if(lbX==null)return;const dx=e.changedTouches
   let calisiyor=false;
   function al(){if(calisiyor)return;if(!("geolocation" in navigator))return butonGoster("Bu tarayıcı konum vermiyor.");calisiyor=true;const eski=oku();
     if(eski)goster(eski,"Konum alınıyor…");else{box.textContent="";box.append(el("small","note","Konum alınıyor… Tarayıcı izin sorarsa \"İzin ver\"e dokun."))}
-    navigator.geolocation.getCurrentPosition(async p=>{await getir(p.coords.latitude,p.coords.longitude,null);calisiyor=false},
-      e=>{calisiyor=false;butonGoster(null,e.code)},{timeout:15000,maximumAge:600000})}
+    konumAl(async p=>{await getir(p.coords.latitude,p.coords.longitude,null);calisiyor=false},
+      e=>{calisiyor=false;butonGoster(null,e.code)},{timeout:12000,maximumAge:600000})}
   const eski=oku();if(eski)goster(eski);else butonGoster();
   navigator.permissions?.query({name:"geolocation"}).then(p=>{const k=()=>{const v=oku();if(p.state==="granted"){if(!v||!v.sabit)al()}else if(p.state==="denied"&&!v)butonGoster(null,true)};
     k();p.onchange=()=>{if(p.state==="granted")al();else k()}}).catch(()=>{});
@@ -1066,7 +1101,7 @@ function v1Aktar(zorla){
 }
 
 /* ===== Başlangıç ===== */
-if(!Object.keys(GEZI.items).length)v1Aktar(false);
+if(!Object.keys(GEZI.items).length&&!LS.get("v1Silindi"))v1Aktar(false);
 idb.all("foto").then(o=>{FOTO=Object.assign(o||{},FOTO);fotoGrup();ciz()}).catch(()=>{});
 if(!gezi()){aktif=null;const l=Object.entries(GEZI.items).filter(([,g])=>g&&g.bas);const s=l.find(([,g])=>durum(g)==="suruyor")||l.find(([,g])=>durum(g)==="yaklasan"&&gunFark(bugunStr(),g.bas)<=1);if(s){aktif=s[0];LS.set("aktif",aktif)}}
 goster();
@@ -1112,18 +1147,18 @@ async function baglan(kod){
   }catch(e){hata(e)}}
 function ayril(){Object.values(abonelik).forEach(x=>x());abonelik={};SYNC.kod=null;SYNC.yaz=null;SYNC.f=null;SYNC.abone=null;
   try{localStorage.removeItem(KEY)}catch(e){}durum="kapali";mesaj="";window.dispatchEvent(new Event("grup"));window.ciz()}
-function kur(kod,onay){if(onay&&!confirm(onay))return;try{localStorage.setItem(KEY,kod)}catch(e){}baglan(kod)}
+async function kur(kod,soruMetni){if(soruMetni&&!await onay(soruMetni))return;try{localStorage.setItem(KEY,kod)}catch(e){}baglan(kod)}
 async function davet(){const kod=SYNC.kod;if(!kod)return;const url=location.origin+location.pathname+"#grup="+goster(kod),metin="Gezilerimize katıl. Grup kodu: "+goster(kod);
   try{if(navigator.share){await navigator.share({title:"Gezinti",text:metin,url});return}}catch(e){if(e&&e.name==="AbortError")return}
-  try{await navigator.clipboard.writeText(metin+"\n"+url);alert("Davet linki kopyalandı. Mesajla gönder.")}catch(e){prompt("Bu linki kopyalayıp gönder:",url)}}
+  try{await navigator.clipboard.writeText(metin+"\n"+url);uyar("Davet linki kopyalandı. Mesajla gönder.")}catch(e){await soru("Bu linki kopyalayıp gönder:",url)}}
 function grupCiz(){document.querySelectorAll(".grup-kart").forEach(k=>{k.textContent="";const u=document.createElement("div");u.className="gust";
   const b=document.createElement("b"),s=document.createElement("small");u.append(b,s);const bt=document.createElement("div");bt.className="gbtn";
   const btn=(t,f,ana)=>{const x=document.createElement("button");x.type="button";x.textContent=t;x.onclick=f;if(ana)x.className="ana";bt.append(x)};
   if(SYNC.kod){b.textContent="👥 Grup "+goster(SYNC.kod);s.textContent=durum==="bagli"?"✓ Bağlı · geziler grupla anlık ortak":durum==="baglaniyor"?"Bağlanıyor…":mesaj;
-    btn("Davet et",davet,true);btn("Ayrıl",()=>{if(confirm("Gruptan ayrılınca veriler bu telefonda kalır ama artık eşitlenmez. Ayrılınsın mı?"))ayril()})}
+    btn("Davet et",davet,true);btn("Ayrıl",async ()=>{if(await onay("Gruptan ayrılınca veriler bu telefonda kalır ama artık eşitlenmez. Ayrılınsın mı?"))ayril()})}
   else{b.textContent="👥 Ortak kullanım";s.textContent=durum==="baglaniyor"?"Bağlanıyor…":(mesaj||"Eşinle ya da birlikte gezdiğin kişilerle aynı gezileri, listeleri ve masrafları paylaş.");
     btn("Grup oluştur",()=>kur(yeniKod(),"Yeni grup oluşturulsun mu? Bu telefondaki geziler gruba yüklenir."),true);
-    btn("Koda katıl",()=>{const k=temizle(prompt("Grup kodunu yaz (örn. ABCD-EFGH-JKMN):"));if(!k)return;if(!gecerli(k))return alert("Kod hatalı görünüyor. 12 harf ve rakamdan oluşmalı.");
+    btn("Koda katıl",async ()=>{const k=temizle(await soru("Grup kodunu yaz (örn. ABCD-EFGH-JKMN):"));if(!k)return;if(!gecerli(k))return uyar("Kod hatalı görünüyor. 12 harf ve rakamdan oluşmalı.");
       kur(k,"Gruba katılınca grubun gezileri bu telefona gelir. Devam edilsin mi?")})}
   k.append(u,bt)})}
 window.grupCiz=grupCiz;
