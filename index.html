@@ -462,6 +462,20 @@ body.aramada{overflow:hidden}
 .tinp::-webkit-calendar-picker-indicator{display:none}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;z-index:60;max-width:calc(100% - 32px);background:var(--fg);color:var(--bg);font-size:14px;padding:11px 16px;border-radius:14px;box-shadow:var(--golge);transition:.25s}
 .toast.acik{opacity:1;transform:translate(-50%,0)}
+/* Sıralama */
+.tutamak{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin:-2px 6px 0 -4px;border-radius:8px;background:var(--ink-soft);color:var(--ink);font-size:16px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;vertical-align:middle}
+li.stop.duzlenir .n{flex-direction:row;flex-wrap:wrap;align-items:center}
+li.stop.duzlenir .n b{flex:1;min-width:0}
+li.stop.duzlenir .n small{flex-basis:100%;padding-left:28px}
+li.stop.surukle{position:relative;z-index:5;background:var(--surface);box-shadow:0 10px 30px rgba(0,0,0,.18);border-radius:12px;opacity:.95}
+li.stop.ustcizgi{box-shadow:inset 0 3px 0 var(--accent)}
+li.stop.altcizgi{box-shadow:inset 0 -3px 0 var(--accent)}
+.dact{flex-wrap:wrap;justify-content:flex-end;max-width:120px;padding-top:8px}
+.dact button{padding:5px 8px!important;font-size:13px!important}
+.dact .sira{background:var(--ink-soft)!important;color:var(--ink)!important;border:0!important}
+li.stop.duzlenir .n .dact{flex-basis:100%;max-width:none;justify-content:flex-start;gap:6px;padding:6px 0 0 28px;display:flex}
+li.stop.duzlenir .n .dact button{min-width:38px;height:34px}
+li.stop .tinp{align-self:start}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -771,13 +785,15 @@ function programPanel(g,p){
     if(rota.length>=2)c.append(link("https://www.google.com/maps/dir/"+rota.slice(0,10).map(([,s])=>encodeURIComponent((s.la&&s.lo)?s.la+","+s.lo:(s.q||s.n)).replace(/%20/g,"+")).join("/"),"cta","🗺️ Günün rotasını Google Maps'te aç"));
     const ol=el("ol");
     ds.forEach(([id,s])=>{
-      const li=el("li","stop"+(s.v?" vardi":""));
+      const li=el("li","stop"+(s.v?" vardi":""));li.dataset.id=id;
       const n=el("span","n");n.append(el("b",null,s.n));if(s.s)n.append(el("small",null,s.s));
       const r=saatRozeti(s);if(r)n.append(r);
       if(!duz&&d===bugun&&!cikisMi(s))n.append(btn(s.v?"↶ Vardım işaretini kaldır":"✓ Vardım","vchip"+(s.v?" geri":""),()=>s.v?D("plan").koy(id,{v:null}):varis(id)));
       if(false){const nr=el("span","near");const q=(s.la&&s.lo)?s.la+","+s.lo:(s.q||s.n);YAKIN.forEach(([l,w])=>nr.append(link(NEAR(w,q),null,l)));n.append(nr)}
       li.append(saatAlani(id,s),n);
-      if(duz){const x=el("span","dact");x.append(btn("✎",null,()=>durakFormu(id,d)),btn("×",null,async ()=>{if(await onay(s.n+" plandan silinsin mi?"))D("plan").sil(id)}));li.append(x)}
+      if(duz){const x=el("span","dact");
+        x.append(btn("▲","sira",()=>tasi(d,id,-1)),btn("▼","sira",()=>tasi(d,id,1)),btn("✎",null,()=>durakFormu(id,d)),btn("×",null,async ()=>{if(await onay(s.n+" plandan silinsin mi?"))D("plan").sil(id)}));n.append(x);
+        const tut=el("span","tutamak","⠿");tut.setAttribute("aria-label","Sürükleyerek taşı");tut.onpointerdown=e=>surukle(e,tut,li,d);n.prepend(tut);li.classList.add("duzlenir")}
       else{const sag=el("span","sagbtn");sag.append(cikisMi(s)?el("span","go cik","Çıkış"):haritaVar(s)?link(hedefURL(s),"go","Git"):el("span"));
         if(!cikisMi(s)){const tb=btn("📞","telbtn"+(s.tel?" var":""),()=>telModal(id));tb.setAttribute("aria-label",s.n+" telefonu");sag.append(tb)}li.append(sag)}
       ol.append(li)});
@@ -794,6 +810,29 @@ function bolgeSec(g,d){
   });
 }
 
+
+
+/* ---------- Durak sırasını değiştir: saat aralıkları yerinde kalır, duraklar yer değiştirir ---------- */
+function gunSirasi(d){return duraklarOf().filter(([,s])=>s.d===d).sort((a,b)=>(gece(dk(a[1].t))??-1)-(gece(dk(b[1].t))??-1)).map(([id])=>id)}
+function siraDegis(d,ids){
+  const P=D("plan"),dk_=t=>gece(dk(t));
+  const slot=ids.map(id=>P.items[id].t).filter(Boolean).sort((a,b)=>dk_(a)-dk_(b));
+  if(slot.length<ids.length){let son=slot.length?slot[slot.length-1]:"09:00";while(slot.length<ids.length){son=saatEkle(son,60);slot.push(son)}}
+  for(let i=1;i<slot.length;i++)if(dk_(slot[i])<=dk_(slot[i-1]))slot[i]=saatEkle(slot[i-1],5);
+  const y={};ids.forEach((id,i)=>{if(P.items[id].t!==slot[i])y[id]={t:slot[i]}});if(Object.keys(y).length)P.toplu(y)}
+function tasi(d,id,yon){const ids=gunSirasi(d),i=ids.indexOf(id),j=i+yon;if(i<0||j<0||j>=ids.length)return;[ids[i],ids[j]]=[ids[j],ids[i]];siraDegis(d,ids)}
+function surukle(e,tut,li,d){
+  e.preventDefault();const ol=li.parentElement,ogeler=[...ol.querySelectorAll("li.stop[data-id]")],bas=e.clientY;let hedef=ogeler.indexOf(li);
+  li.classList.add("surukle");try{tut.setPointerCapture(e.pointerId)}catch(_){}
+  const isaret=x=>ogeler.forEach((o,k)=>{o.classList.toggle("ustcizgi",x!==null&&k===x&&o!==li);o.classList.toggle("altcizgi",x!==null&&x===ogeler.length&&k===ogeler.length-1&&o!==li)});
+  const hareket=ev=>{li.style.transform="translateY("+(ev.clientY-bas)+"px)";const r=li.getBoundingClientRect(),orta=r.top+r.height/2;
+    let k=0;ogeler.forEach(o=>{if(o===li)return;const q=o.getBoundingClientRect();if(orta>q.top+q.height/2)k++});hedef=k;
+    const gor=ogeler.filter(o=>o!==li);isaret(k<gor.length?ogeler.indexOf(gor[k]):ogeler.length)};
+  const bitir=()=>{tut.removeEventListener("pointermove",hareket);tut.removeEventListener("pointerup",bitir);tut.removeEventListener("pointercancel",bitir);
+    li.style.transform="";li.classList.remove("surukle");isaret(null);
+    const ids=ogeler.map(o=>o.dataset.id).filter(x=>x!==li.dataset.id);ids.splice(hedef,0,li.dataset.id);
+    if(ids.join()!==ogeler.map(o=>o.dataset.id).join())siraDegis(d,ids)};
+  tut.addEventListener("pointermove",hareket);tut.addEventListener("pointerup",bitir);tut.addEventListener("pointercancel",bitir)}
 
 /* ---------- Hızlı durak ekleme: aynı sayfada yaz, haritadan seç ---------- */
 function saatAlani(id,s){
@@ -1373,7 +1412,7 @@ function ornekKarti(g){
   k.append(r);return k}
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-10-28.4";
+const SURUM="2026-10-28.5";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
