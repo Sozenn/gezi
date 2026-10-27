@@ -1,6 +1,6 @@
 <!doctype html><html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#1d4a63">
+<meta name="theme-color" content="#0a6f8c">
 <title>Gezinti</title>
 <meta name="description" content="Gezi planı, bütçe, bavul ve ev kontrol listeleri. Elle ya da kendi AI'ınla plan; eşinle ortak.">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><link rel="manifest" href="manifest.json">
@@ -476,11 +476,47 @@ li.stop.altcizgi{box-shadow:inset 0 -3px 0 var(--accent)}
 li.stop.duzlenir .n .dact{flex-basis:100%;max-width:none;justify-content:flex-start;gap:6px;padding:6px 0 0 28px;display:flex}
 li.stop.duzlenir .n .dact button{min-width:38px;height:34px}
 li.stop .tinp{align-self:start}
+/* ================= Renkler: deniz turkuazı + gün batımı mercanı + kum (tamamlayıcı uyum) ================= */
+:root{--bg:#f7f4ee;--surface:#ffffff;--fg:#16232e;--muted:#64717d;--line:#ebe5da;
+  --ink:#0a6f8c;--ink-soft:#e0f2f6;--accent:#e8492c;--accent-soft:#ffe9e2;--ok:#1e9a60;--sun:#f5b335;
+  --golge:0 1px 2px rgba(10,60,80,.05),0 6px 20px rgba(10,60,80,.07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1519;--surface:#16212a;--fg:#eaf0f3;--muted:#94a3ae;--line:#24323c;
+  --ink:#5fc6dc;--ink-soft:#15303a;--accent:#ff7b5c;--accent-soft:#3b1f18;--ok:#5fd394;--sun:#f7c35a}}
+.lgi{filter:saturate(1.2)}
+.yeni-gezi{background:linear-gradient(135deg,var(--accent),#f47b3c);box-shadow:0 8px 20px rgba(232,73,44,.28)}
+.gkart::before{background:linear-gradient(180deg,var(--ink),#14a3b8)}
+.gkart.suruyor::before{background:linear-gradient(180deg,var(--accent),var(--sun))}
+.gsay{background:var(--ink-soft);color:var(--ink)!important}
+.sirada{background:linear-gradient(135deg,#0a6f8c,#14a3b8)!important;box-shadow:0 10px 28px rgba(10,111,140,.32)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sirada{background:linear-gradient(135deg,#0b4f63,#0f7486)!important}}
+.sbtn a.ana{color:#0a6f8c}
+.sgec button.vard{background:var(--ok);border-color:var(--ok)}
+.smola{background:var(--sun)}
+.day.today{box-shadow:0 0 0 2px var(--accent),var(--golge)}
+.today .tag{background:var(--accent);color:#fff}
+.kbar i{background:linear-gradient(90deg,var(--accent),var(--sun))}
+.prog i{background:linear-gradient(90deg,var(--ok),#3cc488)}
+.vchip{border-color:var(--ok);color:var(--ok)}
+.arac.vurgu{background:var(--ink);color:#fff}
+nav.altnav button[aria-selected="true"]{color:var(--ink)!important}
+.ornekbant{background:linear-gradient(135deg,#fff4e0,#ffe9e2)}
+/* Gün kartı: rota ve paylaş */
+.gunbtn{display:flex;gap:8px}
+.gunbtn .cta{flex:1;min-width:0}
+.gpay{flex:none;font:600 14px var(--body);padding:11px 16px;border-radius:12px;border:0;background:var(--accent-soft);color:var(--accent);cursor:pointer}
+/* Saat: her telefonda 24 saat düz yazı, dokununca saat seçici */
+.tsaat{position:relative;align-self:start;display:block;padding-top:10px;cursor:pointer}
+.tyazi{display:block;font:600 13.5px var(--body);color:var(--muted);font-variant-numeric:tabular-nums}
+.tsaat .tinp{position:absolute;inset:0;width:100%;height:100%;padding:0;margin:0;opacity:0;font-size:16px;cursor:pointer}
+/* Bugün modu: sıradaki durak */
+li.stop.siradaki .n::before{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+li.stop.siradaki .tyazi{color:var(--accent)}
+li.stop.siradaki .n b{color:var(--accent)}
+.panel>.sirada{margin:2px 0}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
 <div class="sirada" id="sirada" hidden aria-live="polite"></div>
-<div class="hava" id="hava" hidden aria-live="polite"></div>
 <main id="ana" class="wrap" style="padding:0"></main>
 </div>
 <div id="modal" class="modal" hidden role="dialog" aria-modal="true"></div>
@@ -586,15 +622,17 @@ const VARSAYILAN={
 };
 
 /* ---------- Ekranlar ---------- */
-const ust=document.getElementById("ust"),ana=document.getElementById("ana"),sirada=document.getElementById("sirada"),havaKutu=document.getElementById("hava");
+const ust=document.getElementById("ust"),ana=document.getElementById("ana"),sirada=document.getElementById("sirada");
 let sekme=LS.get("sekme")||"plan",duzenle=null,gunAcik={};
 function bildirimGoster(){if(!hizliBilgi)return;const t=el("div","toast",hizliBilgi);hizliBilgi=null;document.body.append(t);setTimeout(()=>t.classList.add("acik"),20);setTimeout(()=>{t.classList.remove("acik");setTimeout(()=>t.remove(),300)},3500)}
 function goster(){setTimeout(bildirimGoster,50);
   /* Modal açıkken yazılan formu bozmamak için arka planı çizmeyi ertele */
   if(modalAcik()){cizErtele=true;return}
+  /* Sıradaki durak kartı program sekmesinde bugünün kartının üstüne taşınır; yeniden çizmeden önce yerine al */
+  ana.before(sirada);
   const g=gezi();ust.textContent="";ana.textContent="";
-  if(!g){evEkrani();sirada.hidden=true;havaKutu.hidden=true;return}
-  havaKutu.hidden=false;geziEkrani(g);siradaCiz();if(window.havaYerYenile)havaYerYenile();
+  if(!g){evEkrani();sirada.hidden=true;return}
+  geziEkrani(g);siradaCiz();bugunAtla();
 }
 let cizErtele=false;
 
@@ -620,7 +658,15 @@ function evEkrani(){
   const gk=el("div","grup-kart");ana.append(gk);if(window.grupCiz)grupCiz();
   if(v1Var()&&!GEZI.items[V1ID])ana.append(btn("Eski uygulamadaki gezini aktar","reset",()=>{LS.del("v1Silindi");v1Aktar(true);ciz()}));
 }
-function geziAc(id){aktif=id;LS.set("aktif",id);duzenle=null;gunAcik={};window.scrollTo(0,0);ciz()}
+function geziAc(id){aktif=id;LS.set("aktif",id);duzenle=null;gunAcik={};bugunModu();window.scrollTo(0,0);ciz()}
+/* Bugün modu: süren bir gezi açılınca program sekmesi açılır ve sayfa bugünün kartına (sıradaki durağa) kayar */
+let atla=false;
+function bugunModu(){const g=gezi();if(g&&durum(g)==="suruyor"){sekme="plan";LS.set("sekme","plan");atla=true}}
+function bugunAtla(){if(!atla)return;atla=false;if(sekme!=="plan")return;
+  const hedef=()=>(!sirada.hidden&&sirada.closest(".panel"))?sirada:document.querySelector(".day.today");if(!hedef())return;
+  const git=()=>{const h=hedef();if(h)window.scrollTo(0,Math.max(0,h.getBoundingClientRect().top+window.scrollY-12))};
+  requestAnimationFrame(git);if(document.readyState!=="complete")addEventListener("load",()=>setTimeout(git,0),{once:true})}
+try{history.scrollRestoration="manual"}catch(e){}
 function eveDon(){aktif=null;LS.set("aktif",null);window.scrollTo(0,0);ciz()}
 
 /* ===== Gezi ekranı ===== */
@@ -642,6 +688,8 @@ function geziEkrani(g){
 function geziMenu(g){
   modal("Gezi",m=>{
     m.append(btn("✏️ Adı ve tarihleri düzenle","mbtn",()=>{modalKapat();geziFormu(aktif)}),
+      btn("📤 Programı paylaş (WhatsApp vb.)","mbtn",()=>{modalKapat();paylas(programMetni(g,gunler(g)))}),
+      btn("📄 Geziyi kopyala","mbtn",()=>{modalKapat();geziKopyala(aktif)}),
       btn("🗑 Geziyi sil","mbtn tehlike",async ()=>{if(!await onay(g.ad+" silinsin mi? Plan, masraf ve günlük bu gezide kaybolur."))return;if(aktif===V1ID)LS.set("v1Silindi",true);if(aktif===ORNEK)LS.set("ornekSilindi",true);GEZI.sil(aktif);modalKapat();eveDon()}))});
 }
 
@@ -771,7 +819,7 @@ function programPanel(g,p){
   gunler(g).forEach((d,gi)=>{
     const ds=tum.filter(([,s])=>s.d===d).sort((a,b)=>gece(dk(a[1].t))-gece(dk(b[1].t)));
     const bitti=gunBitti(d,ds),acik=gunAcik[d]!==undefined?gunAcik[d]:!bitti,duz=duzenle===d;
-    const c=el("article","day"+(d===bugun?" today":"")+(bitti?" bitti":"")+(acik?"":" kapali"));c.dataset.d=d;
+    const c=el("article","day"+(d===bugun?" today":"")+(bitti?" bitti":"")+(acik?"":" kapali"));c.dataset.d=d;if(d===bugun)p.append(sirada);
     const h=el("div","dhead");const bas=btn("","dtoggle",()=>{gunAcik[d]=!acik;if(!gunAcik[d]&&duz)duzenle=null;ciz()});bas.setAttribute("aria-expanded",acik);
     const bt=el("span","dbaslik");bt.append(el("small","gno",(gi+1)+". gün"),el("h2",null,gunUzun(d)));bas.append(el("span","ok",acik?"▾":"▸"),bt);
     const sag=el("div","dsag");sag.append(el("span","tag",d===bugun?"Bugün":bitti?"Bitti ✓":ds.length+" durak"));
@@ -782,7 +830,8 @@ function programPanel(g,p){
     const yb=btn("📍 "+(yer?yer.ad:"Bölge seç (hava tahmini için)"),"yerbtn",()=>bolgeSec(g,d));c.append(yb);
     const th=el("p","tahmin");c.append(th);tahminYaz(th,yer,d);
     const rota=ds.filter(([,s])=>haritaVar(s));
-    if(rota.length>=2)c.append(link("https://www.google.com/maps/dir/"+rota.slice(0,10).map(([,s])=>encodeURIComponent((s.la&&s.lo)?s.la+","+s.lo:(s.q||s.n)).replace(/%20/g,"+")).join("/"),"cta","🗺️ Günün rotasını Google Maps'te aç"));
+    if(ds.length){const gb=el("div","gunbtn");if(rota.length>=2)gb.append(link(rotaURL(rota),"cta","🗺️ Günün rotası"));
+      gb.append(btn("📤 Paylaş","gpay",()=>paylas(programMetni(g,[d]))));c.append(gb)}
     const ol=el("ol");
     ds.forEach(([id,s])=>{
       const li=el("li","stop"+(s.v?" vardi":""));li.dataset.id=id;
@@ -799,6 +848,43 @@ function programPanel(g,p){
       ol.append(li)});
     if(duz){const li=el("li","stop ekle");li.append(btn("+ Ayrıntılı durak ekle",null,()=>durakFormu(null,d)),btn("🤖 Bu günü AI ile planla","gsifirla",()=>aiModal([d])));ol.append(li)}
     c.append(ol);if(!bitti&&!duz)c.append(hizliEkle(d,g));c.append(gunlukKutu(d));p.append(c)});
+}
+const rotaURL=rota=>"https://www.google.com/maps/dir/"+rota.slice(0,10).map(([,s])=>encodeURIComponent((s.la&&s.lo)?s.la+","+s.lo:(s.q||s.n)).replace(/%20/g,"+")).join("/");
+/* Programı düz yazı olarak paylaş: uygulaması olmayan kişi de okuyabilsin */
+function programMetni(g,gl){
+  const tum=duraklarOf(),hep=gunler(g),sat=["🧭 "+g.ad];
+  gl.forEach(d=>{const ds=tum.filter(([,s])=>s.d===d).sort((a,b)=>gece(dk(a[1].t))-gece(dk(b[1].t)));if(!ds.length)return;
+    const y=yerOf(g,d);sat.push("","📅 "+(hep.indexOf(d)+1)+". gün · "+gunUzun(d)+(y?" · "+y.ad:""));
+    ds.forEach(([,s])=>sat.push((s.t||"--:--")+"  "+s.n+(s.s?" — "+s.s:"")));
+    const rota=ds.filter(([,s])=>haritaVar(s));if(rota.length>=2)sat.push("🗺️ Rota: "+rotaURL(rota))});
+  if(sat.length===1)sat.push("","Henüz durak yok.");
+  sat.push("","Gezinti ile hazırlandı: "+location.origin+location.pathname);
+  return sat.join("\n")}
+async function paylas(metin){
+  if(navigator.share){try{await navigator.share({text:metin});return}catch(e){if(e&&e.name==="AbortError")return}}
+  window.open("https://wa.me/?text="+encodeURIComponent(metin),"_blank")}
+/* Geziyi kopyala: program, bölgeler, listeler (işaretsiz) ve telefonlar yeni tarihe kayarak kopyalanır */
+function geziKopyala(id){
+  const g=GEZI.items[id];if(!g)return;
+  modal("Geziyi kopyala",m=>{
+    const f=el("form","mform2");const alan=(lbl,inp)=>{const l=el("label",null,lbl);l.append(inp);return l};
+    const ad=el("input");ad.required=true;ad.maxLength=60;ad.value=(g.ad.replace(/^Örnek:\s*/,"")+" (kopya)").slice(0,60);
+    const bas=el("input");bas.type="date";bas.required=true;bas.value=tarihEkle(bugunStr(),7);
+    f.append(alan("Yeni gezinin adı",ad),alan("Yeni başlangıç tarihi",bas),
+      el("p","note","Program, gün bölgeleri, bavul ve ev listeleri ile telefonlar kopyalanır; tarihler yeni başlangıca göre kayar. Masraflar, günlük notlar ve fotoğraflar kopyalanmaz."));
+    const kay=el("button","ana","Kopyala");kay.type="submit";f.append(kay);
+    f.onsubmit=e=>{e.preventDefault();if(!bas.value)return;
+      const fark=gunFark(g.bas,bas.value),yid="g"+yeniId();
+      const gg={};Object.entries(g.gunler||{}).forEach(([d,v])=>gg[tarihEkle(d,fark)]=v);
+      GEZI.koy(yid,{ad:ad.value.trim(),bas:bas.value,son:tarihEkle(g.son,fark),yer:g.yer||null,s:Date.now(),gunler:gg});
+      const kaynak=b=>depo(id+"_"+b,VARSAYILAN[b]).items||{};
+      const pl={};Object.entries(kaynak("plan")).forEach(([k,x])=>{if(!x||!x.d)return;const y=Object.assign({},x,{d:tarihEkle(x.d,fark)});delete y.v;pl[k]=y});
+      depo(yid+"_plan").tamYaz(pl);
+      ["bavul","ev","bavulOneri","evOneri"].forEach(b=>{const k={};Object.entries(kaynak(b)).forEach(([i,x])=>{if(x)k[i]=Object.assign({},x,{ok:false})});if(Object.keys(k).length)depo(yid+"_"+b).tamYaz(k)});
+      const tel=kaynak("telefon");if(Object.keys(tel).length)depo(yid+"_telefon").tamYaz(JSON.parse(JSON.stringify(tel)));
+      const yol=LS.get(id+"_yol");if(yol)LS.set(yid+"_yol",yol);
+      modalKapat();hizliBilgi="Gezi kopyalandı.";geziAc(yid)};
+    m.append(f)});
 }
 function bolgeSec(g,d){
   modal("Bölge: "+gunUzun(d),m=>{
@@ -835,9 +921,15 @@ function surukle(e,tut,li,d){
   tut.addEventListener("pointermove",hareket);tut.addEventListener("pointerup",bitir);tut.addEventListener("pointercancel",bitir)}
 
 /* ---------- Hızlı durak ekleme: aynı sayfada yaz, haritadan seç ---------- */
+/* Saat her telefonda 24 saat düz yazı görünür (telefon dili İngilizceyse saat kutusu AM/PM gösterip kesiliyordu);
+   üstündeki görünmez saat kutusu dokununca telefonun saat seçicisini açar */
 function saatAlani(id,s){
+  const k=el("label","tsaat");const y=el("span","tyazi",s.t||"--:--");
   const i=el("input","tinp");i.type="time";i.value=s.t||"";i.setAttribute("aria-label",s.n+" saati");
-  i.onchange=()=>{if(i.value)D("plan").koy(id,{t:i.value})};return i}
+  i.onclick=()=>{try{i.showPicker()}catch(e){}};
+  i.oninput=()=>{if(i.value)y.textContent=i.value};
+  i.onchange=()=>{if(i.value)D("plan").koy(id,{t:i.value})};
+  k.append(y,i);return k}
 function sonrakiSaat(d){const ts=duraklarOf().filter(([,s])=>s.d===d&&s.t).map(([,s])=>gece(dk(s.t)));
   if(!ts.length)return"09:00";let m=Math.max(...ts)+90;if(m>=1440+299)m=1440+299;m=m%1440;return pad(Math.floor(m/60))+":"+pad(m%60)}
 function hizliEkle(d,g){
@@ -945,6 +1037,7 @@ function siradaCiz(){
   const {id,s,z}=list[i],fark=z-now,gec=Math.round(-fark/60000);
   const cik=list.slice(0,i).filter(x=>x.z>=now-20*60e3&&cikisMi(x.s)&&!x.s.v).pop();
   sirada.hidden=false;sirada.textContent="";
+  const sli=document.querySelector('li.stop[data-id="'+id+'"]');if(sli)sli.classList.add("siradaki");
   const u=el("div","sust");u.append(el("span","setk",gec>10?"Gecikmeli":fark<=0?"Şimdi":cik?"İlk mola":"Sıradaki durak"),el("span","ssay",gec>10?gec+" dk geride":fark<=0?"varış saati":sure(fark)+" sonra"));sirada.append(u);
   if(cik){const cf=cik.z-now,row=el("div","scik");row.append(el("span",null,"🚗 Yola çıkış "+cik.s.t+" · "+cik.s.n+(cf>0?" · "+sure(cf)+" sonra":" · şimdi")));
     row.append(btn("Değiştir",null,async ()=>{const v=await soru("Yeni yola çıkış saati (örn. 06:15). Günün bütün durakları aynı farkla kayar.",cik.s.t);if(v===null)return;
@@ -1301,49 +1394,12 @@ document.addEventListener("keydown",e=>{if(!lb.dataset.acik)return;if(e.key==="E
 let lbX=null;lb.addEventListener("touchstart",e=>{lbX=e.touches[0].clientX},{passive:true});
 lb.addEventListener("touchend",e=>{if(lbX==null)return;const dx=e.changedTouches[0].clientX-lbX;lbX=null;if(Math.abs(dx)>50)lb.querySelector(dx<0?".sag":".sol")?.click()});
 
-/* ===== Anlık hava (konum ya da gezinin bölgeleri) + nöbetçi eczane ===== */
-(()=>{
-  const box=havaKutu;
-  const KOD={0:["☀️","Açık"],1:["🌤️","Az bulutlu"],2:["⛅","Parçalı bulutlu"],3:["☁️","Kapalı"],45:["🌫️","Sisli"],48:["🌫️","Sisli"],51:["🌦️","Hafif çisenti"],53:["🌦️","Çisenti"],55:["🌧️","Yoğun çisenti"],
-    61:["🌦️","Hafif yağmur"],63:["🌧️","Yağmurlu"],65:["🌧️","Kuvvetli yağmur"],71:["🌨️","Hafif kar"],73:["🌨️","Karlı"],75:["❄️","Yoğun kar"],80:["🌦️","Sağanak"],81:["🌧️","Kuvvetli sağanak"],82:["⛈️","Şiddetli sağanak"],95:["⛈️","Gök gürültülü"],96:["⛈️","Dolu ihtimali"],99:["⛈️","Dolulu fırtına"]};
-  const oku=()=>LS.get("hava"),yaz=v=>LS.set("hava",v);
-  const slug=x=>x.toLocaleLowerCase("tr-TR").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-  window.nobetciYenile=()=>{const a=document.getElementById("nobetci"),v=oku();if(!a||!v||!v.il)return;const il=slug(v.il);let ilce=v.ilce?slug(v.ilce):"";
-    if(ilce&&(ilce===il||ilce.endsWith("-merkez")))ilce="merkez";a.href="https://www.eczaneler.gen.tr/nobetci-"+il+(ilce?"-"+ilce:"");a.textContent="🌙 Nöbetçi: "+(ilce&&ilce!=="merkez"?v.ilce:v.il)};
-  const yerler=()=>{const g=gezi();if(!g)return[];const m=new Map();gunler(g).forEach(d=>{const y=yerOf(g,d);if(y&&y.la&&!m.has(y.ad))m.set(y.ad,y)});return[...m.values()].slice(0,5)};
-  function sehirler(){const s=el("div","hsehir");s.append(el("small",null,"yer:"),btn("📍 Konumum",null,()=>al()));yerler().forEach(y=>s.append(btn(y.ad,null,()=>getir(y.la,y.lo,y))));return s}
-  function goster(v,not){const c=v.w.current,d=v.w.daily;let [ico,ad]=KOD[c.weather_code]||["🌡️","—"];if(!c.is_day&&(ico==="☀️"||ico==="🌤️"))ico="🌙";
-    const yas=Math.round((Date.now()-v.t)/60000);box.textContent="";
-    const r=el("div","hrow");const ds=el("span","hdesc");ds.append(el("b",null,ad),el("small",null,"📍 "+(v.yer||"Konumun")));r.append(el("span","hico",ico),el("span","htmp",Math.round(c.temperature_2m)+"°"),ds);box.append(r);
-    const hm=el("div","hmeta");[["Hissedilen",Math.round(c.apparent_temperature)+"°"],["Bugün",Math.round(d.temperature_2m_min[0])+"° / "+Math.round(d.temperature_2m_max[0])+"°"],["Yağmur",(d.precipitation_probability_max[0]??"—")+"%"],["Rüzgâr",Math.round(c.wind_speed_10m)+" km/sa"],["Gün batımı",(d.sunset[0]||"").slice(11,16)]]
-      .forEach(([k,x])=>{const sp=el("span");sp.append(k+" ",el("b",null,x));hm.append(sp)});box.append(hm);
-    const f=el("div","hfoot");f.append(el("span",null,not||(yas<1?"Az önce güncellendi":yas<60?yas+" dk önce güncellendi":"Son güncelleme "+new Date(v.t).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}))),
-      btn("↻ Yenile",null,()=>v.sabit?getir(v.la,v.lo,v.sabit):al()));box.append(f,sehirler());window.nobetciYenile()}
-  function butonGoster(mesaj,engelli){box.textContent="";if(mesaj)box.append(el("small","note",mesaj));
-    if(engelli)box.append(konumYardim(engelli===true?1:engelli,()=>al()));
-    else box.append(btn("📍 Konumumun hava durumunu göster","hbtn",()=>al()));box.append(sehirler())}
-  async function getir(la,lo,sabit){const eski=oku();
-    try{const w=await (await fetch("https://api.open-meteo.com/v1/forecast?latitude="+(+la).toFixed(3)+"&longitude="+(+lo).toFixed(3)+"&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunset&forecast_days=1&timezone=auto")).json();if(!w.current)throw 0;
-      let yer="",il="",ilce="";
-      if(sabit){yer=sabit.ad+(sabit.il&&sabit.il!==sabit.ad?", "+sabit.il:"");il=sabit.il||"";ilce=sabit.ilce||""}
-      else if(eski&&!eski.sabit&&eski.il&&Math.abs(eski.la-la)<0.02&&Math.abs(eski.lo-lo)<0.02){yer=eski.yer;il=eski.il;ilce=eski.ilce}
-      else{try{const r=await (await fetch("https://nominatim.openstreetmap.org/reverse?format=json&zoom=12&accept-language=tr&lat="+(+la).toFixed(3)+"&lon="+(+lo).toFixed(3))).json();const a=r.address||{};
-        il=a.province||a.state||a.city||"";ilce=a.town||a.county||"";yer=[ilce,il].filter(Boolean).filter((x,i,arr)=>arr.indexOf(x)===i).join(", ")}catch(e){}}
-      const v={t:Date.now(),la,lo,yer,il,ilce,w,sabit:sabit||null};yaz(v);goster(v)}
-    catch(e){eski?goster(eski,"İnternet yok, son bilinen hava gösteriliyor"):butonGoster("Hava durumu alınamadı.")}}
-  let calisiyor=false;
-  function al(){if(calisiyor)return;if(!("geolocation" in navigator))return butonGoster("Bu tarayıcı konum vermiyor.");calisiyor=true;const eski=oku();
-    if(eski)goster(eski,"Konum alınıyor…");else{box.textContent="";box.append(el("small","note","Konum alınıyor… Tarayıcı izin sorarsa \"İzin ver\"e dokun."))}
-    konumAl(async p=>{await getir(p.coords.latitude,p.coords.longitude,null);calisiyor=false},
-      e=>{calisiyor=false;butonGoster(null,e.code)},{timeout:12000,maximumAge:600000})}
-  const eski=oku();if(eski)goster(eski);else butonGoster();
-  navigator.permissions?.query({name:"geolocation"}).then(p=>{const k=()=>{const v=oku();if(p.state==="granted"){if(!v||!v.sabit)al()}else if(p.state==="denied"&&!v)butonGoster(null,true)};
-    k();p.onchange=()=>{if(p.state==="granted")al();else k()}}).catch(()=>{});
-  const tazele=()=>{const v=oku();if(!v||Date.now()-v.t<15*60000||document.hidden)return;if(v.sabit)return getir(v.la,v.lo,v.sabit);
-    navigator.permissions?.query({name:"geolocation"}).then(p=>{if(p.state==="granted")al()}).catch(()=>{})};
-  setInterval(tazele,60000);document.addEventListener("visibilitychange",tazele);
-  window.havaYerYenile=()=>{const s=box.querySelector(".hsehir");if(s)s.replaceWith(sehirler())};
-})();
+/* ===== Nöbetçi eczane: bugünün (ya da sıradaki günün) gezi bölgesine göre ===== */
+const slug=x=>x.toLocaleLowerCase("tr-TR").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+window.nobetciYenile=()=>{const a=document.getElementById("nobetci"),g=gezi();if(!a||!g)return;
+  const d=gunler(g).find(x=>x>=bugunStr())||g.son,y=yerOf(g,d);if(!y)return;const ad=y.il||y.ad;if(!ad)return;
+  const il=slug(ad);let ilce=y.ilce?slug(y.ilce):"";if(ilce&&(ilce===il||ilce.endsWith("-merkez")))ilce="merkez";
+  a.href="https://www.eczaneler.gen.tr/nobetci-"+il+(ilce?"-"+ilce:"");a.textContent="🌙 Nöbetçi: "+(ilce&&ilce!=="merkez"?y.ilce:ad)};
 
 /* ===== Eski tek-gezi uygulamasından aktarım =====
    Yalnız o uygulamayı bu cihazda açmış kişide çalışır: o uygulama gezisini "v1-aktarim" anahtarıyla bu cihaza bırakır. */
@@ -1412,7 +1468,7 @@ function ornekKarti(g){
   k.append(r);return k}
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-10-28.5";
+const SURUM="2026-10-28.6";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -1421,8 +1477,13 @@ setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{
 if(!Object.keys(GEZI.items).length&&!LS.get("v1Silindi"))v1Aktar(false);
 if(!Object.keys(GEZI.items).length&&!LS.get("ornekSilindi")&&!v1Var())ornekOlustur();
 idb.all("foto").then(o=>{FOTO=Object.assign(o||{},FOTO);fotoGrup();ciz()}).catch(()=>{});
+LS.del("hava");
 if(!gezi()){aktif=null;const l=Object.entries(GEZI.items).filter(([,g])=>g&&g.bas);const s=l.find(([,g])=>durum(g)==="suruyor")||l.find(([,g])=>durum(g)==="yaklasan"&&gunFark(bugunStr(),g.bas)<=1);if(s){aktif=s[0];LS.set("aktif",aktif)}}
+bugunModu();
 goster();
+/* Çevrimdışı çalışma: sayfa ve simgeler telefona kaydedilir, internet yokken de açılır (sw.js) */
+if("serviceWorker" in navigator&&(location.protocol==="https:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname)))
+  addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 
 </script>
 <script type="module">

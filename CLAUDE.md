@@ -22,7 +22,14 @@ Tek dosya: `index.html` (CSS + iki script). Derleme adımı yok.
   - Ekranlar: `goster()` → `evEkrani()` (Gezilerim) ya da `geziEkrani()` → `programPanel / butcePanel / listePanel`. `ciz()` bir sonraki karede yeniden çizer; `cizNazik()` kullanıcı bir kutuya yazıyorsa bekler.
   - Pencereler: `modal()` (alttan açılan), `dialog / onay / soru / uyar` (uygulama içi; tarayıcının confirm/prompt/alert'i bazı uygulama içi tarayıcılarda çalışmadığı için **kullanılmaz**).
   - Yer arama: Photon (photon.komoot.io, OpenStreetMap, anahtarsız). Önce Türkiye kutusu (`bbox=25.6,35.8,44.9,42.2`), sonuç yoksa her yer. `aramaAc()` tam ekran arama (şehir seçimi), `hizliEkle()` gün kartında aynı sayfada durak ekleme.
-  - Hava: Open-Meteo (anahtarsız). Konum adı: Nominatim. Nöbetçi eczane: eczaneler.gen.tr il/ilçe sayfası.
+  - Hava: yalnız gün kartlarında gezi bölgesinin tahmini (Open-Meteo, anahtarsız). Konuma göre anlık hava kutusu kullanıcı isteğiyle kaldırıldı; geri ekleme.
+  - Nöbetçi eczane: eczaneler.gen.tr il/ilçe sayfası; il/ilçe bugünün (ya da sıradaki günün) gezi bölgesinden gelir (`nobetciYenile`).
+  - Saat: `saatAlani()` saati 24 saat düz yazı gösterir, üstündeki görünmez `input[type=time]` seçiciyi açar (telefon dili İngilizceyse saat kutusu AM/PM gösterip kesiliyordu).
+  - Bugün modu: süren gezi açılınca `bugunModu()` program sekmesini seçer, `bugunAtla()` sayfayı sıradaki durak kartına kaydırır. `#sirada` kartı programda bugünün gün kartının üstüne taşınır; `goster()` başta onu yerine alır. Sıradaki durak `li.stop.siradaki`.
+  - Paylaş: `programMetni()` + `paylas()` (navigator.share, yoksa wa.me). Gün kartında "Paylaş", menüde tüm program.
+  - Geziyi kopyala: `geziKopyala()` program, bölgeler, listeler (işaretsiz) ve telefonları yeni tarihe kaydırarak kopyalar; masraf, günlük, foto kopyalanmaz.
+  - Çevrimdışı: `sw.js` (sayfa önce internetten, olmazsa kayıttan; simge/yazı tipi/Firebase kütüphanesi kayıttan). Canlı API istekleri kaydedilmez. `sw.js` içindeki `KAP` adını değiştirmek eski kaydı siler.
+  - Renkler: CSS sonundaki "Renkler" bloğu (turkuaz `--ink`, mercan `--accent`, kum `--bg`, güneş `--sun`).
   - AI ile plan: istek metni hazırlanır, kullanıcının kendi Claude/ChatGPT/Gemini'si açılır, cevaptaki JSON yapıştırılıp `aiCozumle()` ile okunur. Sunucu ya da API anahtarı yok.
   - Fotoğraflar: IndexedDB `gezinti2` (önizleme ~320 px, büyük ~1600 px); grupta Firestore `foto` ve `fotoBuyuk` koleksiyonları.
   - Örnek gezi: `ornekOlustur()`, kimlik `ornek`. İlk açılışta oluşur, silinirse `g2:ornekSilindi` ile bir daha oluşmaz.
@@ -63,5 +70,4 @@ Tarayıcı testleri `testler/` klasöründe (headless Chrome + DevTools protokol
 ## Akla gelen sonraki adımlar (kullanıcı istemedi, öneri)
 
 - Haritada iğne bırakarak durak ekleme.
-- Gezi şablonları (önceki geziyi kopyala).
 - Uygulamayı Claude/ChatGPT içine araç olarak bağlama (MCP). Sunucu gerekir; ücretsiz seçenek araştırılmalı.
