@@ -6,7 +6,7 @@ Kullanıcı Türkçe konuşur; arayüz ve kod yorumları Türkçedir.
 ## Kesin kurallar
 
 - **Her şey ücretsiz kalmalı.** Kredi kartı gerektiren hiçbir servis kurma ya da önerme (Firebase Blaze, Google Places API, Claude API vb.).
-- **Bu uygulama herkese açık paylaşılıyor.** Kodda kullanıcının kişisel gezisine ait veri olmamalı (Adana, Kapadokya, otel adı, ev adresi gibi). Kişisel gezi ayrı ve özel repoda: Sozenn/Gezinti (aşağıya bak).
+- **Bu uygulama ve repo herkese açık.** Kodda, notlarda ve testlerde kullanıcının kişisel bilgisi olmamalı (gezi yeri, tarih, otel, ev adresi, kişisel uygulamanın adresi). Kullanıcının kişisel gezisi ayrı bir uygulamada; adresini buraya yazma.
 - **Uydurma bilgi koyma.** Örnek gezide ya da önerilerde var olduğundan emin olmadığın restoran, telefon numarası, açılış saati yazma.
 - Yayından önce JavaScript'i mutlaka denetle (aşağıdaki komut). Hata varsa push etme; bir kez bozuk sürüm yayınlandı.
 - Her yayında `index.html` içindeki `const SURUM="..."` değerini artır. Telefonlar sayfayı önbellekten gösterirse uygulama bu değeri karşılaştırıp kendini bir kez yeniler.
@@ -26,7 +26,7 @@ Tek dosya: `index.html` (CSS + iki script). Derleme adımı yok.
   - AI ile plan: istek metni hazırlanır, kullanıcının kendi Claude/ChatGPT/Gemini'si açılır, cevaptaki JSON yapıştırılıp `aiCozumle()` ile okunur. Sunucu ya da API anahtarı yok.
   - Fotoğraflar: IndexedDB `gezinti2` (önizleme ~320 px, büyük ~1600 px); grupta Firestore `foto` ve `fotoBuyuk` koleksiyonları.
   - Örnek gezi: `ornekOlustur()`, kimlik `ornek`. İlk açılışta oluşur, silinirse `g2:ornekSilindi` ile bir daha oluşmaz.
-  - Eski tek-gezi uygulamasından aktarım: `v1Aktar()`. Yalnız o uygulamanın cihaza bıraktığı `v1-aktarim` anahtarı varsa çalışır (aynı origin: sozenn.github.io).
+  - Eski tek-gezi uygulamasından aktarım: `v1Aktar()`. Yalnız o uygulamanın cihaza bıraktığı `v1-aktarim` anahtarı varsa çalışır (aynı origin). Başka cihazlarda hiçbir şey aktarılmaz.
 - **2. script (module):** grup / Firebase bağlantısı. Grup kodu localStorage `grup-kod`. Davet linki `#grup=KOD`.
 
 ## Firebase
@@ -34,7 +34,7 @@ Tek dosya: `index.html` (CSS + iki script). Derleme adımı yok.
 - Proje: `gezinti-5393d`, Spark (ücretsiz) plan, Firestore `europe-west3`. Anonim giriş YOK (ücretli plan istiyordu); erişimi 12 haneli tahmin edilemez grup kodu ve kurallar korur.
 - Ayar kodu (apiKey vb.) gizli değildir, sayfada durması normaldir.
 - Kurallar: `firestore.rules`. Yüklemek için: `firebase deploy --only firestore:rules --project gezinti-5393d` (Firebase CLI kullanıcının Google hesabıyla giriş ister).
-- Veri yolları: `gruplar/{kod}/g2/{"geziler" | "{geziId}_{bölüm}"}`, `gruplar/{kod}/foto/{id}`, `gruplar/{kod}/fotoBuyuk/{id}`. Eski uygulama: `gruplar/{kod}/listeler/*`.
+- Veri yolları: `gruplar/{kod}/g2/{"geziler" | "{geziId}_{bölüm}"}`, `gruplar/{kod}/foto/{id}`, `gruplar/{kod}/fotoBuyuk/{id}`.
 - Belge adı kuralı: `^[a-z0-9]{2,24}(_[a-zA-Z]{2,12})?$`. Yeni bir bölüm eklersen bu kalıba uymalı.
 - Testlerin oluşturduğu deneme grupları (içinde `gtest1` gezisi olanlar) silinebilir. Diğer gruplara dokunma; kullanıcıya aittir.
 

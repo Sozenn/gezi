@@ -22,5 +22,4 @@ await a.go(U);console.log("yenileyince:",await a.ev(`"gezi "+Object.keys(GEZI.it
 await a.ev(`{[...document.querySelectorAll("button")].find(b=>b.textContent.includes("göz at")).click();true}`);await a.ev(`new Promise(r=>setTimeout(r,500))`);
 console.log("göz at:",await a.ev(`"gezi "+Object.keys(GEZI.items).length+" | açık: "+document.querySelector("#ust h1").textContent`));
 console.log("A hataları:",a.errs.join(" || ")||"yok");a.close();
-const b=await br(9462);await b.go("http://127.0.0.1:8765/gezinti-repo/index.html");await b.go(U);
-console.log("senin telefonun:",await b.ev(`Object.values(GEZI.items).map(g=>g.ad).join(", ")`));b.close();process.exit(0);
+process.exit(0);
