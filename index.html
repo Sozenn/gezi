@@ -513,6 +513,14 @@ li.stop.siradaki .n::before{background:var(--accent);border-color:var(--accent);
 li.stop.siradaki .tyazi{color:var(--accent)}
 li.stop.siradaki .n b{color:var(--accent)}
 .panel>.sirada{margin:2px 0}
+/* Ana ekrana ekle */
+.eklekart{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:linear-gradient(135deg,var(--ink-soft),#fff4e0);box-shadow:var(--golge)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eklekart{background:linear-gradient(135deg,#15303a,#2e2616)}}
+.ekmetin{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.ekmetin b{font-size:15px}.ekmetin small{color:var(--muted);font-size:13px;line-height:1.35}
+.ekbtn{flex:none;font:600 14px var(--body);padding:10px 16px;border-radius:12px;border:0;background:var(--ink);color:#fff;cursor:pointer}
+.ekadim{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.ekadim li{display:flex;gap:12px;align-items:flex-start;background:var(--surface);padding:12px 14px;border-radius:14px;box-shadow:var(--golge);font-size:15px;line-height:1.45}
+.ekno{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -643,6 +651,7 @@ function evEkrani(){
   const sira={suruyor:0,yaklasan:1,bitti:2};
   liste.sort((a,b)=>sira[durum(a[1])]-sira[durum(b[1])]||(durum(a[1])==="bitti"?b[1].bas.localeCompare(a[1].bas):a[1].bas.localeCompare(b[1].bas)));
   ana.append(btn("+ Yeni gezi","yeni-gezi",()=>geziFormu()));
+  const ek=ekleKarti();if(ek)ana.append(ek);
   if(!liste.length){const k=el("div","karsila");k.append(el("p","bos","Henüz gezi yok. Üç adımda başla:"));
     [["1","Gezini oluştur","Ad, tarih ve gideceğin şehir."],["2","Durakları ekle","Elle ya da kendi AI'ınla (Claude, ChatGPT, Gemini)."],["3","Yolda kullan","Sıradaki durak, yol tarifi, masraf, bavul listesi."]]
       .forEach(([n,b,t])=>{const r=el("div","adimk");r.append(el("span","adno",n));const x=el("div");x.append(el("b",null,b),el("small",null,t));r.append(x);k.append(r)});
@@ -690,6 +699,7 @@ function geziMenu(g){
     m.append(btn("✏️ Adı ve tarihleri düzenle","mbtn",()=>{modalKapat();geziFormu(aktif)}),
       btn("📤 Programı paylaş (WhatsApp vb.)","mbtn",()=>{modalKapat();paylas(programMetni(g,gunler(g)))}),
       btn("📄 Geziyi kopyala","mbtn",()=>{modalKapat();geziKopyala(aktif)}),
+      ...(uygulamaMi()?[]:[btn("📲 Ana ekrana ekle","mbtn",()=>{modalKapat();ekleAc()})]),
       btn("🗑 Geziyi sil","mbtn tehlike",async ()=>{if(!await onay(g.ad+" silinsin mi? Plan, masraf ve günlük bu gezide kaybolur."))return;if(aktif===V1ID)LS.set("v1Silindi",true);if(aktif===ORNEK)LS.set("ornekSilindi",true);GEZI.sil(aktif);modalKapat();eveDon()}))});
 }
 
@@ -1467,8 +1477,67 @@ function ornekKarti(g){
     btn("Örneği sil",null,async()=>{if(!await onay("Örnek gezi silinsin mi?"))return;LS.set("ornekSilindi",true);GEZI.sil(ORNEK);eveDon()}));
   k.append(r);return k}
 
+/* ===== Ana ekrana ekle =====
+   Tarayıcıdan açıldığı sürece Gezilerim'de kart görünür. Android/bilgisayar Chrome-Edge-Samsung: telefonun kendi
+   "Yükle" penceresi açılır (beforeinstallprompt). iPhone/iPad: Apple izin vermediği için tarayıcıya göre tarif gösterilir. */
+let yukleIstegi=null;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();yukleIstegi=e;ciz()});
+addEventListener("appinstalled",()=>{yukleIstegi=null;hizliBilgi="Gezinti ana ekrana eklendi.";ciz()});
+const uygulamaMi=()=>{try{return matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||matchMedia("(display-mode: minimal-ui)").matches||navigator.standalone===true}catch(e){return false}};
+function cihaz(){
+  const ua=navigator.userAgent||"";
+  const ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+  const ios=ipad||/iPhone|iPod/.test(ua),android=/Android/i.test(ua);
+  const icUyg=/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Line\/|Snapchat|TikTok|musical_ly|BytedanceWebview|Twitter|LinkedInApp|Pinterest|GSA\//.test(ua)?
+    (/Instagram/.test(ua)?"Instagram":/FBAN|FBAV|FB_IAB|FBIOS/.test(ua)?"Facebook":/TikTok|musical_ly|Bytedance/.test(ua)?"TikTok":/GSA\//.test(ua)?"Google uygulaması":"Bu uygulama"):null;
+  const tar=ios?(/CriOS/.test(ua)?"chrome":/FxiOS/.test(ua)?"firefox":/EdgiOS/.test(ua)?"edge":/OPiOS|OPT\//.test(ua)?"opera":"safari")
+    :/SamsungBrowser/.test(ua)?"samsung":/Firefox/.test(ua)?"firefox":/Edg\//.test(ua)?"edge":/OPR\//.test(ua)?"opera":/Chrome/.test(ua)?"chrome":/Safari/.test(ua)?"safari":"diger";
+  return {ios,ipad,android,masaustu:!ios&&!android&&!/Mobile/.test(ua),icUyg,tar}}
+function ekleKarti(){
+  if(uygulamaMi())return null;
+  const c=cihaz(),k=el("div","eklekart");
+  const m=el("div","ekmetin");m.append(el("b",null,"📲 Gezinti'yi ana ekrana ekle"),
+    el("small",null,c.icUyg?c.icUyg+" içinde açtın; önce tarayıcıda açman gerekiyor.":"Uygulama gibi tam ekran açılır, internet yokken de çalışır."));
+  k.append(m,btn(yukleIstegi?"Ekle":"Nasıl?","ekbtn",ekleAc));return k}
+const PAYLAS_SVG='<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M6 11H5v10h14V11h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+async function ekleAc(){
+  if(yukleIstegi){const e=yukleIstegi;yukleIstegi=null;try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==="accepted"){hizliBilgi="Gezinti ana ekrana eklendi.";}}catch(_){}ciz();return}
+  const c=cihaz();
+  modal("Ana ekrana ekle",m=>{
+    const adimlar=[];let not=null;
+    if(c.icUyg){
+      adimlar.push(["⋯","Sağ üstteki <b>⋯</b> ya da <b>⋮</b> menüsüne dokun."],
+        ["🌐",c.ios?"<b>Safari'de aç</b> (ya da <b>Tarayıcıda aç</b>) seçeneğine dokun.":"<b>Tarayıcıda aç</b> (ya da <b>Chrome'da aç</b>) seçeneğine dokun."],
+        ["📲","Açılan sayfada bu kartı tekrar göreceksin; oradan ekle."]);
+      not="Menüde bu seçenek yoksa aşağıdaki düğmeyle linki kopyala ve "+(c.ios?"Safari":"Chrome")+"'nin adres çubuğuna yapıştır.";
+    }else if(c.ios){
+      const yer=c.ipad?"adres çubuğunun sağındaki":"alttaki";
+      if(c.tar==="safari")adimlar.push(["⬆️","Safari'de "+yer+" <b>Paylaş</b> "+PAYLAS_SVG+" simgesine dokun. Görmüyorsan önce <b>⋯</b> simgesine dokun."]);
+      else if(c.tar==="chrome")adimlar.push(["⬆️","Adres çubuğunun sağındaki <b>Paylaş</b> "+PAYLAS_SVG+" simgesine dokun."]);
+      else if(c.tar==="firefox")adimlar.push(["☰","Alttaki <b>☰</b> menüsüne, sonra <b>Paylaş</b> "+PAYLAS_SVG+" seçeneğine dokun."]);
+      else if(c.tar==="edge")adimlar.push(["⋯","Alttaki <b>⋯</b> menüsüne, sonra <b>Paylaş</b> "+PAYLAS_SVG+" seçeneğine dokun."]);
+      else adimlar.push(["⬆️","Tarayıcının <b>Paylaş</b> "+PAYLAS_SVG+" menüsünü aç."]);
+      adimlar.push(["➕","Listeyi biraz aşağı kaydır, <b>Ana Ekrana Ekle</b>'ye dokun."],["✅","Sağ üstteki <b>Ekle</b>'ye dokun. Gezinti simgesi ana ekranında belirir."]);
+      not="Paylaş listesinde \"Ana Ekrana Ekle\" yoksa linki Safari'de açıp tekrar dene.";
+    }else if(c.android){
+      if(c.tar==="samsung")adimlar.push(["☰","Alttaki <b>☰</b> menüsüne dokun."],["➕","<b>Sayfayı ekle</b> → <b>Ana ekran</b>'ı seç."]);
+      else if(c.tar==="firefox")adimlar.push(["⋮","Sağ üstteki (ya da alttaki) <b>⋮</b> menüsüne dokun."],["➕","<b>Yükle</b> ya da <b>Ana ekrana ekle</b>'ye dokun."]);
+      else adimlar.push(["⋮","Sağ üstteki <b>⋮</b> menüsüne dokun."],["➕","<b>Uygulamayı yükle</b> ya da <b>Ana ekrana ekle</b>'ye dokun."]);
+      adimlar.push(["✅","<b>Yükle</b> / <b>Ekle</b> ile onayla. Gezinti simgesi ana ekranında belirir."]);
+    }else{
+      if(c.tar==="chrome"||c.tar==="edge")adimlar.push(["⬇️","Adres çubuğunun sağındaki <b>Yükle</b> simgesine (ekran ve ok) tıkla."],["✅","<b>Yükle</b> ile onayla. Gezinti ayrı bir pencerede açılır."]);
+      else if(c.tar==="safari")adimlar.push(["📁","Menüden <b>Dosya → Dock'a Ekle</b>'yi seç."],["✅","<b>Ekle</b> ile onayla."]);
+      else adimlar.push(["🌐","Bu tarayıcı uygulama olarak eklemeyi desteklemiyor. Chrome ya da Edge ile açarsan ekleyebilirsin."]);
+    }
+    const ol=el("ol","ekadim");adimlar.forEach(([i,h],n)=>{const li=el("li");const no=el("span","ekno",String(n+1));const t=el("span");t.innerHTML=h;li.append(no,t);ol.append(li)});m.append(ol);
+    if(not)m.append(el("p","note",not));
+    if(c.icUyg)m.append(btn("🔗 Linki kopyala","ana tam",async()=>{let ok=false;try{await navigator.clipboard.writeText(location.origin+location.pathname);ok=true}catch(_){}if(ok)uyar("Link kopyalandı. Tarayıcıda adres çubuğuna yapıştır.");else await soru("Linki kopyala:",location.origin+location.pathname)}));
+    else m.append(btn("Tamam","ana tam",modalKapat));
+  });
+}
+
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-10-28.6";
+const SURUM="2026-10-28.7";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});

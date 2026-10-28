@@ -29,6 +29,7 @@ Tek dosya: `index.html` (CSS + iki script). Derleme adımı yok.
   - Paylaş: `programMetni()` + `paylas()` (navigator.share, yoksa wa.me). Gün kartında "Paylaş", menüde tüm program.
   - Geziyi kopyala: `geziKopyala()` program, bölgeler, listeler (işaretsiz) ve telefonları yeni tarihe kaydırarak kopyalar; masraf, günlük, foto kopyalanmaz.
   - Çevrimdışı: `sw.js` (sayfa önce internetten, olmazsa kayıttan; simge/yazı tipi/Firebase kütüphanesi kayıttan). Canlı API istekleri kaydedilmez. `sw.js` içindeki `KAP` adını değiştirmek eski kaydı siler.
+  - Ana ekrana ekle: tarayıcıdan açıldığı sürece Gezilerim'de `ekleKarti()` hep görünür (kullanıcı isteği: kapatılamaz), gezi menüsünde de var. `uygulamaMi()` ana ekrandan açıldığını anlar ve gizler. Android/bilgisayar Chrome-Edge-Samsung'da `beforeinstallprompt` ile telefonun kendi Yükle penceresi açılır; iPhone/iPad'de (Apple izin vermiyor) `cihaz()` ile tarayıcıya göre tarif gösterilir. Instagram/Facebook/TikTok içi tarayıcıda önce tarayıcıda açma tarifi ve link kopyalama.
   - Renkler: CSS sonundaki "Renkler" bloğu (turkuaz `--ink`, mercan `--accent`, kum `--bg`, güneş `--sun`).
   - AI ile plan: istek metni hazırlanır, kullanıcının kendi Claude/ChatGPT/Gemini'si açılır, cevaptaki JSON yapıştırılıp `aiCozumle()` ile okunur. Sunucu ya da API anahtarı yok.
   - Fotoğraflar: IndexedDB `gezinti2` (önizleme ~320 px, büyük ~1600 px); grupta Firestore `foto` ve `fotoBuyuk` koleksiyonları.
