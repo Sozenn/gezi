@@ -1,8 +1,8 @@
 /* Gezinti çevrimdışı çalışma
-   - Sayfa (index.html): önce internet, olmazsa son kaydedilen kopya. Böylece yeni sürüm hemen gelir, çekmeyen yerde de açılır.
+   - Sayfa (index.html): önce internet (tarayıcı önbelleğini atlayarak), olmazsa son kaydedilen kopya. Böylece yeni sürüm hemen gelir, çekmeyen yerde de açılır.
    - Simgeler, yazı tipleri ve Firebase kütüphanesi: önce kayıtlı kopya, arkada tazelenir.
    - Yer arama, hava tahmini, Firestore gibi canlı istekler hiç kaydedilmez. */
-const KAP = "gezinti-v1";
+const KAP = "gezinti-v2";
 const TEMEL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -29,7 +29,7 @@ self.addEventListener("fetch", e => {
   // Sayfanın kendisi: önce internet
   if (r.mode === "navigate" || (u.origin === location.origin && /\/(index\.html)?$/.test(u.pathname) && !u.search)) {
     e.respondWith(
-      fetch(r).then(y => {
+      fetch(new Request(r.url, { cache: "no-cache", credentials: "same-origin" })).then(y => {
         if (y.ok) { const k = y.clone(); caches.open(KAP).then(c => c.put("./index.html", k)); }
         return y;
       }).catch(() => caches.match("./index.html").then(x => x || caches.match("./")))

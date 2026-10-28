@@ -517,6 +517,7 @@ li.stop.siradaki .n b{color:var(--accent)}
 .eklekart{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:linear-gradient(135deg,var(--ink-soft),#fff4e0);box-shadow:var(--golge)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eklekart{background:linear-gradient(135deg,#15303a,#2e2616)}}
 .ekmetin{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.ekmetin b{font-size:15px}.ekmetin small{color:var(--muted);font-size:13px;line-height:1.35}
+.eklekart.kisa{margin-top:10px;padding:8px 8px 8px 14px}.eklekart.kisa .ekmetin b{font-size:14px}.eklekart.kisa .ekbtn{padding:8px 14px}
 .ekbtn{flex:none;font:600 14px var(--body);padding:10px 16px;border-radius:12px;border:0;background:var(--ink);color:#fff;cursor:pointer}
 .ekadim{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .ekadim li{display:flex;gap:12px;align-items:flex-start;background:var(--surface);padding:12px 14px;border-radius:14px;box-shadow:var(--golge);font-size:15px;line-height:1.45}
@@ -683,6 +684,7 @@ function geziEkrani(g){
   const ub=el("div","ubar");ub.append(btn("‹ Gezilerim","geri",eveDon),btn("⋯","menu",()=>geziMenu(g)));ust.append(ub);
   const n=gunFark(g.bas,g.son)+1;
   ust.append(el("h1",null,g.ad),el("p","sub",tarihKisa(g.bas)+(n>1?" – "+tarihKisa(g.son):"")+" · "+n+" gün"));
+  const ek=ekleKarti(true);if(ek)ust.append(ek);
   const nav=el("nav","altnav");nav.setAttribute("role","tablist");
   [["plan","🗺️","Program"],["butce","💰","Bütçe"],["bavul","🧳","Bavul"],["ev","🏠","Ev kontrol"]].forEach(([k,i,t])=>{
     const b=btn("",null,()=>{sekme=k;LS.set("sekme",k);window.scrollTo(0,0);ciz()});b.append(el("span","ni",i),el("span","nt",t));b.setAttribute("role","tab");b.setAttribute("aria-selected",sekme===k);nav.append(b)});
@@ -1483,7 +1485,8 @@ function ornekKarti(g){
 let yukleIstegi=null;
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();yukleIstegi=e;ciz()});
 addEventListener("appinstalled",()=>{yukleIstegi=null;hizliBilgi="Gezinti ana ekrana eklendi.";ciz()});
-const uygulamaMi=()=>{try{return matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||matchMedia("(display-mode: minimal-ui)").matches||navigator.standalone===true}catch(e){return false}};
+const uygulamaMi=()=>{if(/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent||""))return false;
+  try{return matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||matchMedia("(display-mode: minimal-ui)").matches||navigator.standalone===true}catch(e){return false}};
 function cihaz(){
   const ua=navigator.userAgent||"";
   const ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
@@ -1493,11 +1496,12 @@ function cihaz(){
   const tar=ios?(/CriOS/.test(ua)?"chrome":/FxiOS/.test(ua)?"firefox":/EdgiOS/.test(ua)?"edge":/OPiOS|OPT\//.test(ua)?"opera":"safari")
     :/SamsungBrowser/.test(ua)?"samsung":/Firefox/.test(ua)?"firefox":/Edg\//.test(ua)?"edge":/OPR\//.test(ua)?"opera":/Chrome/.test(ua)?"chrome":/Safari/.test(ua)?"safari":"diger";
   return {ios,ipad,android,masaustu:!ios&&!android&&!/Mobile/.test(ua),icUyg,tar}}
-function ekleKarti(){
+function ekleKarti(kisa){
   if(uygulamaMi())return null;
-  const c=cihaz(),k=el("div","eklekart");
+  const c=cihaz(),k=el("div","eklekart"+(kisa?" kisa":""));
   const m=el("div","ekmetin");m.append(el("b",null,"📲 Gezinti'yi ana ekrana ekle"),
     el("small",null,c.icUyg?c.icUyg+" içinde açtın; önce tarayıcıda açman gerekiyor.":"Uygulama gibi tam ekran açılır, internet yokken de çalışır."));
+  if(kisa)m.lastChild.remove();
   k.append(m,btn(yukleIstegi?"Ekle":"Nasıl?","ekbtn",ekleAc));return k}
 const PAYLAS_SVG='<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M6 11H5v10h14V11h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 async function ekleAc(){
@@ -1537,7 +1541,7 @@ async function ekleAc(){
 }
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-10-28.7";
+const SURUM="2026-10-28.8";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
