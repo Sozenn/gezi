@@ -49,6 +49,7 @@ Açılışta ana menü (`hubEkrani`). Bölümler `BOLUMLER` (gezi, alis, bebek, 
 - **Faturalar / Araç** (`takipEkrani(c)`, ayar `TAKIP`): kayıt `{ad, son, tk, tutar, once, saat, not, bitti, od:[{d,son,tutar}]}`; "Ödendi/Yapıldı" tekrar varsa `son`'u ileri alır.
 - **Hatırlatmalar:** elle kurulanlar yalnız bu telefonda (`g2:hatir`, `tk` tekrar). Otomatik olanlar `sanalAlarmlar()` ile verilerden hesaplanır (fatura, araç, gecikmiş fatura her gün, mama `g2:mamaAlarm`, gezi durakları `g2:durakAlarm`); çalanlar `g2:sustur`. Hepsi `yaklasanlar()` → `hatirKontrol()`. Alarm yalnız uygulama açıkken çalar; kapalıyken tek ücretsiz yol takvim (`takvimAc`, `.ics` + RRULE). Push sunucusu yok.
 - **Yedek:** `yedekAl` / `yedekYukle` (`g2:` anahtarları; fotoğraflar hariç).
+- **Grup yedek yolu (REST):** iPhone ana ekran uygulamasında SDK'nın canlı bağlantısı anlık güncelleme getirmiyordu. Her yazma ayrıca Firestore REST `PATCH` (updateMask, SDK merge ile aynı uç alanlar) ile yapılır; uygulama açıkken `SYNC.ekran` (son çizimde `depo()` ile kullanılan belgeler) 3 sn'de bir REST `GET` ile okunur (5+ belgede 15 sn). Kendi yazımından sonraki 2,5 sn okuma uygulanmaz. Listelerde `esSatir()` son eşitleme saati + Yenile.
 - iPhone'da Safari ile ana ekrandaki uygulamanın verisi (grup kodu dahil) ayrıdır; grup ikisinde ayrı ayrı kurulmalı.
 
 ## Firebase

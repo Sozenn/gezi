@@ -641,6 +641,7 @@ const LS={get(k){try{return JSON.parse(localStorage.getItem("g2:"+k))}catch(e){r
   set(k,v){try{localStorage.setItem("g2:"+k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem("g2:"+k)}catch(e){}}};
 const DEPO={};window.DEPO_=DEPO;
 function depo(id,varsayilan){
+  if(SYNC.cizer&&SYNC.ekran)SYNC.ekran.add(id);
   if(DEPO[id])return DEPO[id];
   let items=(LS.get(id)||{}).items;if(!items||typeof items!=="object")items=varsayilan?varsayilan():{};
   const sakla=()=>LS.set(id,{items});
@@ -695,6 +696,8 @@ let sekme=LS.get("sekme")||"plan",duzenle=null,gunAcik={};
 let uyg=LS.get("uyg"); /* null = ana menü; "gezi", "bebek", "cikis", "hatir" */
 function bildirimGoster(){if(!hizliBilgi)return;const t=el("div","toast",hizliBilgi);hizliBilgi=null;document.body.append(t);setTimeout(()=>t.classList.add("acik"),20);setTimeout(()=>{t.classList.remove("acik");setTimeout(()=>t.remove(),300)},3500)}
 function goster(){setTimeout(bildirimGoster,50);
+  /* Bu çizimde kullanılan belgeler (grup yedek okuma bunları izler) */
+  SYNC.ekran=new Set(["geziler"]);SYNC.cizer=true;setTimeout(()=>{SYNC.cizer=false},0);
   /* Modal açıkken yazılan formu bozmamak için arka planı çizmeyi ertele */
   if(modalAcik()){cizErtele=true;return}
   /* Sıradaki durak kartı program sekmesinde bugünün kartının üstüne taşınır; yeniden çizmeden önce yerine al */
@@ -2089,7 +2092,7 @@ function hubEkrani(){
 const EKRANLAR={bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.5";
+const SURUM="2026-11-12.6";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -2145,14 +2148,50 @@ async function tazele(yeniden){const f=fb,kod=SYNC.kod;if(!f||!kod||tazeleniyor)
     await Promise.all(Object.keys(abonelik).map(async id=>{try{const s=await f.getDocFromServer(f.doc(f.db,"gruplar",kod,"g2",id));
       if(s.exists()&&DEPO[id]&&Date.now()-(SYNC.sonYaz||0)>4000)DEPO[id].uzak(s.data().items||{});SYNC.son=Date.now()}catch(e){}}));
     if(durum!=="bagli"){durum="bagli";mesaj="";grupCiz()}window.ciz()}catch(e){}finally{tazeleniyor=false}}
-SYNC.tazele=()=>tazele(true);
+SYNC.tazele=()=>{tazele(true);[...(SYNC.ekran||[])].forEach(restOku)};
+/* ===== Yedek yol: Firestore REST =====
+   iPhone ana ekran uygulamasında canlı bağlantı (WebChannel) takılabiliyor: yazılan sunucuya geç gidiyor ya da
+   öbür telefona anlık gelmiyor. Bu yüzden her değişiklik ayrıca REST ile doğrudan yazılır ve uygulama açıkken
+   ekrandaki belgeler birkaç saniyede bir REST ile okunur. SDK'dan bağımsızdır; kurallar aynı (yalnız "items"). */
+const REST="https://firestore.googleapis.com/v1/projects/"+CFG.projectId+"/databases/(default)/documents/gruplar/";
+const restVal=v=>v===null||v===undefined?{nullValue:null}:typeof v==="boolean"?{booleanValue:v}:typeof v==="number"?(Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v}):typeof v==="string"?{stringValue:v}:
+  Array.isArray(v)?{arrayValue:{values:v.map(restVal)}}:{mapValue:{fields:Object.fromEntries(Object.entries(v).filter(([,x])=>x!==undefined).map(([k,x])=>[k,restVal(x)]))}};
+function restDeger(v){if(!v)return null;if("stringValue" in v)return v.stringValue;if("booleanValue" in v)return v.booleanValue;if("integerValue" in v)return Number(v.integerValue);if("doubleValue" in v)return v.doubleValue;
+  if("nullValue" in v)return null;if("timestampValue" in v)return v.timestampValue;if("arrayValue" in v)return (v.arrayValue.values||[]).map(restDeger);
+  if("mapValue" in v){const o={};Object.entries(v.mapValue.fields||{}).forEach(([k,x])=>o[k]=restDeger(x));return o}return null}
+const fp=p=>p.map(x=>"`"+String(x).replace(/\\/g,"\\\\").replace(/`/g,"\\`")+"`").join(".");
+const duz=v=>v&&typeof v==="object"&&!Array.isArray(v);
+/* SDK'nın setDoc(merge) davranışıyla aynı: iç içe nesnelerde yalnız uçtaki alanlar yazılır */
+function uclar(on,v,out){if(duz(v)&&Object.keys(v).length){Object.entries(v).forEach(([k,x])=>{if(x!==undefined)uclar(on.concat(k),x,out)})}else out.push(fp(on))}
+const yaziyor={},imza={};
+async function restYaz(kod,id,degisim,tam){const mask=[],items={};
+  if(tam){mask.push(fp(["items"]));Object.assign(items,tam)}
+  else Object.entries(degisim||{}).forEach(([k,v])=>{if(v===null)mask.push(fp(["items",k]));else{items[k]=v;uclar(["items",k],v,mask)}});
+  if(!mask.length)return;yaziyor[id]=(yaziyor[id]||0)+1;
+  try{const q=mask.map(m=>"updateMask.fieldPaths="+encodeURIComponent(m)).join("&");
+    const r=await fetch(REST+kod+"/g2/"+encodeURIComponent(id)+"?"+q,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:{items:restVal(items)}})});
+    if(r.ok){const j=await r.json();imza[id]=j.updateTime;SYNC.son=Date.now()}}catch(e){}
+  finally{yaziyor[id]--;SYNC.sonYazB=SYNC.sonYazB||{};SYNC.sonYazB[id]=Date.now()}}
+const sirali=v=>Array.isArray(v)?v.map(sirali):duz(v)?Object.keys(v).sort().reduce((o,k)=>(o[k]=sirali(v[k]),o),{}):v;
+async function restOku(id){const kod=SYNC.kod;if(!kod||yaziyor[id])return;
+  try{const r=await fetch(REST+kod+"/g2/"+encodeURIComponent(id),{cache:"no-store"});if(!r.ok)return;const j=await r.json();
+    if(SYNC.kod!==kod||yaziyor[id]||Date.now()-((SYNC.sonYazB||{})[id]||0)<2500)return;
+    SYNC.son=Date.now();if(imza[id]===j.updateTime)return;imza[id]=j.updateTime;
+    const d=DEPO[id];if(!d)return;const items=restDeger((j.fields||{}).items)||{};
+    if(JSON.stringify(sirali(items))!==JSON.stringify(sirali(d.hepsi())))d.uzak(items)}catch(e){}}
+/* Uygulama açıkken: ekrandaki belgeleri 3 sn'de bir oku (ana menü gibi çok belgeli ekranlarda 15 sn'de bir) */
+let tur=0;
+setInterval(()=>{if(document.hidden||!SYNC.kod)return;tur++;const ids=[...(SYNC.ekran||[])].filter(x=>x!=="geziler"||(SYNC.ekran.size<=2));
+  if(ids.length>4&&tur%5)return;ids.slice(0,8).forEach(restOku)},3000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&SYNC.kod)[...(SYNC.ekran||[])].forEach(restOku)});
+
 document.addEventListener("visibilitychange",()=>{if(document.hidden){gizlendi=Date.now();return}if(SYNC.kod&&gizlendi)tazele(Date.now()-gizlendi>15000)});
 addEventListener("online",()=>tazele(true));
 async function baglan(kod){
   SYNC.kod=kod;durum="baglaniyor";mesaj="";grupCiz();
   try{const f=await firebase();Object.values(abonelik).forEach(x=>x());abonelik={};if(SYNC.kod!==kod)return;
     SYNC.f=f;
-    SYNC.yaz=(id,degisim,tam)=>{SYNC.sonYaz=Date.now();const ref=f.doc(f.db,"gruplar",kod,"g2",id);if(tam)return f.setDoc(ref,{items:tam}).catch(hata);
+    SYNC.yaz=(id,degisim,tam)=>{SYNC.sonYaz=Date.now();restYaz(kod,id,degisim,tam);const ref=f.doc(f.db,"gruplar",kod,"g2",id);if(tam)return f.setDoc(ref,{items:tam}).catch(hata);
       const items={};Object.entries(degisim||{}).forEach(([k,v])=>items[k]=v===null?f.deleteField():v);if(Object.keys(items).length)f.setDoc(ref,{items},{merge:true}).catch(hata)};
     SYNC.abone=abone;Object.keys(DEPO).forEach(abone);
     window.dispatchEvent(new Event("grup"));window.ciz();
