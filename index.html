@@ -755,6 +755,21 @@ input.anahtar:checked{background:#34c759}input.anahtar:checked::after{transform:
 .rbar{margin-top:4px}
 .mkutu .add select{width:auto;flex:1}.mkutu .add input[type=time]{flex:1}
 .anahsat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 0}.anahsat b{font-size:16px}
+
+/* ===== Abonelikler ===== */
+.sabit{display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:20px;color:#fff;background:linear-gradient(145deg,#5856d6,#8e7bff);box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 10px 24px rgba(88,86,214,.35)}
+.sabit small{opacity:.85;font-size:13px}.sabit b{font-size:32px;font-family:var(--display);letter-spacing:-.02em;line-height:1.1}.sabit>span{opacity:.9;font-size:13.5px}
+.sbar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.25);margin-top:6px;gap:2px}.sbar .sf{background:#ffd60a}.sbar .sa{background:#fff}
+.slej{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;opacity:.95;flex-wrap:wrap}
+.aboozet{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.aboozet>div{display:flex;flex-direction:column;align-items:center;padding:12px 4px;border-radius:16px;background:var(--surface);box-shadow:var(--golge)}
+.aboozet small{color:var(--muted);font-size:12px}.aboozet b{font-size:17px;font-variant-numeric:tabular-nums}
+.yorum{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:.5px solid var(--line)}.yorum p{margin:0;font-size:14.5px;line-height:1.45}.yorum .bik{font-size:20px}
+.yorum.uyari p{color:var(--fg);font-weight:500}.yorum.uyari{background:linear-gradient(90deg,rgba(255,159,10,.12),transparent);border-radius:10px;padding:10px 8px;border-top:0;margin:4px 0}
+.katsat{display:grid;grid-template-columns:minmax(0,1.3fr) 1fr auto;gap:10px;align-items:center;padding:7px 0;font-size:14px}.katsat b{font-size:13px;font-variant-numeric:tabular-nums}
+.katsat .sgbar i{background:linear-gradient(90deg,#a99cff,#5856d6)}
+.pay{height:6px;border-radius:99px;background:var(--doldur);overflow:hidden}.pay i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#a99cff,#5856d6)}
+.tkart.abo::before{background:#5856d6}.tkart.abo.bitti::before{background:var(--line)}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -1790,7 +1805,7 @@ async function ekleAc(){
    uyg: null = ana menü; diğerleri BOLUMLER anahtarları. Menü sırası/gizlenenler bu telefonda (g2:menu).
    Ortak (grupla eşitlenen) belgeler: "bebek", "bakim", "cikis", "alisveris", "fatura", "arac".
    Yalnız bu telefonda: "hatir" (elle kurulan hatırlatmalar), "sustur" (çalmış otomatik alarmlar), alarm ayarları. */
-const BOLUMLER={gezi:["🧭","Gezinti"],alis:["🛒","Alışveriş listesi"],bebek:["🍼","Bebek"],cikis:["🚪","Evden çıkarken"],hatir:["⏰","Hatırlatmalar"],su:["💧","Su takibi"],fatura:["🧾","Faturalar"],arac:["🚗","Araç takibi"]};
+const BOLUMLER={gezi:["🧭","Gezinti"],alis:["🛒","Alışveriş listesi"],bebek:["🍼","Bebek"],cikis:["🚪","Evden çıkarken"],hatir:["⏰","Hatırlatmalar"],su:["💧","Su takibi"],fatura:["🧾","Faturalar ve abonelikler"],arac:["🚗","Araç takibi"]};
 function menuAyar(){const m=LS.get("menu")||{},tum=Object.keys(BOLUMLER);const sira=(m.sira||[]).filter(k=>tum.includes(k));tum.forEach((k,i)=>{if(sira.includes(k))return;const once=tum.slice(0,i).reverse().find(x=>sira.includes(x));sira.splice(once?sira.indexOf(once)+1:0,0,k)});
   return {sira,gizli:(m.gizli||[]).filter(k=>tum.includes(k))}}
 function uygAc(k){uyg=k;LS.set("uyg",k);window.scrollTo(0,0);ciz()}
@@ -2043,7 +2058,9 @@ function takipDurum(x){if(x.bitti)return {s:"bitti",t:"✓ Tamamlandı"};if(!x.s
   return f<0?{s:"gecti",t:(-f)+" gün geçti!",f}:f===0?{s:"bugun",t:"Bugün son gün",f}:f===1?{s:"yakin",t:"Yarın",f}:{s:f<=7?"yakin":"uzak",t:f+" gün kaldı",f}}
 const takipListe=c=>Object.entries(depo(c).items).filter(([,x])=>x&&x.ad).sort((a,b)=>(a[1].bitti?1:0)-(b[1].bitti?1:0)||(a[1].son||"9999").localeCompare(b[1].son||"9999"));
 function takipEkrani(c){const T=TAKIP[c],L=depo(c);
-  ustBar(T.baslik,T.ikon,T.alt+(SYNC.kod?" · 👥 Grupla ortak":""),null);
+  ustBar(c==="fatura"?"Faturalar ve abonelikler":T.baslik,T.ikon,(c==="fatura"&&faturaSekme==="abo"?"Düzenli ödediklerin, aylık ve yıllık maliyeti":T.alt)+(SYNC.kod?" · 👥 Grupla ortak":""),null);
+  if(c==="fatura"){const seg=el("div","seg");[["fatura","🧾 Faturalar"],["abo","🔁 Abonelikler"]].forEach(([k,t])=>{const b=btn(t,null,()=>{faturaSekme=k;LS.set("faturaSekme",k);window.scrollTo(0,0);ciz()});b.setAttribute("aria-selected",faturaSekme===k);seg.append(b)});ana.append(seg);
+    sabitKart();if(faturaSekme==="abo")return aboPanel()}
   ana.append(btn(T.yeni,"yeni-gezi",()=>takipFormu(c)));
   const l=takipListe(c);
   if(c==="fatura"){const ay=bugunStr().slice(0,7);let od=0,bek=0;l.forEach(([,x])=>{(x.od||[]).forEach(o=>{if(o.d.startsWith(ay))od+=Number(o.tutar)||0});if(!x.bitti&&x.son&&x.son.slice(0,7)<=ay)bek+=Number(x.tutar)||0});
@@ -2099,7 +2116,7 @@ function sonrakiZ(z,tk){const d=new Date(z);if(tk==="gun")d.setDate(d.getDate()+
 const hatirListe=()=>Object.entries(HAT.items).filter(([,x])=>x&&x.n&&x.z);
 /* Otomatik hatırlatmalar: faturalar, araç, mama, gezi durakları. Çalanlar g2:sustur'da tutulur. */
 function sanalAlarmlar(){const o=[],ekle=(key,n,z,kay,ek)=>{if(z>0)o.push(Object.assign({key,n,z,kay},ek||{}))};
-  aralikSanal(ekle);
+  aralikSanal(ekle);aboSanal(ekle);
   ["fatura","arac"].forEach(c=>{const T=TAKIP[c];Object.entries(depo(c).items).forEach(([id,x])=>{if(!x||!x.ad||!x.son||x.bitti)return;const d=takipDurum(x);
     const ad=T.ikon+" "+x.ad+(Number(x.tutar)?" ("+para(x.tutar)+")":"");
     ekle(c+":"+id+":"+x.son+":"+(x.once||0)+":"+(x.saat||""),ad+" · "+(d.f>0?d.t+", ":"")+"son gün "+gunUzun(x.son),takipZaman(x),T.baslik);
@@ -2443,6 +2460,107 @@ function suPanel(){
   ay.append(el("p","note","Su takibi kişiseldir, yalnız bu telefonda tutulur; grupla paylaşılmaz."));
   ana.append(ay)}
 
+
+/* ================= Abonelikler (Faturalar içinde sekme; grupla ortak, depo("abonelik")) =================
+   Kayıt: {ad, tutar, per:"hafta"|"ay"|"3ay"|"6ay"|"yil", yen:"YYYY-AA-GG" (sonraki yenileme), kat, kul:"cok"|"orta"|"az"|"hic",
+           kisi: paylaşan kişi sayısı, deneme:"YYYY-AA-GG" (ücretsiz deneme bitişi), once: kaç gün önce hatırlat, iptal:bool, not} */
+const ABO_PER=[["hafta","Haftalık"],["ay","Aylık"],["3ay","3 ayda bir"],["6ay","6 ayda bir"],["yil","Yıllık"]];
+const ABO_AYLIK={hafta:52/12,ay:1,"3ay":1/3,"6ay":1/6,yil:1/12};
+const ABO_KAT=[["video","🎬 Video"],["muzik","🎵 Müzik"],["bulut","☁️ Bulut / depolama"],["yazilim","🤖 Yazılım / AI"],["oyun","🎮 Oyun"],["haber","📰 Haber / dergi"],["spor","🏋️ Spor / sağlık"],["alisveris","📦 Alışveriş / kargo"],["diger","✨ Diğer"]];
+const ABO_KUL=[["cok","😍 Çok kullanıyorum"],["orta","🙂 Ara sıra"],["az","😐 Nadiren"],["hic","😴 Hiç kullanmıyorum"]];
+const ABO_HIZLI=[["Netflix","video"],["YouTube Premium","video"],["Disney+","video"],["Amazon Prime","alisveris"],["Spotify","muzik"],["Apple Music","muzik"],["iCloud+","bulut"],["Google One","bulut"],["ChatGPT","yazilim"],["Claude","yazilim"],["Spor salonu","spor"],["Xbox / PlayStation","oyun"]];
+const aboKatAd=k=>(ABO_KAT.find(([x])=>x===k)||ABO_KAT[ABO_KAT.length-1])[1];
+const aboListe=()=>Object.entries(depo("abonelik").items).filter(([,x])=>x&&x.ad);
+/* Kişi başına düşen aylık tutar (paylaşılan abonelikte senin payın) */
+const aboAylik=x=>x.iptal?0:(Number(x.tutar)||0)*(ABO_AYLIK[x.per]||1)/Math.max(1,Number(x.kisi)||1);
+function aboSonraki(s,per){if(per==="hafta")return tarihEkle(s,7);return ayEkle(s,{ay:1,"3ay":3,"6ay":6,yil:12}[per]||1)}
+/* Yenileme tarihi geçtiyse otomatik ileri al (abonelikler kendiliğinden yenilenir) */
+function aboTarihleriIlerlet(){const A=depo("abonelik"),d={},b=bugunStr();aboListe().forEach(([id,x])=>{if(x.iptal||!x.yen||x.yen>=b)return;let y=x.yen,n=0;while(y<b&&n++<400)y=aboSonraki(y,x.per);d[id]={yen:y}});if(Object.keys(d).length)A.toplu(d)}
+let faturaSekme=LS.get("faturaSekme")||"fatura";
+/* Aylık sabit gider: tekrarlı faturalar (tutarı girilmiş) + abonelikler */
+function sabitGider(){let f=0;takipListe("fatura").forEach(([,x])=>{const a=TK_AY[x.tk];if(a&&!x.bitti&&Number(x.tutar))f+=Number(x.tutar)/a});
+  let a=0;aboListe().forEach(([,x])=>a+=aboAylik(x));return {f,a,top:f+a}}
+function sabitKart(){const s=sabitGider();if(!s.top)return;const k=el("div","sabit");
+  k.append(el("small",null,"Aylık sabit giderin"),el("b",null,para(s.top)),el("span",null,"Yılda "+para(s.top*12)+" · günde "+para(s.top*12/365)));
+  const bar=el("div","sbar");if(s.f){const i=el("i","sf");i.style.flex=String(s.f);bar.append(i)}if(s.a){const i=el("i","sa");i.style.flex=String(s.a);bar.append(i)}k.append(bar);
+  const lj=el("div","slej");lj.append(el("span","lf","🧾 Faturalar "+para(s.f)),el("span","la","🔁 Abonelikler "+para(s.a)));k.append(lj);ana.append(k)}
+function aboPanel(){const A=depo("abonelik");aboTarihleriIlerlet();
+  const l=aboListe(),aktif=l.filter(([,x])=>!x.iptal),ay=aktif.reduce((t,[,x])=>t+aboAylik(x),0);
+  ana.append(btn("+ Yeni abonelik","yeni-gezi",()=>aboFormu()));
+  if(aktif.length){
+    /* Özet: aylık, yıllık, günlük */
+    const oz=el("div","aboozet");[["Aylık",para(ay)],["Yıllık",para(ay*12)],["Günlük",para(ay*12/365)]].forEach(([t,v])=>{const x=el("div");x.append(el("small",null,t),el("b",null,v));oz.append(x)});ana.append(oz);
+    /* Yorumlar */
+    const yor=aboYorumlar(aktif,ay);if(yor.length){const k=el("div","card");k.append(el("h3",null,"💡 Benim yorumum"));yor.forEach(([i,t,cls])=>{const r=el("div","yorum"+(cls?" "+cls:""));r.append(el("span","bik",i),el("p",null,t));k.append(r)});ana.append(k)}
+    /* Kategori dağılımı */
+    const kat={};aktif.forEach(([,x])=>{const k=x.kat||"diger";kat[k]=(kat[k]||0)+aboAylik(x)});const ks=Object.entries(kat).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    if(ks.length>1){const k=el("div","card");k.append(el("h3",null,"📊 Nereye gidiyor?"));ks.forEach(([kk,v])=>{const r=el("div","katsat");const bar=el("span","sgbar"),i=el("i");i.style.width=Math.round(v/ay*100)+"%";bar.append(i);
+      r.append(el("span",null,aboKatAd(kk)),bar,el("b",null,para(v)+" · %"+Math.round(v/ay*100)));k.append(r)});ana.append(k)}}
+  if(!l.length){const k=el("div","card bilgi");k.append(el("p",null,"Düzenli ödediğin abonelikleri gir: aylık ve yıllık toplamı, hangisini az kullandığını ve yenileme tarihlerini gösteririm. Deneme süresi bitmeden de hatırlatırım."));ana.append(k)}
+  /* Liste: aylık maliyete göre */
+  aktif.sort((a,b)=>aboAylik(b[1])-aboAylik(a[1])).forEach(([id,x])=>ana.append(aboKarti(id,x,ay)));
+  const ip=l.filter(([,x])=>x.iptal);if(ip.length){ana.append(el("h4","bolum","İptal ettiklerin (yılda "+para(ip.reduce((t,[,x])=>t+(Number(x.tutar)||0)*(ABO_AYLIK[x.per]||1)/Math.max(1,Number(x.kisi)||1),0)*12)+" tasarruf)"));ip.forEach(([id,x])=>ana.append(aboKarti(id,x,ay)))}
+  const var_=new Set(l.map(([,x])=>x.ad));const hz=ABO_HIZLI.filter(([a])=>!var_.has(a));
+  if(hz.length){const r=el("div","sikal");r.append(el("small","note","Hızlı ekle:"));hz.forEach(([a,k])=>r.append(btn("+ "+a,"cip",()=>aboFormu(null,{ad:a,kat:k}))));ana.append(r)}
+  ana.append(el("p","note orta","Fiyatları sen gir; uygulama fiyat bilgisi çekmez. Yenileme tarihi geçince kendiliğinden bir sonraki döneme geçer."))}
+function aboYorumlar(aktif,ay){const y=[],gun=x=>x.yen?gunFark(bugunStr(),x.yen):null,yil=ay*12;
+  /* Deneme süresi bitiyor */
+  aktif.filter(([,x])=>x.deneme&&x.deneme>=bugunStr()).forEach(([,x])=>{const f=gunFark(bugunStr(),x.deneme);y.push(["⏳",x.ad+" deneme süresi "+(f===0?"bugün":f+" gün sonra")+" bitiyor. Devam etmeyeceksen ondan önce iptal et; yoksa "+(Number(x.tutar)?para(x.tutar)+" çekilir.":"ücret çekilmeye başlar.")+(Number(x.tutar)?"":" (Deneme sonrası fiyatı tutar olarak girersen toplama katarım.)"),"uyari"])});
+  /* Az / hiç kullanılan */
+  const az=aktif.filter(([,x])=>x.kul==="az"||x.kul==="hic");if(az.length){const t=az.reduce((s,[,x])=>s+aboAylik(x),0);
+    y.push(["✂️",az.map(([,x])=>x.ad).join(", ")+" için "+(az.every(([,x])=>x.kul==="hic")?"hiç kullanmadığını":"nadiren kullandığını")+" söyledin. İptal edersen yılda "+para(t*12)+" cebinde kalır.","uyari"])}
+  /* En pahalı */
+  if(aktif.length>1){const [,e]=aktif.slice().sort((a,b)=>aboAylik(b[1])-aboAylik(a[1]))[0];y.push(["👑","En büyük kalem "+e.ad+": tek başına aboneliklerinin %"+Math.round(aboAylik(e)/ay*100)+"'i (yılda "+para(aboAylik(e)*12)+")."])}
+  /* Aynı kategoride birden fazla */
+  const kat={};aktif.forEach(([,x])=>{(kat[x.kat||"diger"]=kat[x.kat||"diger"]||[]).push(x)});
+  Object.entries(kat).forEach(([k,xs])=>{if(xs.length>1&&k!=="diger")y.push(["🔁",aboKatAd(k).replace(/^\S+\s/,"")+" için "+xs.length+" ayrı abonelik var ("+xs.map(x=>x.ad).join(", ")+"). Hepsini gerçekten kullanıyor musun?"])});
+  /* Paylaşım */
+  const pay=aktif.filter(([,x])=>(Number(x.kisi)||1)>1);if(pay.length)y.push(["🤝","Paylaştığın "+pay.length+" abonelikte senin payın hesaplandı; paylaşmasaydın ayda "+para(pay.reduce((s,[,x])=>s+(Number(x.tutar)||0)*(ABO_AYLIK[x.per]||1),0)-pay.reduce((s,[,x])=>s+aboAylik(x),0))+" daha fazla öderdin."]);
+  /* Yaklaşan yenilemeler */
+  const yak=aktif.filter(([,x])=>{const f=gun(x);return f!=null&&f>=0&&f<=7}).sort((a,b)=>a[1].yen.localeCompare(b[1].yen));
+  if(yak.length)y.push(["📅","Bu hafta yenilenecek: "+yak.map(([,x])=>x.ad+" ("+(gun(x)===0?"bugün":gun(x)===1?"yarın":gun(x)+" gün")+", "+para(x.tutar)+")").join(", ")+"."]);
+  /* Aylıkları yıllığa */
+  const ayl=aktif.filter(([,x])=>x.per==="ay"&&(x.kul==="cok"));if(ayl.length)y.push(["💡","Çok kullandığın aylık aboneliklerin ("+ayl.map(([,x])=>x.ad).join(", ")+") için yıllık plan var mı bak; çoğu serviste yıllık ödeme daha ucuz olabiliyor."]);
+  /* Genel değerlendirme */
+  y.push(["🧮","Aboneliklerin yılda "+para(yil)+" tutuyor"+(aktif.length>2?"; bu "+aktif.length+" aboneliğin ortalaması ayda "+para(ay/aktif.length)+".":".")]);
+  return y}
+function aboKarti(id,x,ay){const k=el("div","card tkart abo"+(x.iptal?" bitti":""));const u=el("div","hzaman");u.append(el("b",null,x.ad),el("small",null,x.iptal?"İptal edildi":para(aboAylik(x))+"/ay"));k.append(u);
+  const f=x.yen?gunFark(bugunStr(),x.yen):null;
+  const bil=[aboKatAd(x.kat||"diger"),Number(x.tutar)?para(x.tutar)+" "+(ABO_PER.find(([p])=>p===x.per)||[,""])[1].toLocaleLowerCase("tr"):null,(Number(x.kisi)||1)>1?"👥 "+x.kisi+" kişi":null,
+    !x.iptal&&x.yen?"🔁 "+(f===0?"bugün":f===1?"yarın":gunUzun(x.yen))+" yenilenir":null,(ABO_KUL.find(([c])=>c===x.kul)||[,""])[1].split(" ")[0]].filter(Boolean).join(" · ");
+  k.append(el("p","note",bil));
+  if(!x.iptal&&x.deneme&&x.deneme>=bugunStr())k.append(el("p","hnot kucuk","⏳ Deneme "+gunUzun(x.deneme)+" bitiyor"));
+  if(x.not)k.append(el("p","hnot kucuk",x.not));
+  if(!x.iptal&&ay){const yz=Math.round(aboAylik(x)/ay*100),pb=el("div","pay"),i=el("i");i.style.width=Math.max(3,yz)+"%";pb.append(i);k.append(pb,el("small","note","Aboneliklerinin %"+yz+"'i · yılda "+para(aboAylik(x)*12)))}
+  const a=el("div","acts");a.append(btn("✎ Düzenle","reset",()=>aboFormu(id)));
+  a.append(btn(x.iptal?"↺ Yeniden başlat":"✂️ İptal ettim","reset",async ()=>{if(!x.iptal&&!await onay(x.ad+" iptal edildi olarak işaretlensin mi? Toplamdan düşer, kayıt durur."))return;depo("abonelik").koy(id,{iptal:!x.iptal});if(!x.iptal)hizliBilgi="✂️ Yılda "+para(aboAylik(x)*12)+" tasarruf"}));
+  k.append(a);return k}
+function aboFormu(id,on){const A=depo("abonelik"),x=id?A.items[id]:Object.assign({per:"ay",kat:"diger",kul:"cok",kisi:1,once:1},on||{});
+  modal(id?x.ad:"Yeni abonelik",m=>{const f=el("form","mform2");
+    const ad=el("input");ad.required=true;ad.maxLength=40;ad.placeholder="örn. Netflix";ad.value=x.ad||"";
+    const tu=el("input");tu.type="number";tu.inputMode="decimal";tu.min="0";tu.step="0.01";tu.placeholder="₺";tu.value=x.tutar||"";
+    const per=secim(ABO_PER,x.per||"ay");const yen=el("input");yen.type="date";yen.value=x.yen||"";
+    const kat=secim(ABO_KAT,x.kat||"diger");const kul=secim(ABO_KUL,x.kul||"cok");
+    const kisi=secim([1,2,3,4,5,6].map(n=>[String(n),n===1?"Sadece ben":n+" kişi paylaşıyoruz"]),String(x.kisi||1));
+    const den=el("input");den.type="date";den.value=x.deneme||"";
+    const once=secim([["0","Yenileme günü"],["1","1 gün önce"],["3","3 gün önce"],["7","1 hafta önce"],["-1","Hatırlatma"]],String(x.once==null?1:x.once));
+    once.options[4].text="Hatırlatma yok";
+    const not=el("input");not.maxLength=100;not.placeholder="örn. hangi karttan, aile planı";not.value=x.not||"";
+    const i1=el("div","iki");i1.append(alanEt("Tutar",tu),alanEt("Ödeme sıklığı",per));
+    const i2=el("div","iki");i2.append(alanEt("Sonraki yenileme",yen),alanEt("Hatırlat",once));
+    const i3=el("div","iki");i3.append(alanEt("Kategori",kat),alanEt("Paylaşım",kisi));
+    const kb=btn("Kaydet","ana");kb.type="submit";
+    f.append(alanEt("Adı",ad),i1,i2,i3,alanEt("Ne kadar kullanıyorsun?",kul),alanEt("Ücretsiz deneme bitişi (varsa)",den),alanEt("Not",not),kb);
+    if(id)f.append(btn("🗑 Sil","mbtn tehlike",async ()=>{if(!await onay(x.ad+" silinsin mi?"))return;modalKapat();A.sil(id)}));
+    m.append(f);
+    f.onsubmit=e=>{e.preventDefault();const a=ad.value.trim();if(!a)return;sesAc();bildirimIzni();modalKapat();
+      A.koy(id||"s"+yeniId(),{ad:a.slice(0,40),tutar:Number(tu.value)||0,per:per.value,yen:yen.value||"",kat:kat.value,kul:kul.value,kisi:Number(kisi.value)||1,deneme:den.value||"",once:Number(once.value),not:not.value.trim(),iptal:id?!!x.iptal:false});hatirZamanla()};
+    if(!id&&!on)setTimeout(()=>ad.focus(),60)})}
+/* Otomatik hatırlatmalara: yenileme ve deneme bitişi */
+function aboSanal(ekle){aboListe().forEach(([id,x])=>{if(x.iptal)return;
+  if(x.yen&&Number(x.once)>=0)ekle("abo:"+id+":"+x.yen+":"+x.once,"🔁 "+x.ad+" "+(Number(x.once)?Number(x.once)+" gün sonra":"bugün")+" yenileniyor ("+para(x.tutar)+")",new Date(tarihEkle(x.yen,-Number(x.once))+"T10:00:00").getTime(),"Abonelikler");
+  if(x.deneme)ekle("den:"+id+":"+x.deneme,"⏳ "+x.ad+" deneme süresi yarın bitiyor. Devam etmeyeceksen bugün iptal et.",new Date(tarihEkle(x.deneme,-1)+"T10:00:00").getTime(),"Abonelikler")})}
+
 /* ================= Ayarlar: menü düzeni ve yedek ================= */
 function ayarlarAc(){modal("⚙️ Ayarlar",m=>{
   m.append(el("h4","bolum","Ana menü (bu telefonda)"));
@@ -2477,6 +2595,9 @@ function hubOzet(k){
     return [Object.keys(CIKIS_BOL).map(b=>{const l=kalemler(C,b,f);return (b==="kontrol"?"Kontrol ":"Yanına al ")+l.filter(([,x])=>x.ok).length+"/"+l.length}).join(" · ")+(n>1?" · "+n+" liste":""),false]}
   if(k==="hatir"){const hs=yaklasanlar().find(x=>x.z>Date.now()-864e5&&!x.su);return [hs?zamanYazi(hs.z)+" · "+hs.n.split("\n")[0].slice(0,40):"Not al, alarm kur",!!hs&&hs.z-Date.now()<3600e3]}
   if(k==="su"){const o=SU.v,ic=suIctim(),s=suSeri(o),yr=suRaporlar(o).some(x=>!o.goruldu[x.key]);if(yr)return ["📊 Yeni raporun hazır! · "+litre(ic)+" / "+litre(o.hedef),true];return [litre(ic)+" / "+litre(o.hedef)+(ic>=o.hedef?" ✓":"")+(s?" · 🔥 "+s+" gün":"")+(ARALIK.items.su&&ARALIK.items.su.acik?" · ⏰":""),false]}
+  if(k==="fatura"){const s=sabitGider(),l=takipListe(k).filter(([,x])=>x.son&&!x.bitti),n=aboListe().filter(([,x])=>!x.iptal).length;let t="",v=false;
+    if(l.length){const [,x]=l[0],d=takipDurum(x);t=x.ad+" · "+d.t;v=d.s==="gecti"||d.s==="bugun"||(d.f!=null&&d.f<=3)}
+    return [(t?t+" · ":"")+(s.top?"aylık "+para(s.top):"")+(n?" · "+n+" abonelik":"")||TAKIP.fatura.alt,v]}
   if(k==="fatura"||k==="arac"){const l=takipListe(k).filter(([,x])=>x.son&&!x.bitti);if(!l.length)return [TAKIP[k].alt,false];const [,x]=l[0],d=takipDurum(x);return [x.ad+" · "+d.t,d.s==="gecti"||d.s==="bugun"||(d.f!=null&&d.f<=3)]}
   return ["",false]}
 function hubEkrani(){
@@ -2492,7 +2613,7 @@ function hubEkrani(){
 const EKRANLAR={su:()=>suEkrani(),bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.14";window.SURUM_=SURUM;
+const SURUM="2026-11-12.15";window.SURUM_=SURUM;
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
