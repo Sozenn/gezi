@@ -90,6 +90,11 @@ Tarayıcı testleri `testler/` klasöründe (headless Chrome + DevTools protokol
 - Alt menü `nav.altnav` sabit; `body` altta boşluk bırakır.
 - Ana kutu `main#ana` genişliği %100'e sabit (aksi halde içerik ekranı taşırıyordu).
 
+## Kaldığımız yer (12 Kasım 2026)
+
+- **Açık 1 — grup senkronu:** İki telefon aynı grupta (kod aynı), "eşitlendi" yazıyor ama Evden çıkarken işaretleri iki telefonda farklı. Eklenenler: REST yedek yol (yazma PATCH + 4 sn'de okuma), uzun yoklama, `cizNazik`/`ciz` düzeltmeleri, belge yoksa tam oluşturma. Kullanıcıdan listenin altındaki **🩺 Test** sonucunun ekran görüntüsü bekleniyor; hangi adım ✗ ise oradan devam.
+- **Açık 2 — kapalıyken alarm:** iPhone web uygulaması kapalıyken ses çalamaz. Takvim (.ics) yolu var ama kullanıcı istemiyor. Önerilen: Web Push + ücretsiz Cloudflare Worker (kart yok; cron her dakika, abonelikler/hatırlatmalar KV'de, VAPID). Kullanıcı onayı ve ücretsiz Cloudflare hesabı bekleniyor; kodu panelden yapıştıracak.
+
 ## Akla gelen sonraki adımlar (kullanıcı istemedi, öneri)
 
 - Haritada iğne bırakarak durak ekleme.
