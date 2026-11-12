@@ -2,7 +2,7 @@
    - Sayfa (index.html): önce internet (tarayıcı önbelleğini atlayarak), olmazsa son kaydedilen kopya. Böylece yeni sürüm hemen gelir, çekmeyen yerde de açılır.
    - Simgeler, yazı tipleri ve Firebase kütüphanesi: önce kayıtlı kopya, arkada tazelenir.
    - Yer arama, hava tahmini, Firestore gibi canlı istekler hiç kaydedilmez. */
-const KAP = "gezinti-v2";
+const KAP = "gezinti-v3";
 const TEMEL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {

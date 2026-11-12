@@ -1,6 +1,6 @@
 <!doctype html><html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a6f8c">
+<meta name="theme-color" content="#f47a20">
 <title>Gezinti</title>
 <meta name="description" content="Gezi planı, bütçe, bavul ve ev kontrol listeleri. Elle ya da kendi AI'ınla plan; eşinle ortak.">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><link rel="manifest" href="manifest.json">
@@ -476,30 +476,36 @@ li.stop.altcizgi{box-shadow:inset 0 -3px 0 var(--accent)}
 li.stop.duzlenir .n .dact{flex-basis:100%;max-width:none;justify-content:flex-start;gap:6px;padding:6px 0 0 28px;display:flex}
 li.stop.duzlenir .n .dact button{min-width:38px;height:34px}
 li.stop .tinp{align-self:start}
-/* ================= Renkler: deniz turkuazı + gün batımı mercanı + kum (tamamlayıcı uyum) ================= */
-:root{--bg:#f7f4ee;--surface:#ffffff;--fg:#16232e;--muted:#64717d;--line:#ebe5da;
-  --ink:#0a6f8c;--ink-soft:#e0f2f6;--accent:#e8492c;--accent-soft:#ffe9e2;--ok:#1e9a60;--sun:#f5b335;
-  --golge:0 1px 2px rgba(10,60,80,.05),0 6px 20px rgba(10,60,80,.07)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1519;--surface:#16212a;--fg:#eaf0f3;--muted:#94a3ae;--line:#24323c;
-  --ink:#5fc6dc;--ink-soft:#15303a;--accent:#ff7b5c;--accent-soft:#3b1f18;--ok:#5fd394;--sun:#f7c35a}}
+/* ================= Renkler: ana renk turuncu =================
+   Renk teorisi: turuncu (ana) + karşıt (tamamlayıcı) renk lacivert-mavi + komşu sıcak tonlar (kehribar, krem).
+   --ink: yanık turuncu (düğmeler, seçili sekme; beyaz yazı okunur) · --accent: canlı turuncu (öne çıkanlar)
+   --navy / --mavi: tamamlayıcı renk (sıradaki durak kartı, yazı) · --sun: kehribar · --ok: yeşil (tamamlandı) */
+:root{--bg:#fbf6f0;--surface:#ffffff;--fg:#1c2a3a;--muted:#6f6760;--line:#f0e5d8;
+  --ink:#c2540a;--ink-soft:#fdeadb;--accent:#f47a20;--accent-soft:#ffecdc;--ok:#2e9a6b;--sun:#f6b43c;
+  --navy:#1d3a5c;--mavi:#2c6a9e;
+  --golge:0 1px 2px rgba(120,60,10,.05),0 6px 20px rgba(120,60,10,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14100d;--surface:#211a15;--fg:#f4ece4;--muted:#ab9e92;--line:#35291f;
+  --ink:#ff9a4d;--ink-soft:#3a2414;--accent:#ff8a3d;--accent-soft:#3d2414;--ok:#5fd394;--sun:#f7c35a;--navy:#16304d;--mavi:#1f5582}}
 .lgi{filter:saturate(1.2)}
-.yeni-gezi{background:linear-gradient(135deg,var(--accent),#f47b3c);box-shadow:0 8px 20px rgba(232,73,44,.28)}
-.gkart::before{background:linear-gradient(180deg,var(--ink),#14a3b8)}
-.gkart.suruyor::before{background:linear-gradient(180deg,var(--accent),var(--sun))}
+.yeni-gezi{background:linear-gradient(135deg,#f26a1b,#f99a3e);box-shadow:0 8px 20px rgba(242,106,27,.3)}
+.gkart::before{background:linear-gradient(180deg,var(--accent),var(--sun))}
+.gkart.suruyor::before{background:linear-gradient(180deg,var(--navy),var(--mavi))}
 .gsay{background:var(--ink-soft);color:var(--ink)!important}
-.sirada{background:linear-gradient(135deg,#0a6f8c,#14a3b8)!important;box-shadow:0 10px 28px rgba(10,111,140,.32)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sirada{background:linear-gradient(135deg,#0b4f63,#0f7486)!important}}
-.sbtn a.ana{color:#0a6f8c}
+.sirada{background:linear-gradient(135deg,var(--navy),var(--mavi))!important;box-shadow:0 10px 28px rgba(29,58,92,.32)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sirada{background:linear-gradient(135deg,#132a44,#1d4a72)!important}}
+.sbtn a.ana{color:var(--navy)}
 .sgec button.vard{background:var(--ok);border-color:var(--ok)}
 .smola{background:var(--sun)}
 .day.today{box-shadow:0 0 0 2px var(--accent),var(--golge)}
 .today .tag{background:var(--accent);color:#fff}
 .kbar i{background:linear-gradient(90deg,var(--accent),var(--sun))}
-.prog i{background:linear-gradient(90deg,var(--ok),#3cc488)}
+.prog i{background:linear-gradient(90deg,var(--accent),var(--sun))}
+.card.bilgi{background:#eaf1f8;color:var(--navy)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card.bilgi{background:#172636;color:#d6e4f2}}
 .vchip{border-color:var(--ok);color:var(--ok)}
 .arac.vurgu{background:var(--ink);color:#fff}
 nav.altnav button[aria-selected="true"]{color:var(--ink)!important}
-.ornekbant{background:linear-gradient(135deg,#fff4e0,#ffe9e2)}
+.ornekbant{background:linear-gradient(135deg,#fff4e0,#ffe6d2)}
 /* Gün kartı: rota ve paylaş */
 .gunbtn{display:flex;gap:8px}
 .gunbtn .cta{flex:1;min-width:0}
@@ -515,7 +521,7 @@ li.stop.siradaki .n b{color:var(--accent)}
 .panel>.sirada{margin:2px 0}
 /* Ana ekrana ekle */
 .eklekart{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:linear-gradient(135deg,var(--ink-soft),#fff4e0);box-shadow:var(--golge)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eklekart{background:linear-gradient(135deg,#15303a,#2e2616)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eklekart{background:linear-gradient(135deg,#3a2414,#2e2616)}}
 .ekmetin{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.ekmetin b{font-size:15px}.ekmetin small{color:var(--muted);font-size:13px;line-height:1.35}
 .eklekart.kisa{margin-top:10px;padding:8px 8px 8px 14px}.eklekart.kisa .ekmetin b{font-size:14px}.eklekart.kisa .ekbtn{padding:8px 14px}
 .ekbtn{flex:none;font:600 14px var(--body);padding:10px 16px;border-radius:12px;border:0;background:var(--ink);color:#fff;cursor:pointer}
@@ -533,7 +539,7 @@ li.stop.siradaki .n b{color:var(--accent)}
 .hok{flex:none;font-size:26px;color:var(--muted)}
 .kbtn{display:flex;flex:none;gap:2px}
 .del.duz{font-size:16px}
-.card.bilgi{background:var(--ink-soft);border-color:transparent;gap:8px}
+.card.bilgi{background:#eaf1f8;color:var(--navy);border-color:transparent;gap:8px}
 .card.bilgi p{margin:0;font-size:14px;line-height:1.45}
 .note.orta{text-align:center}
 h4.bolum{margin:8px 2px 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -1800,7 +1806,7 @@ function hubEkrani(){
 }
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.1";
+const SURUM="2026-11-12.2";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
