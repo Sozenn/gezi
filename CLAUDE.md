@@ -37,6 +37,15 @@ Tek dosya: `index.html` (CSS + iki script). Derleme adımı yok.
   - Eski tek-gezi uygulamasından aktarım: `v1Aktar()`. Yalnız o uygulamanın cihaza bıraktığı `v1-aktarim` anahtarı varsa çalışır (aynı origin). Başka cihazlarda hiçbir şey aktarılmaz.
 - **2. script (module):** grup / Firebase bağlantısı. Grup kodu localStorage `grup-kod`. Davet linki `#grup=KOD`.
 
+## Ana menü ve yan bölümler (Kasım 2026)
+
+Açılışta ana menü (`hubEkrani`): Gezinti, Bebek çantası, Evden çıkarken, Hatırlatmalar. Hangi bölümün açık olduğu `uyg` (localStorage `g2:uyg`): `null` ana menü, `"gezi"`, `"bebek"`, `"cikis"`, `"hatir"`. `goster()` buna göre yönlendirir. Süren ya da yarın başlayan gezi varsa açılışta doğrudan Gezinti açılır.
+
+- **Bebek çantası:** `depo("bebek")` (grupla eşitlenir). `ayar` kaydı `{ay, t, bant}`; yaş `bebekAy()` ile zamanla büyür, yaş bandı değişince yeni listeyi önerir. Varsayılanlar `bebekListe(ay)` (0–6 ay, 6–12 ay, 1–2 yaş, 2+). Sıfırdan liste de yapılabilir.
+- **Evden çıkarken:** `depo("cikis")`, maddelerde `b: "kontrol" | "al"`. Varsayılanlar `CIKIS_V`. Her zaman `cikisDepo()` ile aç (varsayılanı ilk çağrı belirler).
+- **Hatırlatmalar:** yalnız bu telefonda (`g2:hatir`, eşitlenmez; alarm eşin telefonunda çalmasın). Alarm uygulama açıkken çalar (Web Audio + titreşim + bildirim + `.dlg.alarm`). Uygulama kapalıyken çalmasının tek ücretsiz yolu takvim: `takvimAc()` → `.ics` (VALARM) ya da Google Takvim linki. Push sunucusu yok.
+- Ortak liste parçaları: `kalemler`, `ilerlemeBas`, `kalemGrup` (ekle / ✎ değiştir / sil).
+
 ## Firebase
 
 - Proje: `gezinti-5393d`, Spark (ücretsiz) plan, Firestore `europe-west3`. Anonim giriş YOK (ücretli plan istiyordu); erişimi 12 haneli tahmin edilemez grup kodu ve kurallar korur.

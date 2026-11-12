@@ -522,6 +522,32 @@ li.stop.siradaki .n b{color:var(--accent)}
 .ekadim{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .ekadim li{display:flex;gap:12px;align-items:flex-start;background:var(--surface);padding:12px 14px;border-radius:14px;box-shadow:var(--golge);font-size:15px;line-height:1.45}
 .ekno{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+/* Ana menü ve yeni bölümler */
+.hub{display:flex;flex-direction:column;gap:10px}
+.hkart{display:flex;align-items:center;gap:14px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;color:var(--fg);cursor:pointer;font:inherit;box-shadow:var(--golge)}
+.hkart.vurgu{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.hik{flex:none;width:52px;height:52px;border-radius:14px;background:var(--ink-soft);display:grid;place-items:center;font-size:28px}
+.htx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.htx b{font-family:var(--display);font-size:19px;line-height:1.2}
+.htx small{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hok{flex:none;font-size:26px;color:var(--muted)}
+.kbtn{display:flex;flex:none;gap:2px}
+.del.duz{font-size:16px}
+.card.bilgi{background:var(--ink-soft);border-color:transparent;gap:8px}
+.card.bilgi p{margin:0;font-size:14px;line-height:1.45}
+.note.orta{text-align:center}
+h4.bolum{margin:8px 2px 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hkart2{gap:8px}.hkart2.gecti{opacity:.7}
+.hzaman{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hzaman b{font-size:16px}.hzaman small{color:var(--accent);font-weight:600;font-size:13px;flex:none}
+.hkart2.gecti .hzaman small{color:var(--muted)}
+.hnot{margin:0;font-size:15.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.dlg.alarm .dkutu{text-align:center;align-items:center}
+.azil{font-size:54px;line-height:1;animation:zil .5s ease-in-out infinite alternate}
+@keyframes zil{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+.abas{font-family:var(--display);font-size:22px}
+.anot{font-size:18px!important;font-weight:600;white-space:pre-wrap;overflow-wrap:anywhere}
+.dlg.alarm .dbtns{width:100%}.dlg.alarm .dbtns button{flex:1}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -633,6 +659,7 @@ const VARSAYILAN={
 /* ---------- Ekranlar ---------- */
 const ust=document.getElementById("ust"),ana=document.getElementById("ana"),sirada=document.getElementById("sirada");
 let sekme=LS.get("sekme")||"plan",duzenle=null,gunAcik={};
+let uyg=LS.get("uyg"); /* null = ana menü; "gezi", "bebek", "cikis", "hatir" */
 function bildirimGoster(){if(!hizliBilgi)return;const t=el("div","toast",hizliBilgi);hizliBilgi=null;document.body.append(t);setTimeout(()=>t.classList.add("acik"),20);setTimeout(()=>{t.classList.remove("acik");setTimeout(()=>t.remove(),300)},3500)}
 function goster(){setTimeout(bildirimGoster,50);
   /* Modal açıkken yazılan formu bozmamak için arka planı çizmeyi ertele */
@@ -640,6 +667,7 @@ function goster(){setTimeout(bildirimGoster,50);
   /* Sıradaki durak kartı program sekmesinde bugünün kartının üstüne taşınır; yeniden çizmeden önce yerine al */
   ana.before(sirada);
   const g=gezi();ust.textContent="";ana.textContent="";
+  if(uyg!=="gezi"){sirada.hidden=true;if(uyg==="bebek")bebekEkrani();else if(uyg==="cikis")cikisEkrani();else if(uyg==="hatir")hatirEkrani();else hubEkrani();return}
   if(!g){evEkrani();sirada.hidden=true;return}
   geziEkrani(g);siradaCiz();bugunAtla();
 }
@@ -647,6 +675,7 @@ let cizErtele=false;
 
 /* ===== Gezilerim ===== */
 function evEkrani(){
+  const ub=el("div","ubar");ub.append(btn("‹ Ana menü","geri",anaMenu));ust.append(ub);
   const lg=el("div","logo");lg.append(el("span","lgi","🧭"),el("h1",null,"Gezinti"));ust.append(lg,el("p","sub","Gezilerin, planların ve listelerin tek yerde"));
   const liste=Object.entries(GEZI.items).filter(([,g])=>g&&g.ad&&g.bas);
   const sira={suruyor:0,yaklasan:1,bitti:2};
@@ -1540,8 +1569,238 @@ async function ekleAc(){
   });
 }
 
+
+/* ================= Ana menü: Gezinti, Bebek çantası, Evden çıkarken, Hatırlatmalar =================
+   uyg: null = ana menü, "gezi" = gezi uygulaması, "bebek", "cikis", "hatir".
+   Bebek çantası ("bebek") ve Evden çıkarken ("cikis") depo() ile tutulur, grup varsa eşitlenir.
+   Hatırlatmalar yalnhb bu telefonda durur (localStorage g2:hatir); alarm başka telefonda çalmasın diye. */
+function uygAc(k){uyg=k;LS.set("uyg",k);window.scrollTo(0,0);ciz()}
+function anaMenu(){uyg=null;LS.set("uyg",null);window.scrollTo(0,0);ciz()}
+function ustBar(baslik,ikon,alt,menu){const ub=el("div","ubar");ub.append(btn("‹ Ana menü","geri",anaMenu));if(menu)ub.append(btn("⋯","menu",menu));ust.append(ub);
+  const lg=el("div","logo");lg.append(el("span","lgi",ikon),el("h1",null,baslik));ust.append(lg);if(alt)ust.append(el("p","sub",alt))}
+
+/* ---------- Ortak liste parçaları ---------- */
+const kalemler=(L,b)=>Object.entries(L.items).filter(([,x])=>x&&typeof x.t==="string"&&(b==null||x.b===b)).sort((a,c)=>(a[1].s||0)-(c[1].s||0));
+function ilerlemeBas(k,baslik,ls,bitti){const ok=ls.filter(([,x])=>x.ok).length,yz=ls.length?Math.round(ok/ls.length*100):0;
+  const h=el("div","phead");h.append(el("h3",null,baslik),el("b","pct",yz+"%"));k.append(h);
+  const pr=el("div","prog"),pi=el("i");pi.style.width=yz+"%";pr.append(pi);k.append(pr);
+  k.append(el("p","note",!ls.length?"Liste boş. Aşağıdan madde ekle.":(ok===ls.length?(bitti||"Hepsi tamam ✓"):ok+"/"+ls.length+" tamam")+(SYNC.kod?" · 👥 Grupla ortak":"")))}
+function kalemGrup(k,L,b,baslik,odak){
+  const ls=kalemler(L,b);const g=el("div","grp");
+  if(baslik)g.append(el("h4",null,baslik+(ls.length?" · "+ls.filter(([,x])=>x.ok).length+"/"+ls.length:"")));
+  ls.forEach(([id,x])=>{const row=el("div","chk"+(x.ok?" done":""));const l=el("label","lbl");const cb=el("input");cb.type="checkbox";cb.checked=!!x.ok;
+    cb.onchange=()=>L.koy(id,{ok:cb.checked});l.append(cb,el("span",null,x.t));
+    const d=btn("✎","del duz",async ()=>{const v=await soru("Maddeyi değiştir:",x.t);if(v==null)return;const t=v.trim();if(!t)return;L.koy(id,{t:t.slice(0,80)})});d.setAttribute("aria-label","Değiştir");
+    const s=btn("×","del",()=>L.sil(id));s.setAttribute("aria-label","Sil");
+    const ar=el("span","kbtn");ar.append(d,s);row.append(l,ar);g.append(row)});
+  const f=el("form","add");const i=el("input");i.placeholder=(baslik||"Madde")+" ekle…";i.maxLength=80;const eb=btn("Ekle");eb.type="submit";f.append(i,eb);
+  f.onsubmit=e=>{e.preventDefault();const v=i.value.trim();if(!v)return;listeOdak=odak;i.blur();L.koy("k"+yeniId(),{t:v,b,ok:false,s:Date.now()})};g.append(f);
+  if(listeOdak===odak)setTimeout(()=>{i.focus();listeOdak=null});
+  k.append(g)}
+const isaretSifirla=async (L,ls)=>{if(!ls.some(([,x])=>x.ok))return;if(!await onay("Tüm işaretler kaldırılsın mı?"))return;const d={};ls.forEach(([id,x])=>{if(x.ok)d[id]={ok:false}});L.toplu(d)};
+
+/* ================= Bebek çantası ================= */
+const BEBEK_B=["Bez ve bakım","Beslenme","Giyim","Sağlık","Uyku ve oyun","Diğer"];
+const BEBEK_BANT=[[0,6,"0–6 ay"],[6,12,"6–12 ay"],[12,24,"1–2 yaş"],[24,999,"2 yaş ve üstü"]];
+const bantOf=ay=>BEBEK_BANT.findIndex(([a,b])=>ay>=a&&ay<b);
+const yasYazi=ay=>ay<1?"Yeni doğan":ay<12?ay+" aylık":Math.floor(ay/12)+" yaş"+(ay%12?" "+(ay%12)+" ay":"");
+function bebekListe(ay){
+  const b=bantOf(ay),L={"Bez ve bakım":[],"Beslenme":[],"Giyim":[],"Sağlık":[],"Uyku ve oyun":[],"Diğer":[]};
+  const ek=(bol,...m)=>L[bol].push(...m);
+  if(b<=2){ek("Bez ve bakım","Bez (her 2–3 saat için 1 tane + yedek)","Islak mendil","Alt açma örtüsü","Pişik kremi","Kirli bez poşeti")}
+  else ek("Bez ve bakım","Alıştırma bezi ya da yedek külot","Islak mendil","Kirli çamaşır poşeti");
+  ek("Bez ve bakım","Kuru mendil / peçete","El temizleme jeli");
+  if(b===0){ek("Beslenme","Biberon ve mama (ya da emzirme örtüsü)","Ölçülü mama kabı","Termosta sıcak su","Ağhb bezi / tükürük bezi","Emzik ve emzik zinciri")}
+  else if(b===1){ek("Beslenme","Biberon ve mama ya da süt","Ek gıda / püre ve bebek kaşığı","Mama önlüğü","Alıştırma bardağı / suluk","Bebek atıştırmalığı","Diş kaşıyıcı","Emzik ve emzik zinciri")}
+  else if(b===2){ek("Beslenme","Suluk / alıştırma bardağı","Atıştırmalık ve meyve","Yemek kabı ve kaşık","Önlük")}
+  else ek("Beslenme","Su matarası","Atıştırmalık ve meyve","Yemek kabı");
+  if(b===0)ek("Giyim","Yedek body ve tulum (2 takım)","Şapka / bere","Çorap","Battaniye / kundak");
+  else if(b<=2)ek("Giyim","Yedek kıyafet (2 takım)","Şapka / bere","Çorap","İnce hırka ya da mont");
+  else ek("Giyim","Yedek kıyafet takımı","Şapka / bere","İnce hırka ya da mont");
+  ek("Sağlık","Ateş ölçer","Doktorun önerdiği ilaçlar","Serum fizyolojik","Yara bandı");
+  if(b>=1)ek("Sağlık","Bebeğe uygun güneş kremi");
+  if(b===0)ek("Uyku ve oyun","Çıngırak / küçük oyuncak","Puset örtüsü");
+  else if(b<=2)ek("Uyku ve oyun","Sevdiği oyuncak","Bez ya da resimli kitap","Uyku arkadaşı (battaniye, peluş)");
+  else ek("Uyku ve oyun","Sevdiği oyuncak","Boyama kitabı ve kalemler","Küçük kitap");
+  ek("Diğer","Kimlik / sağlık kartı","Yedek poşet","Telefon şarjı");
+  return listeYap(BEBEK_B,L)}
+let bebekAyarAcik=false;
+function bebekAy(a){if(!a||a.ay==null)return null;const gecen=Math.floor((Date.now()-(a.t||Date.now()))/(30.44*864e5));return Math.max(0,a.ay+Math.max(0,gecen))}
+function yasAlani(ilk){const t=el("div","iki");const y=el("select"),m=el("select");
+  for(let i=0;i<=5;i++)y.append(new Option(i+" yaş",i));for(let i=0;i<=11;i++)m.append(new Option(i+" ay",i));
+  if(ilk!=null){y.value=Math.min(5,Math.floor(ilk/12));m.value=ilk%12}
+  const al=(l,i)=>{const x=el("label",null,l);x.append(i);return x};t.append(al("Yıl",y),al("Ay",m));
+  return {el:t,deger:()=>Number(y.value)*12+Number(m.value)}}
+function bebekEkrani(){
+  const B=depo("bebek"),a=B.items.ayar,ay=bebekAy(a);
+  ustBar("Bebek çantası","🍼",ay!=null?yasYazi(ay)+" bebek için çanta":"Bebeğin yaşına göre hazır liste",ay!=null?bebekMenu:null);
+  if(ay==null||bebekAyarAcik){
+    const k=el("div","card");k.append(el("h3",null,ay==null?"Bebeğin kaç yaşında?":"Yaşı değiştir"));
+    k.append(el("p","note","Yaşa göre önerilen bir liste gelir. Sonra madde ekleyip silebilir, değiştirebilirsin."));
+    const f=el("div","mform2");const ya=yasAlani(ay);f.append(ya.el);k.append(f);
+    const kaydet=(liste)=>{const yeni=ya.deger(),ayar={ay:yeni,t:Date.now(),bant:liste==="oneri"?bantOf(yeni):(a&&a.bant!=null?a.bant:null)};bebekAyarAcik=false;
+      if(liste==="oneri")B.tamYaz(Object.assign({ayar},bebekListe(yeni)));else if(liste==="bos")B.tamYaz({ayar:Object.assign(ayar,{bant:null})});else B.koy("ayar",ayar)};
+    const acts=el("div","mform2");
+    acts.append(btn(ay==null?"📋 Önerilen listeyi getir":"📋 Bu yaşa göre önerilen listeyi getir","ana tam",async ()=>{if(ay!=null&&kalemler(B).length&&!await onay("Şu anki liste silinip yeni yaşa göre önerilen liste gelsin mi?"))return;kaydet("oneri")}));
+    if(ay==null)acts.append(btn("✏️ Sıfırdan kendi listemi yapacağım","mbtn",()=>kaydet("bos")));
+    else{acts.append(btn("Sadece yaşı kaydet, listem kalsın","mbtn",()=>kaydet("yas")),btn("Vazgeç","reset",()=>{bebekAyarAcik=false;ciz()}))}
+    k.append(acts);ana.append(k);
+    if(ay==null){const on=el("div","card");on.append(el("h3",null,"Yaşa göre listeler"));BEBEK_BANT.forEach(([,,t])=>on.append(el("p","note","• "+t)));ana.append(on)}
+    return}
+  const ls=kalemler(B);
+  if(a.bant!=null&&bantOf(ay)!==a.bant){const u=el("div","card bilgi");u.append(el("p",null,"🎉 Bebeğin büyüdü: artık "+yasYazi(ay)+". "+BEBEK_BANT[bantOf(ay)][2]+" için önerilen listeye geçmek ister misin?"));
+    const ub=el("div","acts");ub.append(btn("Yeni listeyi getir","ana",async ()=>{if(!await onay("Şu anki liste silinip "+BEBEK_BANT[bantOf(ay)][2]+" listesi gelsin mi?"))return;B.tamYaz(Object.assign({ayar:{ay,t:Date.now(),bant:bantOf(ay)}},bebekListe(ay)))}),
+      btn("Listem kalsın","reset",()=>B.koy("ayar",{ay,t:Date.now(),bant:bantOf(ay)})));u.append(ub);ana.append(u)}
+  const k=el("div","card");ana.append(k);
+  ilerlemeBas(k,"Çanta listesi",ls,"Çanta hazır ✓ İyi gezmeler!");
+  const bl=[...BEBEK_B];ls.forEach(([,x])=>{if(x.b&&!bl.includes(x.b))bl.push(x.b)});
+  bl.forEach((b,i)=>kalemGrup(k,B,b,b,"bebek"+i));
+  const acts=el("div","acts");acts.append(btn("İşaretleri sıfırla","reset",()=>isaretSifirla(B,ls)));k.append(acts);
+}
+function bebekMenu(){const B=depo("bebek");modal("Bebek çantası",m=>{
+  m.append(btn("👶 Yaşı değiştir","mbtn",()=>{modalKapat();bebekAyarAcik=true;ciz()}),
+    btn("📋 Önerilen listeyi baştan yükle","mbtn",async ()=>{modalKapat();if(!await onay("Liste, bebeğin yaşına göre önerilen haline dönsün mü? Eklediklerin silinir."))return;const ay=bebekAy(B.items.ayar);B.tamYaz(Object.assign({ayar:{ay,t:Date.now(),bant:bantOf(ay)}},bebekListe(ay)))}),
+    btn("✏️ Listeyi boşalt, sıfırdan yapacağım","mbtn tehlike",async ()=>{modalKapat();if(!await onay("Tüm maddeler silinsin mi?"))return;B.tamYaz({ayar:Object.assign({},B.items.ayar,{bant:null})})}),
+    btn("📤 Listeyi paylaş","mbtn",()=>{modalKapat();const ls=kalemler(B);paylas("🍼 Bebek çantası\n"+ls.map(([,x])=>(x.ok?"✓ ":"☐ ")+x.t).join("\n"))}))})}
+
+/* ================= Evden çıkarken ================= */
+const CIKIS_V={
+  kontrol:["Ocak ve fırın kapalı","Ütü, kettle, saç kurutma fişte değil","Musluklar kapalı","Işıklar kapalı","Pencereler kapalı","Klima / kombi ayarı yapıldı","Kapı kilitlendi"],
+  al:["Ev anahtarı","Cüzdan","Telefon","Telefon şarjı / powerbank","Kulaklık","Gözlük / güneş gözlüğü","Su şişesi","Şemsiye","Araç anahtarı","Toplu taşıma kartı"]};
+const cikisVars=b=>{const o={};CIKIS_V[b].forEach((t,i)=>o["v"+b[0]+(i+1)]={t,b,ok:false,s:i+1});return o};
+const CIKIS_BOL={kontrol:["✅ Kontrol edilecekler","Kontrol edilecekler","Her şey kapalı, kapı kilitli ✓"],al:["🎒 Yanıma alacaklarım","Yanıma alacaklarım","Hepsi yanında ✓ İyi günler!"]};
+const cikisDepo=()=>depo("cikis",()=>Object.assign(cikisVars("kontrol"),cikisVars("al")));
+let cikisSekme=LS.get("cikisSekme")||"kontrol";
+function cikisEkrani(){
+  const C=cikisDepo();
+  ustBar("Evden çıkarken","🚪","Kapıdan çıkmadan son bakış",cikisMenu);
+  const seg=el("div","seg");Object.entries(CIKIS_BOL).forEach(([k,[t]])=>{const ls=kalemler(C,k),ok=ls.filter(([,x])=>x.ok).length;
+    const b=btn(t+(ls.length?" "+ok+"/"+ls.length:""),null,()=>{cikisSekme=k;LS.set("cikisSekme",k);ciz()});b.setAttribute("aria-selected",cikisSekme===k);seg.append(b)});
+  ana.append(seg);
+  const bol=cikisSekme,ls=kalemler(C,bol),k=el("div","card");ana.append(k);
+  ilerlemeBas(k,CIKIS_BOL[bol][1],ls,CIKIS_BOL[bol][2]);kalemGrup(k,C,bol,null,"cikis"+bol);
+  const acts=el("div","acts");acts.append(btn("İşaretleri sıfırla","reset",()=>isaretSifirla(C,ls)));k.append(acts);
+  ana.append(el("p","note orta","Her çıkışta işaretleri sıfırlayıp yeniden kontrol edebilirsin."));
+}
+function cikisMenu(){const C=cikisDepo(),bol=cikisSekme,ad=CIKIS_BOL[bol][1];modal("Evden çıkarken",m=>{
+  m.append(btn("↺ İki listedeki tüm işaretleri sıfırla","mbtn",()=>{modalKapat();const d={};kalemler(C).forEach(([id,x])=>{if(x.ok)d[id]={ok:false}});if(Object.keys(d).length)C.toplu(d)}),
+    btn("📋 \""+ad+"\" önerilen listeye dönsün","mbtn",async ()=>{modalKapat();if(!await onay("\""+ad+"\" listesi önerilen haline dönsün mü? Eklediklerin silinir."))return;
+      const d={};kalemler(C,bol).forEach(([id])=>d[id]=null);Object.assign(d,cikisVars(bol));C.toplu(d)}),
+    btn("✏️ \""+ad+"\" listesini boşalt","mbtn tehlike",async ()=>{modalKapat();if(!await onay("\""+ad+"\" listesindeki tüm maddeler silinsin mi?"))return;
+      const d={};kalemler(C,bol).forEach(([id])=>d[id]=null);C.toplu(d)}))})}
+
+/* ================= Hatırlatmalar ================= */
+/* Kayıt: {n: not, z: zaman (ms), caldi: çaldı mı, s: oluşturulma}. Yalnhb bu telefonda. */
+const HAT={get items(){const o=LS.get("hatir");return o&&typeof o==="object"?o:{}},
+  koy(k,v){const o=this.items;o[k]=Object.assign(o[k]||{},v);LS.set("hatir",o);ciz()},
+  sil(k){const o=this.items;delete o[k];LS.set("hatir",o);ciz()},
+  tamYaz(o){LS.set("hatir",o);ciz()}};
+const hatirListe=()=>Object.entries(HAT.items).filter(([,x])=>x&&x.n&&x.z);
+const hatirSiradaki=()=>hatirListe().filter(([,x])=>!x.caldi).sort((a,b)=>a[1].z-b[1].z)[0];
+function zamanYazi(z){const d=new Date(z),g=tarihStr(d),b=bugunStr(),s=pad(d.getHours())+":"+pad(d.getMinutes());
+  return (g===b?"Bugün":g===tarihEkle(b,1)?"Yarın":g===tarihEkle(b,-1)?"Dün":d.toLocaleDateString("tr-TR",{weekday:"short",day:"numeric",month:"long"})+(d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""))+" "+s}
+function hatirEkrani(){
+  ustBar("Hatırlatmalar","⏰","Not al, saatini kur, zamanı gelince çalsın",hatirListe().some(([,x])=>x.caldi)?hatirMenu:null);
+  ana.append(btn("+ Yeni hatırlatma","yeni-gezi",()=>hatirFormu()));
+  const bil=el("div","card bilgi");bil.append(el("p",null,"🔔 Alarm, uygulama açıkken sesle çalar. Telefon kilitliyken ya da uygulama kapalıyken de uyarması için hatırlatmada 📅 Takvime ekle'ye bas."));
+  if("Notification" in window&&Notification.permission==="default")bil.append(btn("Bildirimlere izin ver","reset",()=>bildirimIzni().then(ciz)));
+  ana.append(bil);
+  const l=hatirListe(),gel=l.filter(([,x])=>!x.caldi).sort((a,b)=>a[1].z-b[1].z),gec=l.filter(([,x])=>x.caldi).sort((a,b)=>b[1].z-a[1].z);
+  if(!l.length)ana.append(el("p","bos","Henüz hatırlatma yok. Yukarıdan ekle."));
+  if(gel.length){ana.append(el("h4","bolum","Yaklaşan"));gel.forEach(([id,x])=>ana.append(hatirKarti(id,x)))}
+  if(gec.length){ana.append(el("h4","bolum","Geçmiş"));gec.slice(0,30).forEach(([id,x])=>ana.append(hatirKarti(id,x,true)))}
+}
+function hatirKarti(id,x,gecmis){
+  const k=el("div","card hkart2"+(gecmis?" gecti":""));const ust2=el("div","hzaman");ust2.append(el("b",null,"⏰ "+zamanYazi(x.z)));
+  if(!gecmis){const kal=x.z-Date.now();ust2.append(el("small",null,kal>0?sure(kal)+" sonra":"şimdi"))}else ust2.append(el("small",null,"✓ çaldı"));
+  k.append(ust2,el("p","hnot",x.n));
+  const a=el("div","acts");
+  if(!gecmis)a.append(btn("📅 Takvime ekle","reset",()=>takvimAc(id,x)));
+  a.append(btn(gecmis?"↺ Yeniden kur":"✎ Düzenle","reset",()=>hatirFormu(id)),btn("Sil","reset",async ()=>{if(await onay("Hatırlatma silinsin mi?"))HAT.sil(id)}));
+  k.append(a);return k}
+function hatirMenu(){modal("Hatırlatmalar",m=>m.append(btn("🗑 Geçmiş hatırlatmaları sil","mbtn tehlike",async ()=>{modalKapat();if(!await onay("Çalmış hatırlatmaların hepsi silinsin mi?"))return;
+  const o=HAT.items;Object.keys(o).forEach(k=>{if(o[k]&&o[k].caldi)delete o[k]});HAT.tamYaz(o)})))}
+function hatirFormu(id){const x=id?HAT.items[id]:null;
+  modal(x?"Hatırlatmayı düzenle":"Yeni hatırlatma",m=>{
+    const f=el("form","mform2");const alan=(lbl,inp)=>{const l=el("label",null,lbl);l.append(inp);return l};
+    const n=el("textarea");n.rows=3;n.maxLength=300;n.required=true;n.placeholder="örn. Faturayı öde";n.value=x?x.n:"";
+    let ilk=x&&!x.caldi?new Date(x.z):new Date(Date.now()+60*60e3);if(!x||x.caldi){ilk.setMinutes(Math.ceil(ilk.getMinutes()/5)*5,0,0)}
+    const t=el("input");t.type="date";t.required=true;t.value=tarihStr(ilk);
+    const s=el("input");s.type="time";s.required=true;s.value=pad(ilk.getHours())+":"+pad(ilk.getMinutes());
+    const iki=el("div","iki");iki.append(alan("Tarih",t),alan("Saat",s));
+    const hiz=el("div","acts");[["10 dk sonra",10],["1 saat sonra",60],["Yarın 09:00",-1]].forEach(([y,d])=>hiz.append(btn(y,"reset",()=>{
+      let z;if(d<0){z=new Date();z.setDate(z.getDate()+1);z.setHours(9,0,0,0)}else z=new Date(Date.now()+d*60e3);t.value=tarihStr(z);s.value=pad(z.getHours())+":"+pad(z.getMinutes())})));
+    const kb=btn("Kaydet","ana");kb.type="submit";
+    f.append(alan("Not",n),iki,el("small","note","Hhblı seç:"),hiz,kb);m.append(f);
+    f.onsubmit=e=>{e.preventDefault();const v=n.value.trim();if(!v||!t.value||!s.value)return;
+      const z=new Date(t.value+"T"+s.value+":00").getTime();if(!(z>0))return;
+      if(z<=Date.now())return uyar("Bu saat geçmiş. İleri bir saat seç.");
+      sesAc();bildirimIzni();modalKapat();hizliBilgi="⏰ "+zamanYazi(z)+" için kuruldu";
+      HAT.koy(id||"h"+yeniId(),{n:v,z,caldi:false,s:x?x.s:Date.now()});hatirZamanla()};
+    if(!x)setTimeout(()=>n.focus(),60)})}
+/* Takvime ekle: .ics (iPhone ve Android takvimi açar) ya da Google Takvim. Takvimin kendi uyarısı uygulama kapalıyken de çalar. */
+function takvimAc(id,x){modal("📅 Takvime ekle",m=>{
+  m.append(el("p","note","Hatırlatma telefonunun takvimine etkinlik olarak eklenir ve tam o saatte uyarı verir. Uygulama kapalı olsa da çalışır."));
+  m.append(btn("📱 Telefonun takvimine ekle (iPhone / Android)","mbtn",()=>{icsIndir(id,x);modalKapat()}));
+  const f=d=>new Date(d).toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const g="https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(x.n.split("\n")[0].slice(0,80))+"&dates="+f(x.z)+"/"+f(x.z+15*60e3)+"&details="+encodeURIComponent(x.n);
+  const a=link(g,"mbtn","🗓 Google Takvim'e ekle");a.onclick=()=>setTimeout(modalKapat,50);m.append(a)})}
+function icsIndir(id,x){const f=d=>new Date(d).toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const esc=s=>String(s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");
+  const bas=esc(x.n.split("\n")[0].slice(0,80));
+  const txt=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Gezinti//Hatirlatma//TR","CALSCALE:GREGORIAN","BEGIN:VEVENT","UID:"+id+"-"+x.z+"@gezinti","DTSTAMP:"+f(Date.now()),"DTSTART:"+f(x.z),"DTEND:"+f(x.z+15*60e3),
+    "SUMMARY:⏰ "+bas,"DESCRIPTION:"+esc(x.n),"BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+bas,"TRIGGER:PT0M","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const u=URL.createObjectURL(new Blob([txt],{type:"text/calendar;charset=utf-8"}));const a=el("a");a.href=u;a.download="hatirlatma.ics";document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)}
+
+/* ---------- Alarm: ses (Web Audio), titreşim, bildirim ve uygulama içi pencere ---------- */
+let sesCtx=null;
+function sesAc(){try{if(!sesCtx){const A=window.AudioContext||window.webkitAudioContext;if(!A)return;sesCtx=new A();
+    const b=sesCtx.createBuffer(1,1,22050),s=sesCtx.createBufferSource();s.buffer=b;s.connect(sesCtx.destination);s.start(0)}
+  if(sesCtx.state==="suspended")sesCtx.resume()}catch(e){}}
+/* iPhone sesi ancak bir dokunuştan sonra açar: her dokunuşta sesi hazır tut */
+document.addEventListener("pointerdown",sesAc,{passive:true});
+function bip(){if(!sesCtx)return;try{const t=sesCtx.currentTime;[0,.22,.44].forEach(d=>{const o=sesCtx.createOscillator(),g=sesCtx.createGain();o.type="square";o.frequency.value=d===.44?1175:880;
+  g.gain.setValueAtTime(.0001,t+d);g.gain.exponentialRampToValueAtTime(.35,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+.18);o.connect(g);g.connect(sesCtx.destination);o.start(t+d);o.stop(t+d+.2)})}catch(e){}}
+function alarmCal(){sesAc();let n=0;const tik=()=>{bip();try{navigator.vibrate&&navigator.vibrate([400,150,400])}catch(e){}};tik();
+  const iv=setInterval(()=>{if(++n>60)return clearInterval(iv);tik()},1500);return ()=>{clearInterval(iv);try{navigator.vibrate&&navigator.vibrate(0)}catch(e){}}}
+async function bildirimIzni(){try{if("Notification" in window&&Notification.permission==="default")await Notification.requestPermission()}catch(e){}}
+async function bildirimAt(id,x){try{if(!("Notification" in window)||Notification.permission!=="granted")return;const o={body:x.n,tag:"hatir-"+id,requireInteraction:true,icon:"icon-192.png",vibrate:[400,150,400]};
+  const r=navigator.serviceWorker&&await Promise.race([navigator.serviceWorker.getRegistration(),new Promise(ok=>setTimeout(ok,1500))]);
+  if(r&&r.showNotification)await r.showNotification("⏰ Hatırlatma",o);else new Notification("⏰ Hatırlatma",o)}catch(e){}}
+let alarmAcik=false,hatirZaman=null;
+function hatirKontrol(){if(alarmAcik)return;const simdi=Date.now();
+  const due=hatirListe().filter(([,x])=>!x.caldi&&x.z<=simdi).sort((a,b)=>a[1].z-b[1].z);if(!due.length)return hatirZamanla();
+  const [id,x]=due[0];alarmAcik=true;const kacti=simdi-x.z>10*60e3;
+  const dur=kacti?()=>{}:alarmCal();if(!kacti||document.hidden)bildirimAt(id,x);
+  const d=el("div","dlg alarm");const k=el("div","dkutu");k.setAttribute("role","alertdialog");
+  k.append(el("div","azil",kacti?"🔕":"⏰"),el("b","abas",kacti?"Kaçırılan hatırlatma":"Hatırlatma"),el("p","anot",x.n),el("small","note",zamanYazi(x.z)));
+  const b=el("div","dbtns");const kapat=v=>{dur();d.remove();alarmAcik=false;if(v)HAT.koy(id,{z:Date.now()+v*60e3,caldi:false});else HAT.koy(id,{caldi:true});setTimeout(hatirKontrol,400)};
+  b.append(btn("10 dk ertele","hayir",()=>kapat(10)),btn("Tamam","evet",()=>kapat(0)));k.append(b);d.append(k);document.body.append(d)}
+/* Sıradaki hatırlatmanın saatinde tam zamanında kontrol et (ayrıca her 15 sn ve uygulamaya dönünce) */
+function hatirZamanla(){clearTimeout(hatirZaman);const s=hatirSiradaki();if(!s)return;const ms=s[1].z-Date.now();if(ms>0&&ms<2147e6)hatirZaman=setTimeout(hatirKontrol,ms+200)}
+setInterval(hatirKontrol,15000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)hatirKontrol()});
+addEventListener("storage",e=>{if(e.key==="g2:hatir"){hatirZamanla();ciz()}});
+
+/* ================= Ana menü ekranı ================= */
+function hubEkrani(){
+  const lg=el("div","logo");lg.append(el("span","lgi","🧭"),el("h1",null,"Gezinti"));ust.append(lg,el("p","sub","Gezi, bebek çantası, kapı önü ve hatırlatmalar tek yerde"));
+  const ek=ekleKarti();if(ek)ana.append(ek);
+  const gz=Object.values(GEZI.items).filter(g=>g&&g.ad&&g.bas),sr=gz.find(g=>durum(g)==="suruyor"),yk=gz.filter(g=>durum(g)==="yaklasan").sort((a,b)=>a.bas.localeCompare(b.bas))[0];
+  const gOzet=sr?"● Şu an: "+sr.ad:yk?"Sıradaki: "+yk.ad+" · "+tarihKisa(yk.bas):gz.length?gz.length+" gezi":"Gezi planı, bütçe, bavul listesi";
+  const B=depo("bebek"),ba=B&&B.items.ayar,bay=bebekAy(ba),bl=B?kalemler(B):[];
+  const bOzet=bay!=null?yasYazi(bay)+" · "+(bl.length?bl.filter(([,x])=>x.ok).length+"/"+bl.length+" hazır":"liste boş"):"Yaşı gir, hazır liste gelsin";
+  const C=cikisDepo();
+  const cOzet=C?Object.keys(CIKIS_BOL).map(b=>{const l=kalemler(C,b);return (b==="kontrol"?"Kontrol ":"Yanına al ")+l.filter(([,x])=>x.ok).length+"/"+l.length}).join(" · "):"Kontrol edilecekler ve yanına alacakların";
+  const hs=hatirSiradaki(),hOzet=hs?zamanYazi(hs[1].z)+" · "+hs[1].n.split("\n")[0].slice(0,40):"Not al, alarm kur";
+  const hb=el("div","hub");
+  [["gezi","🧭","Gezinti",gOzet,!!sr],["bebek","🍼","Bebek çantası",bOzet],["cikis","🚪","Evden çıkarken",cOzet],["hatir","⏰","Hatırlatmalar",hOzet,!!hs&&hs[1].z-Date.now()<864e5]].forEach(([k,i,t,o,vurgu])=>{
+    const b=btn("","hkart"+(vurgu?" vurgu":""),()=>uygAc(k));const ic=el("span","hik",i),tx=el("span","htx");tx.append(el("b",null,t),el("small",null,o));b.append(ic,tx,el("span","hok","›"));hb.append(b)});
+  ana.append(hb);
+  const gk=el("div","grup-kart");ana.append(gk);if(window.grupCiz)grupCiz();
+}
+
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-10-28.8";
+const SURUM="2026-11-12.1";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -1551,9 +1810,10 @@ if(!Object.keys(GEZI.items).length&&!LS.get("v1Silindi"))v1Aktar(false);
 if(!Object.keys(GEZI.items).length&&!LS.get("ornekSilindi")&&!v1Var())ornekOlustur();
 idb.all("foto").then(o=>{FOTO=Object.assign(o||{},FOTO);fotoGrup();ciz()}).catch(()=>{});
 LS.del("hava");
-if(!gezi()){aktif=null;const l=Object.entries(GEZI.items).filter(([,g])=>g&&g.bas);const s=l.find(([,g])=>durum(g)==="suruyor")||l.find(([,g])=>durum(g)==="yaklasan"&&gunFark(bugunStr(),g.bas)<=1);if(s){aktif=s[0];LS.set("aktif",aktif)}}
+if(!gezi()){aktif=null;const l=Object.entries(GEZI.items).filter(([,g])=>g&&g.bas);const s=l.find(([,g])=>durum(g)==="suruyor")||l.find(([,g])=>durum(g)==="yaklasan"&&gunFark(bugunStr(),g.bas)<=1);if(s){aktif=s[0];LS.set("aktif",aktif);uyg="gezi";LS.set("uyg","gezi")}}
 bugunModu();
 goster();
+hatirZamanla();setTimeout(hatirKontrol,1500);
 /* Çevrimdışı çalışma: sayfa ve simgeler telefona kaydedilir, internet yokken de açılır (sw.js) */
 if("serviceWorker" in navigator&&(location.protocol==="https:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname)))
   addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
