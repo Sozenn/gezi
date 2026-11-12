@@ -30,7 +30,7 @@ Tek dosya: `index.html` (CSS + iki script). Derleme adımı yok.
   - Geziyi kopyala: `geziKopyala()` program, bölgeler, listeler (işaretsiz) ve telefonları yeni tarihe kaydırarak kopyalar; masraf, günlük, foto kopyalanmaz.
   - Çevrimdışı: `sw.js` (sayfa önce internetten `cache:no-cache` ile — GitHub Pages 10 dk önbellek veriyor, eski sürüm kalmasın —, olmazsa kayıttan; simge/yazı tipi/Firebase kütüphanesi kayıttan). Canlı API istekleri kaydedilmez. `sw.js` içindeki `KAP` adını değiştirmek eski kaydı siler.
   - Ana ekrana ekle: tarayıcıdan açıldığı sürece Gezilerim'de `ekleKarti()`, gezi ekranında başlığın altında `ekleKarti(true)` (kısa) hep görünür (kullanıcı isteği: kapatılamaz), gezi menüsünde de var. `uygulamaMi()` ana ekrandan açıldığını anlar ve gizler; iPhone'da Chrome/Firefox/Edge (CriOS/FxiOS/EdgiOS) her zaman tarayıcı sayılır. Android/bilgisayar Chrome-Edge-Samsung'da `beforeinstallprompt` ile telefonun kendi Yükle penceresi açılır; iPhone/iPad'de (Apple izin vermiyor) `cihaz()` ile tarayıcıya göre tarif gösterilir. Instagram/Facebook/TikTok içi tarayıcıda önce tarayıcıda açma tarifi ve link kopyalama.
-  - Renkler: CSS sonundaki "Renkler" bloğu. Ana renk turuncu (kullanıcı isteği, Kas 2026): yanık turuncu `--ink`, canlı turuncu `--accent`, tamamlayıcı lacivert-mavi `--navy`/`--mavi`, kehribar `--sun`, krem `--bg`. Simge: lacivert zemin, turuncu iğne.
+  - Renkler: CSS sonundaki "Renkler" bloğu. Ana renk turuncu (kullanıcı isteği, Kas 2026; karanlık modda zemin lacivert, kahverengi istemiyor): yanık turuncu `--ink`, canlı turuncu `--accent`, tamamlayıcı lacivert-mavi `--navy`/`--mavi`, kehribar `--sun`, krem `--bg`. Simge: lacivert zemin, turuncu iğne.
   - AI ile plan: istek metni hazırlanır, kullanıcının kendi Claude/ChatGPT/Gemini'si açılır, cevaptaki JSON yapıştırılıp `aiCozumle()` ile okunur. Sunucu ya da API anahtarı yok.
   - Fotoğraflar: IndexedDB `gezinti2` (önizleme ~320 px, büyük ~1600 px); grupta Firestore `foto` ve `fotoBuyuk` koleksiyonları.
   - Örnek gezi: `ornekOlustur()`, kimlik `ornek`. İlk açılışta oluşur, silinirse `g2:ornekSilindi` ile bir daha oluşmaz.
@@ -39,12 +39,17 @@ Tek dosya: `index.html` (CSS + iki script). Derleme adımı yok.
 
 ## Ana menü ve yan bölümler (Kasım 2026)
 
-Açılışta ana menü (`hubEkrani`): Gezinti, Bebek çantası, Evden çıkarken, Hatırlatmalar. Hangi bölümün açık olduğu `uyg` (localStorage `g2:uyg`): `null` ana menü, `"gezi"`, `"bebek"`, `"cikis"`, `"hatir"`. `goster()` buna göre yönlendirir. Süren ya da yarın başlayan gezi varsa açılışta doğrudan Gezinti açılır.
+Açılışta ana menü (`hubEkrani`). Bölümler `BOLUMLER` (gezi, alis, bebek, cikis, hatir, fatura, arac); ekranlar `EKRANLAR`. Açık bölüm `uyg` (`g2:uyg`, `null` = ana menü). Menü sırası/gizlenenler bu telefonda (`g2:menu`, `ayarlarAc`). Süren ya da yarın başlayan gezi varsa açılışta doğrudan Gezinti açılır.
 
-- **Bebek çantası:** `depo("bebek")` (grupla eşitlenir). `ayar` kaydı `{ay, t, bant}`; yaş `bebekAy()` ile zamanla büyür, yaş bandı değişince yeni listeyi önerir. Varsayılanlar `bebekListe(ay)` (0–6 ay, 6–12 ay, 1–2 yaş, 2+). Sıfırdan liste de yapılabilir.
-- **Evden çıkarken:** `depo("cikis")`, maddelerde `b: "kontrol" | "al"`. Varsayılanlar `CIKIS_V`. Her zaman `cikisDepo()` ile aç (varsayılanı ilk çağrı belirler).
-- **Hatırlatmalar:** yalnız bu telefonda (`g2:hatir`, eşitlenmez; alarm eşin telefonunda çalmasın). Alarm uygulama açıkken çalar (Web Audio + titreşim + bildirim + `.dlg.alarm`). Uygulama kapalıyken çalmasının tek ücretsiz yolu takvim: `takvimAc()` → `.ics` (VALARM) ya da Google Takvim linki. Push sunucusu yok.
-- Ortak liste parçaları: `kalemler`, `ilerlemeBas`, `kalemGrup` (ekle / ✎ değiştir / sil).
+- **Ortak liste parçaları:** `kalemler(L,b,f)`, `ilerlemeBas`, `satir`, `kalemGrup(..., ek, f)` (ekle / ✎ / sil), `listeYenile` (yalnız verilen maddeleri değiştirir; `tamYaz` başka listeleri de silerdi, kullanma).
+- **Birden fazla liste:** tanım kaydı `L_{id}` `{ad, sab, s}`, maddelerde `l` alanı (yoksa varsayılan liste). `listeTan`, `listeCip`, `yeniListeModal`.
+- **Bebek** (`depo("bebek")`): `ayar` `{ay, t, bant}`, çantalar (varsayılan `ana`, şablonlar `BEBEK_SAB` park/doktor/gece). **Bakım kaydı** `depo("bakim")` `{tur: mama|uyku|uyan|bez|ilac, z, n}`, 12 günden eski kayıtlar silinir (belge 400 madde sınırı).
+- **Evden çıkarken** (`cikisDepo()`): `b: kontrol|al`, şablonlar `CIKIS_SAB` (ev, is, spor, tatil).
+- **Alışveriş** (`depo("alisveris")`): virgülle çoklu ekleme, sık alınanlar bu telefonda (`g2:alSik`).
+- **Faturalar / Araç** (`takipEkrani(c)`, ayar `TAKIP`): kayıt `{ad, son, tk, tutar, once, saat, not, bitti, od:[{d,son,tutar}]}`; "Ödendi/Yapıldı" tekrar varsa `son`'u ileri alır.
+- **Hatırlatmalar:** elle kurulanlar yalnız bu telefonda (`g2:hatir`, `tk` tekrar). Otomatik olanlar `sanalAlarmlar()` ile verilerden hesaplanır (fatura, araç, gecikmiş fatura her gün, mama `g2:mamaAlarm`, gezi durakları `g2:durakAlarm`); çalanlar `g2:sustur`. Hepsi `yaklasanlar()` → `hatirKontrol()`. Alarm yalnız uygulama açıkken çalar; kapalıyken tek ücretsiz yol takvim (`takvimAc`, `.ics` + RRULE). Push sunucusu yok.
+- **Yedek:** `yedekAl` / `yedekYukle` (`g2:` anahtarları; fotoğraflar hariç).
+- iPhone'da Safari ile ana ekrandaki uygulamanın verisi (grup kodu dahil) ayrıdır; grup ikisinde ayrı ayrı kurulmalı.
 
 ## Firebase
 
