@@ -689,6 +689,57 @@ nav.altnav .ni{font-size:23px}
 .tkart.yakin::before,.tkart.bugun::before{background:var(--sun)}.tkart.gecti::before{background:var(--kirmizi)}.tkart.uzak::before{background:var(--ok)}
 .tkart.gecti .hzaman small{color:var(--kirmizi)}
 .yeni-gezi{margin-top:2px}
+
+/* ===== Su takibi ===== */
+.yeni-gezi.ikincil{background:var(--surface)!important;color:var(--ink)!important;box-shadow:var(--golge)!important;text-shadow:none}
+.iki>.yeni-gezi{font-size:15.5px!important;padding:14px 8px!important}
+.susahne{position:relative;background:linear-gradient(180deg,#e9f6ff,#ffffff);border-radius:22px;padding:58px 14px 16px;box-shadow:var(--golge);overflow:hidden;display:flex;flex-direction:column;gap:10px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .susahne{background:linear-gradient(180deg,#0b2236,#1c1c1e)}}
+.musluk{position:absolute;top:8px;left:50%;transform:translateX(-62%);width:110px;filter:drop-shadow(0 4px 4px rgba(0,0,0,.18))}
+.suakis{position:absolute;top:58px;left:calc(50% + 14px);width:9px;height:0;border-radius:0 0 6px 6px;background:linear-gradient(90deg,#7fd3ff,#2fa4ff,#7fd3ff);opacity:.9}
+.suakis.akiyor{animation:akis 1.1s ease-in-out}
+@keyframes akis{0%{height:0}25%{height:70px}75%{height:70px;opacity:.9}100%{height:70px;opacity:0;transform:translateY(20px)}}
+.siseler{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:20px 0 4px}
+.sise{position:relative;width:38px;height:84px;border-radius:12px 12px 10px 10px;background:rgba(255,255,255,.55);border:2px solid rgba(80,150,210,.45);overflow:hidden;box-shadow:inset -6px 0 10px rgba(255,255,255,.6),inset 4px 0 8px rgba(0,60,120,.08),0 4px 8px rgba(0,60,120,.12)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sise{background:rgba(255,255,255,.06);border-color:rgba(120,190,255,.35)}}
+.sise .kapak{position:absolute;top:-1px;left:9px;right:9px;height:9px;border-radius:0 0 4px 4px;background:linear-gradient(180deg,#ffa043,#f27412);z-index:2}
+.susev{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#6fd0ff,#1e8fff);transition:height .9s cubic-bezier(.3,1.4,.5,1);box-shadow:inset 0 3px 0 rgba(255,255,255,.45)}
+.susev.dalga::before{content:"";position:absolute;left:-50%;top:-5px;width:200%;height:10px;background:radial-gradient(circle at 10px 10px,transparent 6px,#6fd0ff 6.5px) 0 0/20px 10px repeat-x;animation:dalga 2.2s linear infinite}
+@keyframes dalga{to{transform:translateX(20px)}}
+.sise .parla{position:absolute;top:12px;left:6px;width:5px;height:50px;border-radius:3px;background:rgba(255,255,255,.65);z-index:2}
+.sise.dolu{border-color:#1e8fff;box-shadow:0 0 0 3px rgba(30,143,255,.18),0 6px 14px rgba(30,143,255,.3)}
+.suozet{text-align:center}.suozet b{font-family:var(--display);font-size:34px;letter-spacing:-.02em;color:#1e8fff}.suozet span{color:var(--muted);font-weight:600}
+.subtn{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.subt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 4px;border:0;border-radius:16px;background:linear-gradient(180deg,#5ab8ff,#1e7fff);color:#fff;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 -2px 0 rgba(0,0,0,.12) inset,0 6px 14px rgba(30,127,255,.3)}
+.subt b{font-size:15px}.subt small{font-size:11px;opacity:.9}.subt .bik{font-size:24px}
+.subt:active{transform:scale(.95)}
+.acts.orta3{justify-content:center}
+.suust{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.seribox{display:flex;flex-direction:column;align-items:center;gap:1px;padding:10px 4px;border-radius:14px;background:var(--doldur)}
+.seribox b{font-size:18px}.seribox small{color:var(--muted);font-size:12px}
+.hafta{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:end}
+.hgun{display:flex;flex-direction:column;align-items:center;gap:4px}.hgun small{font-size:11px;color:var(--muted)}
+.hbar{width:100%;max-width:26px;height:70px;border-radius:8px;background:var(--doldur);position:relative;overflow:hidden}
+.hbar i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#8fd6ff,#3a9bff);border-radius:8px}
+.hgun.tamam .hbar i{background:linear-gradient(180deg,#5ee27a,#28b446)}.hgun.bugun small{color:var(--ink);font-weight:700}
+.madalyalar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.madalya{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:12px 4px;border-radius:14px;background:var(--doldur);opacity:.6}
+.madalya.var{opacity:1;background:linear-gradient(180deg,#fff6db,#ffe6a8);box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 4px 10px rgba(240,170,0,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .madalya.var{background:linear-gradient(180deg,#4a3b10,#2e250a)}}
+.mikon{font-size:28px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}.madalya b{font-size:12.5px}.madalya small{font-size:10.5px;color:var(--muted);line-height:1.25}
+.kutla{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(0,0,0,.35);animation:kgel .25s ease}
+.kkutu{position:relative;background:var(--surface);border-radius:24px;padding:26px 24px;text-align:center;max-width:300px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;animation:kzipla .5s cubic-bezier(.3,1.6,.5,1)}
+.kkutu b{display:block;font-size:20px;margin-top:6px}.kkutu p{margin:6px 0 0;color:var(--muted)}
+.kikon{font-size:64px;line-height:1;filter:drop-shadow(0 6px 8px rgba(0,0,0,.25))}
+.konfeti{position:absolute;top:-10px;width:8px;height:12px;border-radius:2px;animation:konfeti 1.6s ease-in forwards}
+@keyframes konfeti{to{top:110%;transform:rotate(540deg)}}@keyframes kgel{from{opacity:0}}@keyframes kzipla{from{transform:scale(.6);opacity:0}}
+.gunsec{display:flex;gap:5px;flex-wrap:wrap}
+.gunb{flex:1;min-width:38px;padding:9px 0;border:0;border-radius:10px;background:var(--doldur);color:var(--muted);font:600 13px var(--body)}
+.gunb.sec{background:var(--kabarik);color:#fff;box-shadow:var(--kabarik-g)}
+input.anahtar{-webkit-appearance:none;appearance:none;width:50px;height:30px;border-radius:99px;background:rgba(120,120,128,.32);position:relative;flex:none;cursor:pointer;transition:background .2s;margin:0}
+input.anahtar::after{content:"";position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:transform .2s}
+input.anahtar:checked{background:#34c759}input.anahtar:checked::after{transform:translateX(20px)}
+.dkutu .ana.tam{margin-top:4px}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -1724,7 +1775,7 @@ async function ekleAc(){
    uyg: null = ana menü; diğerleri BOLUMLER anahtarları. Menü sırası/gizlenenler bu telefonda (g2:menu).
    Ortak (grupla eşitlenen) belgeler: "bebek", "bakim", "cikis", "alisveris", "fatura", "arac".
    Yalnız bu telefonda: "hatir" (elle kurulan hatırlatmalar), "sustur" (çalmış otomatik alarmlar), alarm ayarları. */
-const BOLUMLER={gezi:["🧭","Gezinti"],alis:["🛒","Alışveriş listesi"],bebek:["🍼","Bebek"],cikis:["🚪","Evden çıkarken"],hatir:["⏰","Hatırlatmalar"],fatura:["🧾","Faturalar"],arac:["🚗","Araç takibi"]};
+const BOLUMLER={gezi:["🧭","Gezinti"],alis:["🛒","Alışveriş listesi"],bebek:["🍼","Bebek"],cikis:["🚪","Evden çıkarken"],hatir:["⏰","Hatırlatma ve su"],fatura:["🧾","Faturalar"],arac:["🚗","Araç takibi"]};
 function menuAyar(){const m=LS.get("menu")||{},tum=Object.keys(BOLUMLER);const sira=(m.sira||[]).filter(k=>tum.includes(k));tum.forEach(k=>{if(!sira.includes(k))sira.push(k)});
   return {sira,gizli:(m.gizli||[]).filter(k=>tum.includes(k))}}
 function uygAc(k){uyg=k;LS.set("uyg",k);window.scrollTo(0,0);ciz()}
@@ -2032,7 +2083,8 @@ function sonrakiZ(z,tk){const d=new Date(z);if(tk==="gun")d.setDate(d.getDate()+
   else if(tk==="ay"||tk==="yil"){const g=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+(tk==="ay"?1:12));d.setDate(Math.min(g,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()))}else return null;return d.getTime()}
 const hatirListe=()=>Object.entries(HAT.items).filter(([,x])=>x&&x.n&&x.z);
 /* Otomatik hatırlatmalar: faturalar, araç, mama, gezi durakları. Çalanlar g2:sustur'da tutulur. */
-function sanalAlarmlar(){const o=[],ekle=(key,n,z,kay)=>{if(z>0)o.push({key,n,z,kay})};
+function sanalAlarmlar(){const o=[],ekle=(key,n,z,kay,ek)=>{if(z>0)o.push(Object.assign({key,n,z,kay},ek||{}))};
+  aralikSanal(ekle);
   ["fatura","arac"].forEach(c=>{const T=TAKIP[c];Object.entries(depo(c).items).forEach(([id,x])=>{if(!x||!x.ad||!x.son||x.bitti)return;const d=takipDurum(x);
     const ad=T.ikon+" "+x.ad+(Number(x.tutar)?" ("+para(x.tutar)+")":"");
     ekle(c+":"+id+":"+x.son+":"+(x.once||0)+":"+(x.saat||""),ad+" · "+(d.f>0?d.t+", ":"")+"son gün "+gunUzun(x.son),takipZaman(x),T.baslik);
@@ -2048,20 +2100,25 @@ const susturulmus=()=>LS.get("sustur")||{};
 function sustur(key){const s=susturulmus(),sinir=Date.now()-60*864e5;Object.keys(s).forEach(k=>{if(s[k]<sinir)delete s[k]});s[key]=Date.now();LS.set("sustur",s)}
 /* Sıradaki çalacak her şey (elle + otomatik), en yakın önce */
 function yaklasanlar(){const s=susturulmus();const a=hatirListe().filter(([,x])=>!x.caldi).map(([id,x])=>({id,n:x.n,z:x.z,tk:x.tk}));
-  const b=sanalAlarmlar().filter(x=>!s[x.key]&&x.z>Date.now()-864e5);return a.concat(b).sort((p,q)=>p.z-q.z)}
+  const b=sanalAlarmlar().filter(x=>!s[x.key]&&x.z>Date.now()-(x.ara?10*60e3:864e5));return a.concat(b).sort((p,q)=>p.z-q.z)}
 const hatirSiradaki=()=>yaklasanlar().find(x=>x.z>Date.now()-864e5);
 function zamanYazi(z){const d=new Date(z),g=tarihStr(d),b=bugunStr(),s=pad(d.getHours())+":"+pad(d.getMinutes());
   return (g===b?"Bugün":g===tarihEkle(b,1)?"Yarın":g===tarihEkle(b,-1)?"Dün":d.toLocaleDateString("tr-TR",{weekday:"short",day:"numeric",month:"long"})+(d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""))+" "+s}
+let hatirSekme=LS.get("hatirSekme")||"liste";
 function hatirEkrani(){
-  ustBar("Hatırlatmalar","⏰","Not al, saatini kur, zamanı gelince çalsın",hatirMenu);
-  ana.append(btn("+ Yeni hatırlatma","yeni-gezi",()=>hatirFormu()));
+  ustBar("Hatırlatmalar","⏰",hatirSekme==="su"?"Su iç, şişeleri doldur, madalya topla":"Not al, saatini kur, zamanı gelince çalsın",hatirMenu);
+  const seg=el("div","seg");[["liste","⏰ Hatırlatmalar"],["su","💧 Su takibi"]].forEach(([k,t])=>{const b=btn(t,null,()=>{hatirSekme=k;LS.set("hatirSekme",k);window.scrollTo(0,0);ciz()});b.setAttribute("aria-selected",hatirSekme===k);seg.append(b)});ana.append(seg);
+  if(hatirSekme==="su")return suPanel();
+  const ab=el("div","iki");ab.append(btn("+ Tek seferlik","yeni-gezi",()=>hatirFormu()),btn("🔁 Gün içi tekrar","yeni-gezi ikincil",()=>aralikFormu()));ana.append(ab);
   const bil=el("div","card bilgi");bil.append(el("p",null,"🔔 Alarm, uygulama açıkken sesle çalar. Telefon kilitliyken ya da uygulama kapalıyken de uyarması için hatırlatmada 📅 Takvime ekle'ye bas."));
   if("Notification" in window&&Notification.permission==="default")bil.append(btn("Bildirimlere izin ver","reset",()=>bildirimIzni().then(ciz)));
   ana.append(bil);
   const l=hatirListe(),gel=l.filter(([,x])=>!x.caldi).sort((a,b)=>a[1].z-b[1].z),gec=l.filter(([,x])=>x.caldi).sort((a,b)=>b[1].z-a[1].z);
-  if(!l.length)ana.append(el("p","bos","Henüz hatırlatma yok. Yukarıdan ekle."));
+  if(!l.length&&!Object.keys(ARALIK.items).length)ana.append(el("p","bos","Henüz hatırlatma yok. Yukarıdan ekle; su ya da atıştırmalık için \"Gün içi tekrar\"ı seç."));
   if(gel.length){ana.append(el("h4","bolum","Yaklaşan"));gel.forEach(([id,x])=>ana.append(hatirKarti(id,x)))}
-  const s=susturulmus(),oto=sanalAlarmlar().filter(x=>!s[x.key]&&x.z>Date.now()-864e5&&x.z<Date.now()+14*864e5).sort((a,b)=>a.z-b.z).slice(0,12);
+  const ar=Object.entries(ARALIK.items).filter(([,x])=>x&&x.n);
+  if(ar.length){ana.append(el("h4","bolum","Gün içi tekrarlayan"));ar.forEach(([id,x])=>ana.append(aralikKarti(id,x)))}
+  const s=susturulmus(),oto=sanalAlarmlar().filter(x=>!x.ara&&!s[x.key]&&x.z>Date.now()-864e5&&x.z<Date.now()+14*864e5).sort((a,b)=>a.z-b.z).slice(0,12);
   const ok=el("div","card");ok.append(el("h3",null,"🤖 Otomatik hatırlatmalar"));
   oto.forEach(x=>{const r=el("div","oto");r.append(el("b",null,zamanYazi(x.z)),el("span",null,x.n),el("small","note",x.kay));ok.append(r)});
   if(!oto.length)ok.append(el("p","note","Önümüzdeki 2 haftada yok."));
@@ -2154,11 +2211,130 @@ function hatirKontrol(){if(alarmAcik)return;const simdi=Date.now();
     else if(x.tk){let z=x.z;while(z<=Date.now())z=sonrakiZ(z,x.tk);HAT.koy(x.id,{z,caldi:false})}
     else HAT.koy(x.id,{caldi:true});
     ciz();setTimeout(hatirKontrol,400)};
-  b.append(btn("10 dk ertele","hayir",()=>kapat(10)),btn("Tamam","evet",()=>kapat(0)));k.append(b);d.append(k);document.body.append(d)}
+  if(x.su){const bd=SU.v.bardak||250;k.append(btn("💧 İçtim (+"+bd+" ml)","ana tam",()=>{kapat(0);suEkle(bd)}))}
+  b.append(btn("10 dk ertele","hayir",()=>kapat(10)),btn(x.su?"Sonra":"Tamam","evet",()=>kapat(0)));k.append(b);d.append(k);document.body.append(d)}
 /* Sıradakinin saatinde tam zamanında kontrol et (ayrıca her 15 sn ve uygulamaya dönünce) */
 function hatirZamanla(){clearTimeout(hatirZaman);const s=yaklasanlar().find(x=>x.z>Date.now());if(!s)return;const ms=s.z-Date.now();if(ms<2147e6)hatirZaman=setTimeout(hatirKontrol,ms+200)}
 setInterval(hatirKontrol,15000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)hatirKontrol()});
 addEventListener("storage",e=>{if(e.key==="g2:hatir"){hatirZamanla();ciz()}});
+
+
+/* ================= Gün içi aralıklı hatırlatıcılar (su, atıştırmalık, mola…) =================
+   g2:aralik → {id: {n, bas:"09:00", son:"22:00", dk:60, gun:[0..6], acik:true, su:bool}}. Yalnız bu telefonda. */
+const ARALIK={get items(){const o=LS.get("aralik");return o&&typeof o==="object"?o:{}},
+  koy(k,v){const o=this.items;o[k]=Object.assign(o[k]||{},v);LS.set("aralik",o);hatirZamanla();ciz()},
+  sil(k){const o=this.items;delete o[k];LS.set("aralik",o);hatirZamanla();ciz()}};
+const ARALIK_SAB=[["💧 Su iç",60,true],["🍎 Atıştırmalık ye",180],["🚶 Kalk, biraz yürü",60],["👀 Gözlerini dinlendir",45],["🧘 Esne, nefes al",120]];
+const GUN_K=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
+/* Bir aralıklı hatırlatıcının bugün ve yarınki çalma zamanları */
+function aralikSaatleri(x){const o=[],bas=dk(x.bas||"09:00"),son=dk(x.son||"22:00"),adim=Math.max(10,Number(x.dk)||60);
+  [0,1].forEach(g=>{const d=new Date();d.setDate(d.getDate()+g);if(x.gun&&x.gun.length&&!x.gun.includes(d.getDay()))return;
+    for(let m=bas;m<=son;m+=adim){const z=new Date(d);z.setHours(Math.floor(m/60),m%60,0,0);o.push(z.getTime())}});return o}
+function aralikSanal(ekle){Object.entries(ARALIK.items).forEach(([id,x])=>{if(!x||!x.acik||!x.n)return;
+  const sonSu=x.su?suSonIcme():0;
+  aralikSaatleri(x).forEach(z=>{if(z<Date.now()-10*60e3)return;
+    /* Su: son yarım aralıkta zaten içtiysen bu sefer çalma */
+    if(x.su&&sonSu&&sonSu>z-(Number(x.dk)||60)*30e3&&sonSu<=z)return;
+    ekle("ara:"+id+":"+tarihStr(new Date(z))+":"+saatOf(z),x.n,z,x.su?"Su hatırlatıcı":"Gün içi hatırlatıcı",{ara:true,su:!!x.su})})})}
+function aralikFormu(id,on){const x=id?ARALIK.items[id]:Object.assign({bas:"09:00",son:"22:00",dk:60,gun:[0,1,2,3,4,5,6],acik:true},on||{});
+  modal(id?"Hatırlatıcıyı düzenle":"Gün içi hatırlatıcı",m=>{const f=el("form","mform2");
+    if(!id&&!on){const r=el("div","sikal");ARALIK_SAB.forEach(([t,d,su])=>r.append(btn(t,"cip",()=>{n.value=t;sk.value=String(d);suMu=!!su})));f.append(el("p","note","Hazır seç ya da kendin yaz:"),r)}
+    let suMu=!!x.su;
+    const n=el("input");n.required=true;n.maxLength=60;n.placeholder="örn. 💧 Su iç";n.value=x.n||"";
+    const b=el("input");b.type="time";b.value=x.bas;const s=el("input");s.type="time";s.value=x.son;
+    const sk=secim([["15","15 dakikada bir"],["30","30 dakikada bir"],["45","45 dakikada bir"],["60","Saatte bir"],["90","1,5 saatte bir"],["120","2 saatte bir"],["180","3 saatte bir"],["240","4 saatte bir"]],String(x.dk||60));
+    const i1=el("div","iki");i1.append(alanEt("Başlangıç",b),alanEt("Bitiş",s));
+    const gs=new Set(x.gun||[0,1,2,3,4,5,6]);const gr=el("div","gunsec");[1,2,3,4,5,6,0].forEach(g=>{const c=btn(GUN_K[g],"gunb"+(gs.has(g)?" sec":""),()=>{gs.has(g)?gs.delete(g):gs.add(g);c.classList.toggle("sec",gs.has(g))});gr.append(c)});
+    const kb=btn("Kaydet","ana");kb.type="submit";
+    f.append(alanEt("Ne hatırlatılsın?",n),i1,alanEt("Sıklık",sk),alanEt("Günler",gr),kb);
+    if(id)f.append(btn("🗑 Sil","mbtn tehlike",async ()=>{if(!await onay("Bu hatırlatıcı silinsin mi?"))return;modalKapat();ARALIK.sil(id)}));
+    m.append(f);
+    f.onsubmit=e=>{e.preventDefault();const v=n.value.trim();if(!v||!gs.size)return;if(dk(s.value)<dk(b.value))return uyar("Bitiş saati başlangıçtan sonra olmalı.");
+      sesAc();bildirimIzni();modalKapat();if(!id&&/su iç/i.test(v))suMu=true;
+      ARALIK.koy(id||(suMu&&!ARALIK.items.su?"su":"a"+yeniId()),{n:v.slice(0,60),bas:b.value,son:s.value,dk:Number(sk.value),gun:[...gs],acik:true,su:suMu});hizliBilgi="🔁 Kuruldu"}})}
+function aralikKarti(id,x){const k=el("div","card hkart2");const u=el("div","hzaman");u.append(el("b",null,x.n));
+  const sw=el("input");sw.type="checkbox";sw.className="anahtar";sw.checked=!!x.acik;sw.onchange=()=>{ARALIK.koy(id,{acik:sw.checked});if(sw.checked){sesAc();bildirimIzni()}};u.append(sw);k.append(u);
+  const gun=(x.gun||[]).length===7?"Her gün":[1,2,3,4,5,6,0].filter(g=>(x.gun||[]).includes(g)).map(g=>GUN_K[g]).join(", ");
+  const sira=x.acik?aralikSaatleri(x).find(z=>z>Date.now()):null;
+  k.append(el("p","note","🔁 "+(x.dk>=60?(x.dk/60).toLocaleString("tr-TR")+" saatte bir":x.dk+" dakikada bir")+" · "+x.bas+"–"+x.son+" · "+gun+(sira?" · sıradaki "+zamanYazi(sira):"")));
+  const a=el("div","acts");a.append(btn("✎ Düzenle","reset",()=>aralikFormu(id)));k.append(a);return k}
+
+/* ================= Su takibi (kişisel, bu telefonda): musluk, şişeler, seri, madalyalar ================= */
+/* g2:su → {hedef: ml, bardak: ml, gun:{"YYYY-AA-GG": ml}, bugun:{d, l:[{ml,z}]}, toplam: ml, madalya:{id: tarih}} */
+const SU={get v(){const o=LS.get("su");return Object.assign({hedef:2000,bardak:250,gun:{},bugun:{d:bugunStr(),l:[]},toplam:0,madalya:{}},o&&typeof o==="object"?o:{})},yaz(o){LS.set("su",o)}};
+function suBugun(o){o=o||SU.v;return o.bugun&&o.bugun.d===bugunStr()?o.bugun:{d:bugunStr(),l:[]}}
+const suIctim=()=>suBugun().l.reduce((t,x)=>t+x.ml,0);
+function suSonIcme(){const l=suBugun().l;return l.length?l[l.length-1].z:0}
+const litre=ml=>(ml/1000).toLocaleString("tr-TR",{maximumFractionDigits:2})+" L";
+/* Seri: hedefe ulaşılan art arda günler (bugün henüz bitmediyse dünden geriye sayar) */
+function suSeri(o){o=o||SU.v;let n=0,d=bugunStr();if((o.gun[d]||0)<o.hedef)d=tarihEkle(d,-1);while((o.gun[d]||0)>=o.hedef){n++;d=tarihEkle(d,-1)}return n}
+const MADALYA=[
+  ["ilk","💧","İlk yudum","İlk suyunu kaydet",o=>o.toplam>0],
+  ["hedef","🎯","Hedef tamam","Bir günde hedefe ulaş",o=>Object.values(o.gun).some(v=>v>=o.hedef)],
+  ["erken","🌅","Erkenci","Saat 10'dan önce 500 ml iç",o=>suBugun(o).l.filter(x=>new Date(x.z).getHours()<10).reduce((t,x)=>t+x.ml,0)>=500],
+  ["seri3","🔥","3 gün seri","3 gün üst üste hedef",o=>suSeri(o)>=3],
+  ["seri7","⚡","Haftanın yıldızı","7 gün üst üste hedef",o=>suSeri(o)>=7],
+  ["tasma","🌊","Taşkın","Bir günde hedefin 1,5 katı",o=>Object.values(o.gun).some(v=>v>=o.hedef*1.5)],
+  ["top10","🥉","10 litre","Toplam 10 L",o=>o.toplam>=10000],
+  ["top50","🥈","50 litre","Toplam 50 L",o=>o.toplam>=50000],
+  ["seri30","👑","Su ustası","30 gün üst üste hedef",o=>suSeri(o)>=30],
+  ["top100","🥇","100 litre","Toplam 100 L",o=>o.toplam>=100000],
+  ["top365","🏆","Okyanus","Toplam 365 L",o=>o.toplam>=365000]];
+function suEkle(ml){const o=SU.v,b=suBugun(o),once=b.l.reduce((t,x)=>t+x.ml,0);b.l.push({ml,z:Date.now()});o.bugun=b;
+  o.gun[b.d]=(o.gun[b.d]||0)+ml;o.toplam=(o.toplam||0)+ml;
+  const sinir=tarihEkle(bugunStr(),-400);Object.keys(o.gun).forEach(d=>{if(d<sinir)delete o.gun[d]});
+  const yeni=MADALYA.filter(([id,,,,f])=>!o.madalya[id]&&f(o));yeni.forEach(([id])=>o.madalya[id]=bugunStr());SU.yaz(o);
+  suAkit=ml;hatirZamanla();ciz();
+  const simdi=once+ml;
+  setTimeout(()=>{if(once<o.hedef&&simdi>=o.hedef)suKutla("🎯","Günün hedefi tamam!",litre(simdi)+" içtin. Harika gidiyorsun!");
+    yeni.forEach(([,i,ad,ac],j)=>setTimeout(()=>suKutla(i,"Yeni madalya: "+ad,ac),(j+(once<o.hedef&&simdi>=o.hedef?1:0))*2600))},900)}
+function suGeriAl(){const o=SU.v,b=suBugun(o);const x=b.l.pop();if(!x)return;o.bugun=b;o.gun[b.d]=Math.max(0,(o.gun[b.d]||0)-x.ml);o.toplam=Math.max(0,(o.toplam||0)-x.ml);SU.yaz(o);ciz()}
+let suAkit=0;
+function suKutla(ikon,baslik,metin){const d=el("div","kutla");const k=el("div","kkutu");k.append(el("div","kikon",ikon),el("b",null,baslik),el("p",null,metin));
+  for(let i=0;i<26;i++){const c=el("i","konfeti");c.style.left=Math.random()*100+"%";c.style.background=["#ff9f0a","#34c759","#0a84ff","#ff375f","#ffd60a"][i%5];c.style.animationDelay=(Math.random()*.4)+"s";c.style.transform="rotate("+Math.random()*360+"deg)";k.append(c)}
+  d.append(k);d.onclick=()=>d.remove();document.body.append(d);try{navigator.vibrate&&navigator.vibrate([60,40,60])}catch(e){}setTimeout(()=>d.remove(),2400)}
+function suPanel(){
+  const o=SU.v,ic=suIctim(),h=o.hedef,yz=Math.min(100,Math.round(ic/h*100)),seri=suSeri(o);
+  /* Musluk ve şişeler */
+  const sahne=el("div","susahne");
+  const mus=el("div","musluk");mus.innerHTML='<svg viewBox="0 0 120 70" aria-hidden="true"><defs><linearGradient id="krom" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f6f8"/><stop offset=".45" stop-color="#b9c2cc"/><stop offset="1" stop-color="#7d8894"/></linearGradient></defs><rect x="0" y="14" width="78" height="18" rx="9" fill="url(#krom)"/><rect x="20" y="4" width="26" height="12" rx="4" fill="url(#krom)"/><rect x="12" y="0" width="42" height="7" rx="3.5" fill="#ff8a1f"/><path d="M66 14h26a12 12 0 0 1 12 12v22h-18V32H66z" fill="url(#krom)"/><rect x="84" y="46" width="22" height="7" rx="3" fill="#8b96a2"/></svg>';
+  sahne.append(mus);
+  const akis=el("div","suakis"+(suAkit?" akiyor":""));sahne.append(akis);if(suAkit)setTimeout(()=>{suAkit=0;akis.classList.remove("akiyor")},1100);
+  const raf=el("div","siseler");const n=Math.max(1,Math.ceil(h/500));
+  for(let i=0;i<n;i++){const dol=Math.max(0,Math.min(1,(ic-i*500)/500));const s=el("div","sise"+(dol>=1?" dolu":""));const su=el("div","susev");su.style.height=(dol*100)+"%";
+    if(dol>0&&dol<1)su.classList.add("dalga");s.append(el("span","kapak"),su,el("span","parla"));raf.append(s)}
+  sahne.append(raf);
+  const ozet=el("div","suozet");ozet.append(el("b",null,litre(ic)),el("span",null," / "+litre(h)+" · %"+yz));sahne.append(ozet);
+  sahne.append(el("p","note orta",ic>=h?"🎉 Bugünkü hedef tamam! İstersen devam et.":ic?"Hedefe "+litre(h-ic)+" kaldı. Bir bardak daha?":"Güne bir bardak suyla başla 💧"));
+  ana.append(sahne);
+  /* İçme düğmeleri */
+  const dg=el("div","subtn");[["🥛",200,"Bardak"],["🥤",330,"Kutu"],["🍶",500,"Şişe"],["💧",o.bardak&&![200,330,500].includes(o.bardak)?o.bardak:250,"Su bardağı"]].forEach(([i,ml,t])=>{
+    const b=btn("","subt",()=>{sesAc();suEkle(ml)});b.append(el("span","bik",i),el("b",null,"+"+ml),el("small",null,t));dg.append(b)});ana.append(dg);
+  const ac=el("div","acts orta3");ac.append(btn("✏️ Başka miktar","reset",async ()=>{const v=Number(String(await soru("Kaç ml içtin?","300")||"").replace(",","."));if(v>0&&v<=3000)suEkle(Math.round(v))}));
+  if(suBugun(o).l.length)ac.append(btn("↶ Sonuncuyu geri al","reset",suGeriAl));ana.append(ac);
+  /* Seri ve hafta */
+  const k=el("div","card");const ust2=el("div","suust");ust2.append(el("div","seribox",""));ust2.firstChild.append(el("span","bik","🔥"),el("b",null,String(seri)),el("small",null,"gün seri"));
+  const tb=el("div","seribox");tb.append(el("span","bik","🌊"),el("b",null,litre(o.toplam||0)),el("small",null,"toplam"));ust2.append(tb);
+  const mb=el("div","seribox");mb.append(el("span","bik","🏅"),el("b",null,Object.keys(o.madalya).length+"/"+MADALYA.length),el("small",null,"madalya"));ust2.append(mb);k.append(ust2);
+  const hf=el("div","hafta");for(let i=6;i>=0;i--){const d=tarihEkle(bugunStr(),-i),v=o.gun[d]||0,c=el("div","hgun"+(v>=h?" tamam":"")+(i===0?" bugun":""));
+    const bar=el("div","hbar"),dol=el("i");dol.style.height=Math.min(100,v/h*100)+"%";bar.append(dol);c.append(bar,el("small",null,i===0?"Bugün":GUN_K[new Date(d+"T12:00:00").getDay()]));hf.append(c)}
+  k.append(hf);ana.append(k);
+  /* Madalyalar */
+  const md=el("div","card");md.append(el("h3",null,"🏅 Madalyalar"));const g=el("div","madalyalar");
+  MADALYA.forEach(([id,i,ad,ac])=>{const var_=!!o.madalya[id];const m=el("div","madalya"+(var_?" var":""));m.append(el("span","mikon",var_?i:"🔒"),el("b",null,ad),el("small",null,var_?tarihKisa(o.madalya[id]):ac));g.append(m)});
+  md.append(g);ana.append(md);
+  /* Hedef ve hatırlatıcı */
+  const ay=el("div","card");ay.append(el("h3",null,"⚙️ Hedef ve hatırlatıcı"));
+  const hs=secim([1500,1750,2000,2250,2500,2750,3000,3500].map(v=>[String(v),litre(v)]),String(h));hs.onchange=()=>{const x=SU.v;x.hedef=Number(hs.value);SU.yaz(x);ciz()};
+  const sx=ARALIK.items.su;
+  const i2=el("div","iki");i2.append(alanEt("🎯 Günlük hedef",hs));
+  const rs=secim([["0","Kapalı"],["30","30 dk'da bir"],["45","45 dk'da bir"],["60","Saatte bir"],["90","1,5 saatte bir"],["120","2 saatte bir"]],sx&&sx.acik?String(sx.dk):"0");
+  rs.onchange=()=>{const v=Number(rs.value);if(!v){if(sx)ARALIK.koy("su",{acik:false});return}sesAc();bildirimIzni();ARALIK.koy("su",Object.assign({n:"💧 Su içme zamanı",bas:"09:00",son:"22:00",gun:[0,1,2,3,4,5,6]},ARALIK.items.su||{},{dk:v,acik:true,su:true}))};
+  i2.append(alanEt("⏰ Hatırlat",rs));ay.append(i2);
+  if(sx&&sx.acik){ay.append(el("p","note","Hatırlatma "+sx.bas+"–"+sx.son+" arası. Yakın zamanda içtiysen o seferki atlanır. Alarmda \"İçtim\" deyince otomatik kaydedilir."));
+    ay.append(btn("Saat aralığını değiştir","reset",()=>aralikFormu("su")))}
+  ay.append(el("p","note","Su takibi kişiseldir, yalnız bu telefonda tutulur; grupla paylaşılmaz."));
+  ana.append(ay)}
 
 /* ================= Ayarlar: menü düzeni ve yedek ================= */
 function ayarlarAc(){modal("⚙️ Ayarlar",m=>{
@@ -2192,7 +2368,7 @@ function hubOzet(k){
     return [ay==null?"Yaşı gir, hazır çanta listesi gelsin":yasYazi(ay)+(sm?" · son mama "+sure(Date.now()-sm[1].z)+" önce":" · çanta ve bakım kaydı"),false]}
   if(k==="cikis"){const C=cikisDepo(),n=listeTan(C,"ev","").length,f=x=>(x.l||"ev")==="ev";
     return [Object.keys(CIKIS_BOL).map(b=>{const l=kalemler(C,b,f);return (b==="kontrol"?"Kontrol ":"Yanına al ")+l.filter(([,x])=>x.ok).length+"/"+l.length}).join(" · ")+(n>1?" · "+n+" liste":""),false]}
-  if(k==="hatir"){const hs=hatirSiradaki();return [hs?zamanYazi(hs.z)+" · "+hs.n.split("\n")[0].slice(0,40):"Not al, alarm kur",!!hs&&hs.z-Date.now()<864e5]}
+  if(k==="hatir"){const hs=hatirSiradaki(),su=suIctim(),sh=SU.v.hedef;return ["💧 "+litre(su)+"/"+litre(sh)+(hs?" · "+zamanYazi(hs.z)+" "+hs.n.split("\n")[0].slice(0,28):""),!!hs&&hs.z-Date.now()<3600e3]}
   if(k==="fatura"||k==="arac"){const l=takipListe(k).filter(([,x])=>x.son&&!x.bitti);if(!l.length)return [TAKIP[k].alt,false];const [,x]=l[0],d=takipDurum(x);return [x.ad+" · "+d.t,d.s==="gecti"||d.s==="bugun"||(d.f!=null&&d.f<=3)]}
   return ["",false]}
 function hubEkrani(){
@@ -2208,7 +2384,7 @@ function hubEkrani(){
 const EKRANLAR={bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.9";window.SURUM_=SURUM;
+const SURUM="2026-11-12.10";window.SURUM_=SURUM;
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
