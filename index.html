@@ -740,6 +740,20 @@ input.anahtar{-webkit-appearance:none;appearance:none;width:50px;height:30px;bor
 input.anahtar::after{content:"";position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:transform .2s}
 input.anahtar:checked{background:#34c759}input.anahtar:checked::after{transform:translateX(20px)}
 .dkutu .ana.tam{margin-top:4px}
+
+.suozet2{font-size:22px;font-weight:700;color:#1e8fff;margin:0}
+.sgun{display:grid;grid-template-columns:96px 1fr 72px;align-items:center;gap:10px;padding:10px 2px;border:0;border-top:.5px solid var(--line);background:transparent;color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.sgun .sgt{font-size:14px}.sgun b{text-align:right;font-size:14px}.sgun.tamam b{color:var(--ok)}
+.sgbar{height:8px;border-radius:99px;background:var(--doldur);overflow:hidden}.sgbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#8fd6ff,#3a9bff)}
+.sgun.tamam .sgbar i{background:linear-gradient(90deg,#5ee27a,#28b446)}
+.srapor{display:flex;align-items:center;gap:12px;padding:10px 2px;border:0;border-top:.5px solid var(--line);background:transparent;color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.srapor .bik{font-size:30px}.srapor .htx{flex:1}.rmad2{font-size:24px}
+.rbas{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:6px 0 4px;position:relative}
+.rikon{font-size:72px;line-height:1.1;filter:drop-shadow(0 8px 10px rgba(0,0,0,.2));animation:kzipla .6s cubic-bezier(.3,1.6,.5,1)}
+.rbas b{font-size:24px;font-family:var(--display)}.rbas small{color:var(--muted)}
+.rmad{position:absolute;top:4px;right:calc(50% - 70px);font-size:34px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
+.rbar{margin-top:4px}
+.mkutu .add select{width:auto;flex:1}.mkutu .add input[type=time]{flex:1}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -2254,7 +2268,7 @@ function aralikFormu(id,on){const x=id?ARALIK.items[id]:Object.assign({bas:"09:0
       if(!x.su&&/(^|\s)su iç/i.test(v)){modalKapat();uygAc("su");hizliBilgi="💧 Su hatırlatıcısı Su takibi bölümünde";return}
       sesAc();bildirimIzni();modalKapat();
       ARALIK.koy(id||(suMu&&!ARALIK.items.su?"su":"a"+yeniId()),{n:v.slice(0,60),bas:b.value,son:s.value,dk:Number(sk.value),gun:[...gs],acik:true,su:suMu});hizliBilgi="🔁 Kuruldu"}})}
-function suEkrani(){const o=SU.v;ustBar("Su takibi","💧","Kişisel · şişeleri doldur, seriyi koru"+(suSeri(o)?" · 🔥 "+suSeri(o)+" gün":""),null);suPanel()}
+function suEkrani(){const o=SU.v;{const r=suMadalyaGuncelle(o);if(r.yeni.length||r.giden.length)SU.yaz(o)}const u=suUnvan(o);ustBar("Su takibi","💧",(u?"Unvanın: "+u:"Kişisel · şişeleri doldur, seriyi koru")+(suSeri(o)?" · 🔥 "+suSeri(o)+" gün":""),null);suPanel();setTimeout(suRaporKontrol,400)}
 function aralikKarti(id,x){const k=el("div","card hkart2");const u=el("div","hzaman");u.append(el("b",null,x.n));
   const sw=el("input");sw.type="checkbox";sw.className="anahtar";sw.checked=!!x.acik;sw.onchange=()=>{ARALIK.koy(id,{acik:sw.checked});if(sw.checked){sesAc();bildirimIzni()}};u.append(sw);k.append(u);
   const gun=(x.gun||[]).length===7?"Her gün":[1,2,3,4,5,6,0].filter(g=>(x.gun||[]).includes(g)).map(g=>GUN_K[g]).join(", ");
@@ -2264,35 +2278,90 @@ function aralikKarti(id,x){const k=el("div","card hkart2");const u=el("div","hza
 
 /* ================= Su takibi (kişisel, bu telefonda): musluk, şişeler, seri, madalyalar ================= */
 /* g2:su → {hedef: ml, bardak: ml, gun:{"YYYY-AA-GG": ml}, bugun:{d, l:[{ml,z}]}, toplam: ml, madalya:{id: tarih}} */
-const SU={get v(){const o=LS.get("su");return Object.assign({hedef:2000,bardak:250,gun:{},bugun:{d:bugunStr(),l:[]},toplam:0,madalya:{}},o&&typeof o==="object"?o:{})},yaz(o){LS.set("su",o)}};
-function suBugun(o){o=o||SU.v;return o.bugun&&o.bugun.d===bugunStr()?o.bugun:{d:bugunStr(),l:[]}}
+/* kayit: {"YYYY-AA-GG": [{ml,z}]} (son 120 gün, tek tek silinebilir); gun: gün toplamları (400 gün); goruldu: gösterilen raporlar */
+const SU={get v(){const r=LS.get("su"),o=Object.assign({hedef:2000,bardak:250,gun:{},kayit:{},toplam:0,madalya:{},goruldu:{}},r&&typeof r==="object"?r:{});
+    if(o.bugun&&o.bugun.l&&o.bugun.l.length&&!o.kayit[o.bugun.d])o.kayit[o.bugun.d]=o.bugun.l;delete o.bugun;return o},yaz(o){LS.set("su",o)}};
+function suBugun(o){o=o||SU.v;const d=bugunStr();return {d,l:o.kayit[d]||[]}}
 const suIctim=()=>suBugun().l.reduce((t,x)=>t+x.ml,0);
 function suSonIcme(){const l=suBugun().l;return l.length?l[l.length-1].z:0}
 const litre=ml=>(ml/1000).toLocaleString("tr-TR",{maximumFractionDigits:2})+" L";
 /* Seri: hedefe ulaşılan art arda günler (bugün henüz bitmediyse dünden geriye sayar) */
 function suSeri(o){o=o||SU.v;let n=0,d=bugunStr();if((o.gun[d]||0)<o.hedef)d=tarihEkle(d,-1);while((o.gun[d]||0)>=o.hedef){n++;d=tarihEkle(d,-1)}return n}
+/* Şimdiye kadarki en uzun seri (madalyalar geçmişe göre hesaplanır; silinen su madalyayı da götürür) */
+function suEnIyiSeri(o){const g=Object.keys(o.gun).filter(d=>o.gun[d]>=o.hedef).sort();let en=0,n=0,on=null;g.forEach(d=>{n=on&&tarihEkle(on,1)===d?n+1:1;on=d;en=Math.max(en,n)});return en}
+/* Madalyaları verilere göre yenile: hak edilmeyen gider, yeni hak edilen eklenir */
+function suMadalyaGuncelle(o){const yeni=[],giden=[];MADALYA.forEach(m=>{const [id,,,,f]=m,var_=!!o.madalya[id],hak=f(o);if(hak&&!var_){o.madalya[id]=bugunStr();yeni.push(m)}else if(!hak&&var_){delete o.madalya[id];giden.push(m)}});return {yeni,giden}}
 const MADALYA=[
   ["ilk","💧","İlk yudum","İlk suyunu kaydet",o=>o.toplam>0],
   ["hedef","🎯","Hedef tamam","Bir günde hedefe ulaş",o=>Object.values(o.gun).some(v=>v>=o.hedef)],
-  ["erken","🌅","Erkenci","Saat 10'dan önce 500 ml iç",o=>suBugun(o).l.filter(x=>new Date(x.z).getHours()<10).reduce((t,x)=>t+x.ml,0)>=500],
-  ["seri3","🔥","3 gün seri","3 gün üst üste hedef",o=>suSeri(o)>=3],
-  ["seri7","⚡","Haftanın yıldızı","7 gün üst üste hedef",o=>suSeri(o)>=7],
+  ["erken","🌅","Erkenci","Saat 10'dan önce 500 ml iç",o=>Object.values(o.kayit).some(l=>l.filter(x=>new Date(x.z).getHours()<10).reduce((t,x)=>t+x.ml,0)>=500)],
+  ["seri3","🔥","3 gün seri","3 gün üst üste hedef",o=>suEnIyiSeri(o)>=3],
+  ["seri7","⚡","Haftanın yıldızı","7 gün üst üste hedef",o=>suEnIyiSeri(o)>=7],
   ["tasma","🌊","Taşkın","Bir günde hedefin 1,5 katı",o=>Object.values(o.gun).some(v=>v>=o.hedef*1.5)],
   ["top10","🥉","10 litre","Toplam 10 L",o=>o.toplam>=10000],
   ["top50","🥈","50 litre","Toplam 50 L",o=>o.toplam>=50000],
-  ["seri30","👑","Su ustası","30 gün üst üste hedef",o=>suSeri(o)>=30],
+  ["seri30","👑","Su ustası","30 gün üst üste hedef",o=>suEnIyiSeri(o)>=30],
   ["top100","🥇","100 litre","Toplam 100 L",o=>o.toplam>=100000],
   ["top365","🏆","Okyanus","Toplam 365 L",o=>o.toplam>=365000]];
-function suEkle(ml){const o=SU.v,b=suBugun(o),once=b.l.reduce((t,x)=>t+x.ml,0);b.l.push({ml,z:Date.now()});o.bugun=b;
-  o.gun[b.d]=(o.gun[b.d]||0)+ml;o.toplam=(o.toplam||0)+ml;
-  const sinir=tarihEkle(bugunStr(),-400);Object.keys(o.gun).forEach(d=>{if(d<sinir)delete o.gun[d]});
-  const yeni=MADALYA.filter(([id,,,,f])=>!o.madalya[id]&&f(o));yeni.forEach(([id])=>o.madalya[id]=bugunStr());SU.yaz(o);
-  suAkit=ml;hatirZamanla();ciz();
+function suEkle(ml,gun,z){const o=SU.v,d=gun||bugunStr(),l=o.kayit[d]||[],once=l.reduce((t,x)=>t+x.ml,0);
+  l.push({ml,z:z||Date.now()});l.sort((a,b)=>a.z-b.z);o.kayit[d]=l;o.gun[d]=(o.gun[d]||0)+ml;o.toplam=(o.toplam||0)+ml;
+  const sinir=tarihEkle(bugunStr(),-400),sinir2=tarihEkle(bugunStr(),-120);Object.keys(o.gun).forEach(x=>{if(x<sinir)delete o.gun[x]});Object.keys(o.kayit).forEach(x=>{if(x<sinir2)delete o.kayit[x]});
+  const {yeni}=suMadalyaGuncelle(o);SU.yaz(o);
+  if(d===bugunStr())suAkit=ml;hatirZamanla();ciz();if(d!==bugunStr())return;
   const simdi=once+ml;
   setTimeout(()=>{if(once<o.hedef&&simdi>=o.hedef)suKutla("🎯","Günün hedefi tamam!",litre(simdi)+" içtin. Harika gidiyorsun!");
     yeni.forEach(([,i,ad,ac],j)=>setTimeout(()=>suKutla(i,"Yeni madalya: "+ad,ac),(j+(once<o.hedef&&simdi>=o.hedef?1:0))*2600))},900)}
-function suGeriAl(){const o=SU.v,b=suBugun(o);const x=b.l.pop();if(!x)return;o.bugun=b;o.gun[b.d]=Math.max(0,(o.gun[b.d]||0)-x.ml);o.toplam=Math.max(0,(o.toplam||0)-x.ml);SU.yaz(o);ciz()}
-let suAkit=0;
+/* Kayıt silme, geri alma, günü sıfırlama */
+function suKayitSil(d,i){const o=SU.v,l=o.kayit[d]||[],x=l.splice(i,1)[0];if(!x)return;o.kayit[d]=l;o.gun[d]=Math.max(0,(o.gun[d]||0)-x.ml);if(!o.gun[d])delete o.gun[d];o.toplam=Math.max(0,(o.toplam||0)-x.ml);const {giden}=suMadalyaGuncelle(o);SU.yaz(o);hizliBilgi="↶ "+x.ml+" ml silindi"+(giden.length?" · "+giden.map(m=>m[1]+" "+m[2]).join(", ")+" madalyası geri alındı":"");ciz()}
+function suGeriAl(){const l=suBugun().l;if(l.length)suKayitSil(bugunStr(),l.length-1)}
+async function suGunSifirla(d){const o=SU.v,top=o.gun[d]||0;if(!top&&!(o.kayit[d]||[]).length)return;
+  if(!await onay((d===bugunStr()?"Bugünün":gunUzun(d)+" gününün")+" tüm su kayıtları ("+litre(top)+") silinsin mi?"))return;
+  const x=SU.v;x.toplam=Math.max(0,(x.toplam||0)-(x.gun[d]||0));delete x.gun[d];delete x.kayit[d];const {giden}=suMadalyaGuncelle(x);SU.yaz(x);hizliBilgi="Gün sıfırlandı"+(giden.length?" · "+giden.length+" madalya geri alındı":"");ciz()}
+/* Bir günün kayıtları: tek tek sil, unutulanı ekle, sıfırla */
+function suGunAc(d){modal("💧 "+(d===bugunStr()?"Bugün":gunUzun(d)),m=>{const ciz2=()=>{m.textContent="";const o=SU.v,l=o.kayit[d]||[],top=o.gun[d]||0;
+    m.append(el("p","suozet2",litre(top)+" / "+litre(o.hedef)+(top>=o.hedef?" ✓ hedef tamam":"")));
+    if(!l.length)m.append(el("p","note",top?"Bu günün ayrıntısı yok, yalnız toplamı var.":"Kayıt yok."));
+    const g=el("div","grp");l.forEach((x,i)=>{const r=el("div","chk");r.append(el("span","lbl",saatOf(x.z)+"  ·  💧 "+x.ml+" ml"));const s=btn("×","del",()=>{suKayitSil(d,i);ciz2()});s.setAttribute("aria-label","Sil");r.append(s);g.append(r)});m.append(g);
+    const f=el("form","add");const mi=secim([["200","200 ml"],["250","250 ml"],["330","330 ml"],["500","500 ml"],["750","750 ml"],["1000","1 L"]],"250");const sa=el("input");sa.type="time";
+    const t=d===bugunStr()?new Date():new Date(d+"T12:00:00");sa.value=pad(t.getHours())+":"+pad(t.getMinutes());const eb=btn("Ekle");eb.type="submit";f.append(mi,sa,eb);
+    f.onsubmit=e=>{e.preventDefault();const z=new Date(d+"T"+(sa.value||"12:00")+":00").getTime();suEkle(Number(mi.value),d,z);ciz2()};
+    m.append(el("p","note","Unuttuğun bir içmeyi ekle:"),f);
+    if(l.length||top)m.append(btn("🗑 Bu günü sıfırla","mbtn tehlike",async ()=>{await suGunSifirla(d);ciz2()}))};ciz2()})}
+
+/* ===== Haftalık ve aylık rapor: dönem bitince unvan ve madalya ===== */
+const haftaBas=d=>{const x=new Date(d+"T12:00:00"),g=(x.getDay()+6)%7;return tarihEkle(d,-g)};
+const HAFTA_UNVAN=[[7,"🐋","Haftanın Balinası","🥇"],[5,"🐬","Yunus","🥈"],[3,"🐟","Çevik Balık","🥉"],[1,"🌱","Filiz",""],[0,"🌵","Kaktüs",""]];
+const AY_UNVAN=[[.9,"🌊","Okyanus Lordu","🏆"],[.7,"💎","Su Elçisi","🥇"],[.5,"💧","Damla Avcısı","🥈"],[.25,"🌱","Yeşeren","🥉"],[0,"🏜️","Çöl Gezgini",""]];
+function suDonem(o,bas,son,tur){const gunler=[];for(let d=bas;d<=son;d=tarihEkle(d,1))gunler.push(d);
+  const v=gunler.map(d=>o.gun[d]||0),top=v.reduce((a,b)=>a+b,0),hd=v.filter(x=>x>=o.hedef).length,eb=Math.max(...v);
+  const u=tur==="h"?HAFTA_UNVAN.find(([n])=>hd>=n):AY_UNVAN.find(([r])=>hd/gunler.length>=r);
+  return {tur,bas,son,gunler,v,top,ort:Math.round(top/gunler.length),hd,n:gunler.length,enIyi:eb?gunler[v.indexOf(eb)]:null,eb,ikon:u[1],unvan:u[2],madalya:u[3],key:tur+":"+bas}}
+function suRaporlar(o){o=o||SU.v;const gunler=Object.keys(o.gun).filter(d=>o.gun[d]>0).sort();if(!gunler.length)return [];const ilk=gunler[0],r=[],bugun=bugunStr();
+  for(let b=haftaBas(ilk);tarihEkle(b,6)<bugun;b=tarihEkle(b,7)){const x=suDonem(o,b,tarihEkle(b,6),"h");if(x.top)r.push(x)}
+  let a=ilk.slice(0,7)+"-01";while(true){const son=tarihEkle(ayEkle(a,1),-1);if(son>=bugun)break;const x=suDonem(o,a,son,"a");if(x.top)r.push(x);a=ayEkle(a,1)}
+  return r.sort((p,q)=>q.son.localeCompare(p.son)||(p.tur==="a"?-1:1))}
+const donemAd=r=>r.tur==="h"?tarihKisa(r.bas)+" – "+tarihKisa(r.son)+" haftası":new Date(r.bas+"T12:00:00").toLocaleDateString("tr-TR",{month:"long",year:"numeric"});
+function suUnvan(o){const r=suRaporlar(o).find(x=>x.tur==="h");return r?r.ikon+" "+r.unvan:null}
+function suRaporAc(r){const o=SU.v,tum=suRaporlar(o),onceki=tum.find(x=>x.tur===r.tur&&x.son<r.son);
+  modal(r.tur==="h"?"📊 Haftalık rapor":"📊 Aylık rapor",m=>{
+    const u=el("div","rbas");u.append(el("div","rikon",r.ikon),el("b",null,r.unvan),el("small",null,donemAd(r)));if(r.madalya)u.append(el("span","rmad",r.madalya));m.append(u);
+    const g=el("div","suust");[["🌊",litre(r.top),"toplam"],["📈",litre(r.ort),"günlük ort."],["🎯",r.hd+"/"+r.n,"hedef günü"]].forEach(([i,b,s])=>{const x=el("div","seribox");x.append(el("span","bik",i),el("b",null,b),el("small",null,s));g.append(x)});m.append(g);
+    const bars=el("div","hafta rbar");const parca=r.tur==="h"?r.gunler.map((d,i)=>[GUN_K[new Date(d+"T12:00:00").getDay()],r.v[i],o.hedef]):
+      (()=>{const p=[];for(let i=0;i<r.n;i+=7){const s=r.v.slice(i,i+7);p.push([(i/7+1)+". hf",s.reduce((a,b)=>a+b,0)/s.length,o.hedef])}return p})();
+    parca.forEach(([t,v,hd])=>{const c=el("div","hgun"+(v>=hd?" tamam":""));const bar=el("div","hbar"),dol=el("i");dol.style.height=Math.min(100,v/hd*100)+"%";bar.append(dol);c.append(bar,el("small",null,t));bars.append(c)});
+    bars.style.gridTemplateColumns="repeat("+parca.length+",minmax(0,1fr))";m.append(bars);
+    const not=[];if(r.enIyi)not.push("🏅 En iyi gün: "+gunUzun(r.enIyi)+" · "+litre(r.eb));
+    if(onceki){const f=onceki.ort?Math.round((r.ort-onceki.ort)/onceki.ort*100):0;not.push((f>=0?"📈 Önceki "+(r.tur==="h"?"haftaya":"aya")+" göre %"+f+" daha fazla":"📉 Önceki "+(r.tur==="h"?"haftaya":"aya")+" göre %"+(-f)+" daha az"))}
+    const sonraki=r.tur==="h"?HAFTA_UNVAN.slice().reverse().find(([n])=>n>r.hd):AY_UNVAN.slice().reverse().find(([x])=>x>r.hd/r.n);
+    if(sonraki)not.push("🎯 Sonraki unvan: "+sonraki[1]+" "+sonraki[2]+(r.tur==="h"?" ("+sonraki[0]+" gün hedef)":" (günlerin %"+Math.round(sonraki[0]*100)+"'inde hedef)"));
+    not.forEach(t=>m.append(el("p","note",t)));
+    m.append(btn("Paylaş","mbtn",()=>paylas("💧 "+donemAd(r)+": "+r.ikon+" "+r.unvan+" "+r.madalya+"\n"+litre(r.top)+" su · günde ort. "+litre(r.ort)+" · "+r.hd+"/"+r.n+" gün hedef")))})}
+/* Bitmiş dönemin raporu ilk kez: kutlama + rapor (eski dönemler sessizce görülmüş sayılır) */
+function suRaporKontrol(){const o=SU.v,r=suRaporlar(o);if(!r.length)return;const yeni=r.filter(x=>!o.goruldu[x.key]);/* görüldü kaydı yalnız dönem anahtarı; unvan her zaman güncel veriden hesaplanır */if(!yeni.length)return;
+  const son=["h","a"].map(t=>yeni.find(x=>x.tur===t&&x===r.find(y=>y.tur===t))).filter(Boolean);
+  yeni.forEach(x=>o.goruldu[x.key]=1);SU.yaz(o);
+  son.forEach((x,i)=>setTimeout(()=>{suKutla(x.ikon,(x.tur==="h"?"Hafta bitti: ":"Ay bitti: ")+x.unvan+" "+x.madalya,litre(x.top)+" içtin · "+x.hd+"/"+x.n+" gün hedef");setTimeout(()=>suRaporAc(x),2500)},600+i*5200))}
+let suAkit=0,suTumGecmis=false,suTumRapor=false;
 function suKutla(ikon,baslik,metin){const d=el("div","kutla");const k=el("div","kkutu");k.append(el("div","kikon",ikon),el("b",null,baslik),el("p",null,metin));
   for(let i=0;i<26;i++){const c=el("i","konfeti");c.style.left=Math.random()*100+"%";c.style.background=["#ff9f0a","#34c759","#0a84ff","#ff375f","#ffd60a"][i%5];c.style.animationDelay=(Math.random()*.4)+"s";c.style.transform="rotate("+Math.random()*360+"deg)";k.append(c)}
   d.append(k);d.onclick=()=>d.remove();document.body.append(d);try{navigator.vibrate&&navigator.vibrate([60,40,60])}catch(e){}setTimeout(()=>d.remove(),2400)}
@@ -2314,7 +2383,7 @@ function suPanel(){
   const dg=el("div","subtn");[["🥛",200,"Bardak"],["🥤",330,"Kutu"],["🍶",500,"Şişe"],["💧",o.bardak&&![200,330,500].includes(o.bardak)?o.bardak:250,"Su bardağı"]].forEach(([i,ml,t])=>{
     const b=btn("","subt",()=>{sesAc();suEkle(ml)});b.append(el("span","bik",i),el("b",null,"+"+ml),el("small",null,t));dg.append(b)});ana.append(dg);
   const ac=el("div","acts orta3");ac.append(btn("✏️ Başka miktar","reset",async ()=>{const v=Number(String(await soru("Kaç ml içtin?","300")||"").replace(",","."));if(v>0&&v<=3000)suEkle(Math.round(v))}));
-  if(suBugun(o).l.length)ac.append(btn("↶ Sonuncuyu geri al","reset",suGeriAl));ana.append(ac);
+  if(suBugun(o).l.length)ac.append(btn("↶ Geri al","reset",suGeriAl),btn("📋 Bugün","reset",()=>suGunAc(bugunStr())),btn("🗑 Sıfırla","reset",()=>suGunSifirla(bugunStr())));ana.append(ac);
   /* Seri ve hafta */
   const k=el("div","card");const ust2=el("div","suust");ust2.append(el("div","seribox",""));ust2.firstChild.append(el("span","bik","🔥"),el("b",null,String(seri)),el("small",null,"gün seri"));
   const tb=el("div","seribox");tb.append(el("span","bik","🌊"),el("b",null,litre(o.toplam||0)),el("small",null,"toplam"));ust2.append(tb);
@@ -2322,13 +2391,24 @@ function suPanel(){
   const hf=el("div","hafta");for(let i=6;i>=0;i--){const d=tarihEkle(bugunStr(),-i),v=o.gun[d]||0,c=el("div","hgun"+(v>=h?" tamam":"")+(i===0?" bugun":""));
     const bar=el("div","hbar"),dol=el("i");dol.style.height=Math.min(100,v/h*100)+"%";bar.append(dol);c.append(bar,el("small",null,i===0?"Bugün":GUN_K[new Date(d+"T12:00:00").getDay()]));hf.append(c)}
   k.append(hf);ana.append(k);
+  /* Geçmiş günler */
+  const gc=el("div","card");gc.append(el("h3",null,"📅 Geçmiş"));const gl=[];for(let i=1;i<=(suTumGecmis?60:7);i++)gl.push(tarihEkle(bugunStr(),-i));
+  gl.forEach(d=>{const v=o.gun[d]||0,r=btn("","sgun"+(v>=h?" tamam":""),()=>suGunAc(d));const bar=el("span","sgbar"),dol=el("i");dol.style.width=Math.min(100,v/h*100)+"%";bar.append(dol);
+    r.append(el("span","sgt",d===tarihEkle(bugunStr(),-1)?"Dün":new Date(d+"T12:00:00").toLocaleDateString("tr-TR",{weekday:"short",day:"numeric",month:"short"})),bar,el("b",null,v?litre(v)+(v>=h?" ✓":""):"—"));gc.append(r)});
+  gc.append(btn(suTumGecmis?"Daha az göster":"Son 60 günü göster","reset",()=>{suTumGecmis=!suTumGecmis;ciz()}));ana.append(gc);
+  /* Raporlar */
+  const rp=suRaporlar(o),rc=el("div","card");rc.append(el("h3",null,"📊 Raporlar ve unvanlar"));
+  if(!rp.length)rc.append(el("p","note","Hafta ya da ay bitince burada raporun çıkar: kaç litre içtin, kaç gün hedefi tutturdun, unvanın ve madalyan."));
+  rp.slice(0,suTumRapor?60:6).forEach(r=>{const b=btn("","srapor",()=>suRaporAc(r));b.append(el("span","bik",r.ikon),el("span","htx"),el("span","rmad2",r.madalya||""));
+    b.children[1].append(el("b",null,r.unvan),el("small",null,(r.tur==="h"?"Hafta · ":"Ay · ")+donemAd(r)+" · "+litre(r.top)));rc.append(b)});
+  if(rp.length>6)rc.append(btn(suTumRapor?"Daha az göster":"Tümünü göster","reset",()=>{suTumRapor=!suTumRapor;ciz()}));ana.append(rc);
   /* Madalyalar */
   const md=el("div","card");md.append(el("h3",null,"🏅 Madalyalar"));const g=el("div","madalyalar");
   MADALYA.forEach(([id,i,ad,ac])=>{const var_=!!o.madalya[id];const m=el("div","madalya"+(var_?" var":""));m.append(el("span","mikon",var_?i:"🔒"),el("b",null,ad),el("small",null,var_?tarihKisa(o.madalya[id]):ac));g.append(m)});
   md.append(g);ana.append(md);
   /* Hedef ve hatırlatıcı (hatırlatıcı yalnız burada) */
   const ay=el("div","card");ay.append(el("h3",null,"⏰ Hatırlatıcı ve hedef"));
-  const hs=secim([1500,1750,2000,2250,2500,2750,3000,3500].map(v=>[String(v),litre(v)]),String(h));hs.onchange=()=>{const x=SU.v;x.hedef=Number(hs.value);SU.yaz(x);ciz()};
+  const hs=secim([1500,1750,2000,2250,2500,2750,3000,3500].map(v=>[String(v),litre(v)]),String(h));hs.onchange=()=>{const x=SU.v;x.hedef=Number(hs.value);suMadalyaGuncelle(x);SU.yaz(x);ciz()};
   const sx=ARALIK.items.su;
   const i2=el("div","iki");i2.append(alanEt("🎯 Günlük hedef",hs));
   const rs=secim([["0","Kapalı"],["30","30 dk'da bir"],["45","45 dk'da bir"],["60","Saatte bir"],["90","1,5 saatte bir"],["120","2 saatte bir"]],sx&&sx.acik?String(sx.dk):"0");
@@ -2375,7 +2455,7 @@ function hubOzet(k){
   if(k==="cikis"){const C=cikisDepo(),n=listeTan(C,"ev","").length,f=x=>(x.l||"ev")==="ev";
     return [Object.keys(CIKIS_BOL).map(b=>{const l=kalemler(C,b,f);return (b==="kontrol"?"Kontrol ":"Yanına al ")+l.filter(([,x])=>x.ok).length+"/"+l.length}).join(" · ")+(n>1?" · "+n+" liste":""),false]}
   if(k==="hatir"){const hs=yaklasanlar().find(x=>x.z>Date.now()-864e5&&!x.su);return [hs?zamanYazi(hs.z)+" · "+hs.n.split("\n")[0].slice(0,40):"Not al, alarm kur",!!hs&&hs.z-Date.now()<3600e3]}
-  if(k==="su"){const o=SU.v,ic=suIctim(),s=suSeri(o);return [litre(ic)+" / "+litre(o.hedef)+(ic>=o.hedef?" ✓":"")+(s?" · 🔥 "+s+" gün":"")+(ARALIK.items.su&&ARALIK.items.su.acik?" · ⏰":""),false]}
+  if(k==="su"){const o=SU.v,ic=suIctim(),s=suSeri(o),yr=suRaporlar(o).some(x=>!o.goruldu[x.key]);if(yr)return ["📊 Yeni raporun hazır! · "+litre(ic)+" / "+litre(o.hedef),true];return [litre(ic)+" / "+litre(o.hedef)+(ic>=o.hedef?" ✓":"")+(s?" · 🔥 "+s+" gün":"")+(ARALIK.items.su&&ARALIK.items.su.acik?" · ⏰":""),false]}
   if(k==="fatura"||k==="arac"){const l=takipListe(k).filter(([,x])=>x.son&&!x.bitti);if(!l.length)return [TAKIP[k].alt,false];const [,x]=l[0],d=takipDurum(x);return [x.ad+" · "+d.t,d.s==="gecti"||d.s==="bugun"||(d.f!=null&&d.f<=3)]}
   return ["",false]}
 function hubEkrani(){
@@ -2391,7 +2471,7 @@ function hubEkrani(){
 const EKRANLAR={su:()=>suEkrani(),bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.11";window.SURUM_=SURUM;
+const SURUM="2026-11-12.12";window.SURUM_=SURUM;
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
