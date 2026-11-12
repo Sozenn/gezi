@@ -658,7 +658,7 @@ button{transition:transform .12s ease,filter .12s ease}
 .hkart{padding:13px 14px!important;gap:13px}
 .hik{width:48px;height:48px;border-radius:12px;font-size:26px;box-shadow:0 1px 0 rgba(255,255,255,.45) inset,0 -2px 0 rgba(0,0,0,.12) inset,0 4px 10px rgba(0,0,0,.15)}
 .hik.k-gezi{background:linear-gradient(180deg,#5ac8fa,#007aff)}.hik.k-alis{background:linear-gradient(180deg,#5ee27a,#28b446)}.hik.k-bebek{background:linear-gradient(180deg,#ff8db4,#ff4f8b)}
-.hik.k-cikis{background:linear-gradient(180deg,#ffb247,#f27412)}.hik.k-hatir{background:linear-gradient(180deg,#ff7a6e,#ff3b30)}.hik.k-fatura{background:linear-gradient(180deg,#a99cff,#5856d6)}.hik.k-arac{background:linear-gradient(180deg,#6fdde0,#1fa6b0)}
+.hik.k-cikis{background:linear-gradient(180deg,#ffb247,#f27412)}.hik.k-hatir{background:linear-gradient(180deg,#ff7a6e,#ff3b30)}.hik.k-fatura{background:linear-gradient(180deg,#a99cff,#5856d6)}.hik.k-su{background:linear-gradient(180deg,#7fd3ff,#1e8fff)}.hik.k-arac{background:linear-gradient(180deg,#6fdde0,#1fa6b0)}
 .htx b{font-family:var(--display);font-size:17px;font-weight:600}.htx small{font-size:13.5px}
 .hok{font-size:22px;color:rgba(142,142,147,.7)}
 .hkart.vurgu{box-shadow:0 0 0 2px var(--accent),var(--golge)!important}
@@ -1775,8 +1775,8 @@ async function ekleAc(){
    uyg: null = ana menü; diğerleri BOLUMLER anahtarları. Menü sırası/gizlenenler bu telefonda (g2:menu).
    Ortak (grupla eşitlenen) belgeler: "bebek", "bakim", "cikis", "alisveris", "fatura", "arac".
    Yalnız bu telefonda: "hatir" (elle kurulan hatırlatmalar), "sustur" (çalmış otomatik alarmlar), alarm ayarları. */
-const BOLUMLER={gezi:["🧭","Gezinti"],alis:["🛒","Alışveriş listesi"],bebek:["🍼","Bebek"],cikis:["🚪","Evden çıkarken"],hatir:["⏰","Hatırlatma ve su"],fatura:["🧾","Faturalar"],arac:["🚗","Araç takibi"]};
-function menuAyar(){const m=LS.get("menu")||{},tum=Object.keys(BOLUMLER);const sira=(m.sira||[]).filter(k=>tum.includes(k));tum.forEach(k=>{if(!sira.includes(k))sira.push(k)});
+const BOLUMLER={gezi:["🧭","Gezinti"],alis:["🛒","Alışveriş listesi"],bebek:["🍼","Bebek"],cikis:["🚪","Evden çıkarken"],hatir:["⏰","Hatırlatmalar"],su:["💧","Su takibi"],fatura:["🧾","Faturalar"],arac:["🚗","Araç takibi"]};
+function menuAyar(){const m=LS.get("menu")||{},tum=Object.keys(BOLUMLER);const sira=(m.sira||[]).filter(k=>tum.includes(k));tum.forEach((k,i)=>{if(sira.includes(k))return;const once=tum.slice(0,i).reverse().find(x=>sira.includes(x));sira.splice(once?sira.indexOf(once)+1:0,0,k)});
   return {sira,gizli:(m.gizli||[]).filter(k=>tum.includes(k))}}
 function uygAc(k){uyg=k;LS.set("uyg",k);window.scrollTo(0,0);ciz()}
 function anaMenu(){uyg=null;LS.set("uyg",null);window.scrollTo(0,0);ciz()}
@@ -2104,11 +2104,8 @@ function yaklasanlar(){const s=susturulmus();const a=hatirListe().filter(([,x])=
 const hatirSiradaki=()=>yaklasanlar().find(x=>x.z>Date.now()-864e5);
 function zamanYazi(z){const d=new Date(z),g=tarihStr(d),b=bugunStr(),s=pad(d.getHours())+":"+pad(d.getMinutes());
   return (g===b?"Bugün":g===tarihEkle(b,1)?"Yarın":g===tarihEkle(b,-1)?"Dün":d.toLocaleDateString("tr-TR",{weekday:"short",day:"numeric",month:"long"})+(d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""))+" "+s}
-let hatirSekme=LS.get("hatirSekme")||"liste";
 function hatirEkrani(){
-  ustBar("Hatırlatmalar","⏰",hatirSekme==="su"?"Su iç, şişeleri doldur, madalya topla":"Not al, saatini kur, zamanı gelince çalsın",hatirMenu);
-  const seg=el("div","seg");[["liste","⏰ Hatırlatmalar"],["su","💧 Su takibi"]].forEach(([k,t])=>{const b=btn(t,null,()=>{hatirSekme=k;LS.set("hatirSekme",k);window.scrollTo(0,0);ciz()});b.setAttribute("aria-selected",hatirSekme===k);seg.append(b)});ana.append(seg);
-  if(hatirSekme==="su")return suPanel();
+  ustBar("Hatırlatmalar","⏰","Not al, saatini kur, zamanı gelince çalsın",hatirMenu);
   const ab=el("div","iki");ab.append(btn("+ Tek seferlik","yeni-gezi",()=>hatirFormu()),btn("🔁 Gün içi tekrar","yeni-gezi ikincil",()=>aralikFormu()));ana.append(ab);
   const bil=el("div","card bilgi");bil.append(el("p",null,"🔔 Alarm, uygulama açıkken sesle çalar. Telefon kilitliyken ya da uygulama kapalıyken de uyarması için hatırlatmada 📅 Takvime ekle'ye bas."));
   if("Notification" in window&&Notification.permission==="default")bil.append(btn("Bildirimlere izin ver","reset",()=>bildirimIzni().then(ciz)));
@@ -2116,8 +2113,11 @@ function hatirEkrani(){
   const l=hatirListe(),gel=l.filter(([,x])=>!x.caldi).sort((a,b)=>a[1].z-b[1].z),gec=l.filter(([,x])=>x.caldi).sort((a,b)=>b[1].z-a[1].z);
   if(!l.length&&!Object.keys(ARALIK.items).length)ana.append(el("p","bos","Henüz hatırlatma yok. Yukarıdan ekle; su ya da atıştırmalık için \"Gün içi tekrar\"ı seç."));
   if(gel.length){ana.append(el("h4","bolum","Yaklaşan"));gel.forEach(([id,x])=>ana.append(hatirKarti(id,x)))}
-  const ar=Object.entries(ARALIK.items).filter(([,x])=>x&&x.n);
+  const ar=Object.entries(ARALIK.items).filter(([,x])=>x&&x.n&&!x.su),sx=ARALIK.items.su;
   if(ar.length){ana.append(el("h4","bolum","Gün içi tekrarlayan"));ar.forEach(([id,x])=>ana.append(aralikKarti(id,x)))}
+  /* Su hatırlatıcısı Su takibi bölümünde yönetilir; burada yalnız kısayol */
+  const sk=btn("","hkart",()=>uygAc("su"));sk.append(el("span","hik k-su","💧"));const st=el("span","htx");
+  st.append(el("b",null,"Su hatırlatıcısı"),el("small",null,sx&&sx.acik?"🔁 "+(sx.dk>=60?(sx.dk/60).toLocaleString("tr-TR")+" saatte bir":sx.dk+" dk'da bir")+" · "+sx.bas+"–"+sx.son+" · Su takibinde":"Kapalı · Su takibi bölümünden aç"));sk.append(st,el("span","hok","›"));ana.append(sk);
   const s=susturulmus(),oto=sanalAlarmlar().filter(x=>!x.ara&&!s[x.key]&&x.z>Date.now()-864e5&&x.z<Date.now()+14*864e5).sort((a,b)=>a.z-b.z).slice(0,12);
   const ok=el("div","card");ok.append(el("h3",null,"🤖 Otomatik hatırlatmalar"));
   oto.forEach(x=>{const r=el("div","oto");r.append(el("b",null,zamanYazi(x.z)),el("span",null,x.n),el("small","note",x.kay));ok.append(r)});
@@ -2224,7 +2224,7 @@ addEventListener("storage",e=>{if(e.key==="g2:hatir"){hatirZamanla();ciz()}});
 const ARALIK={get items(){const o=LS.get("aralik");return o&&typeof o==="object"?o:{}},
   koy(k,v){const o=this.items;o[k]=Object.assign(o[k]||{},v);LS.set("aralik",o);hatirZamanla();ciz()},
   sil(k){const o=this.items;delete o[k];LS.set("aralik",o);hatirZamanla();ciz()}};
-const ARALIK_SAB=[["💧 Su iç",60,true],["🍎 Atıştırmalık ye",180],["🚶 Kalk, biraz yürü",60],["👀 Gözlerini dinlendir",45],["🧘 Esne, nefes al",120]];
+const ARALIK_SAB=[["🍎 Atıştırmalık ye",180],["🚶 Kalk, biraz yürü",60],["👀 Gözlerini dinlendir",45],["🧘 Esne, nefes al",120]];
 const GUN_K=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
 /* Bir aralıklı hatırlatıcının bugün ve yarınki çalma zamanları */
 function aralikSaatleri(x){const o=[],bas=dk(x.bas||"09:00"),son=dk(x.son||"22:00"),adim=Math.max(10,Number(x.dk)||60);
@@ -2238,7 +2238,8 @@ function aralikSanal(ekle){Object.entries(ARALIK.items).forEach(([id,x])=>{if(!x
     ekle("ara:"+id+":"+tarihStr(new Date(z))+":"+saatOf(z),x.n,z,x.su?"Su hatırlatıcı":"Gün içi hatırlatıcı",{ara:true,su:!!x.su})})})}
 function aralikFormu(id,on){const x=id?ARALIK.items[id]:Object.assign({bas:"09:00",son:"22:00",dk:60,gun:[0,1,2,3,4,5,6],acik:true},on||{});
   modal(id?"Hatırlatıcıyı düzenle":"Gün içi hatırlatıcı",m=>{const f=el("form","mform2");
-    if(!id&&!on){const r=el("div","sikal");ARALIK_SAB.forEach(([t,d,su])=>r.append(btn(t,"cip",()=>{n.value=t;sk.value=String(d);suMu=!!su})));f.append(el("p","note","Hazır seç ya da kendin yaz:"),r)}
+    if(!id&&!on){const r=el("div","sikal");ARALIK_SAB.forEach(([t,d])=>r.append(btn(t,"cip",()=>{n.value=t;sk.value=String(d)})));
+      r.append(btn("💧 Su iç → Su takibi","cip",()=>{modalKapat();uygAc("su")}));f.append(el("p","note","Hazır seç ya da kendin yaz:"),r)}
     let suMu=!!x.su;
     const n=el("input");n.required=true;n.maxLength=60;n.placeholder="örn. 💧 Su iç";n.value=x.n||"";
     const b=el("input");b.type="time";b.value=x.bas;const s=el("input");s.type="time";s.value=x.son;
@@ -2250,8 +2251,10 @@ function aralikFormu(id,on){const x=id?ARALIK.items[id]:Object.assign({bas:"09:0
     if(id)f.append(btn("🗑 Sil","mbtn tehlike",async ()=>{if(!await onay("Bu hatırlatıcı silinsin mi?"))return;modalKapat();ARALIK.sil(id)}));
     m.append(f);
     f.onsubmit=e=>{e.preventDefault();const v=n.value.trim();if(!v||!gs.size)return;if(dk(s.value)<dk(b.value))return uyar("Bitiş saati başlangıçtan sonra olmalı.");
-      sesAc();bildirimIzni();modalKapat();if(!id&&/su iç/i.test(v))suMu=true;
+      if(!x.su&&/(^|\s)su iç/i.test(v)){modalKapat();uygAc("su");hizliBilgi="💧 Su hatırlatıcısı Su takibi bölümünde";return}
+      sesAc();bildirimIzni();modalKapat();
       ARALIK.koy(id||(suMu&&!ARALIK.items.su?"su":"a"+yeniId()),{n:v.slice(0,60),bas:b.value,son:s.value,dk:Number(sk.value),gun:[...gs],acik:true,su:suMu});hizliBilgi="🔁 Kuruldu"}})}
+function suEkrani(){const o=SU.v;ustBar("Su takibi","💧","Kişisel · şişeleri doldur, seriyi koru"+(suSeri(o)?" · 🔥 "+suSeri(o)+" gün":""),null);suPanel()}
 function aralikKarti(id,x){const k=el("div","card hkart2");const u=el("div","hzaman");u.append(el("b",null,x.n));
   const sw=el("input");sw.type="checkbox";sw.className="anahtar";sw.checked=!!x.acik;sw.onchange=()=>{ARALIK.koy(id,{acik:sw.checked});if(sw.checked){sesAc();bildirimIzni()}};u.append(sw);k.append(u);
   const gun=(x.gun||[]).length===7?"Her gün":[1,2,3,4,5,6,0].filter(g=>(x.gun||[]).includes(g)).map(g=>GUN_K[g]).join(", ");
@@ -2323,16 +2326,19 @@ function suPanel(){
   const md=el("div","card");md.append(el("h3",null,"🏅 Madalyalar"));const g=el("div","madalyalar");
   MADALYA.forEach(([id,i,ad,ac])=>{const var_=!!o.madalya[id];const m=el("div","madalya"+(var_?" var":""));m.append(el("span","mikon",var_?i:"🔒"),el("b",null,ad),el("small",null,var_?tarihKisa(o.madalya[id]):ac));g.append(m)});
   md.append(g);ana.append(md);
-  /* Hedef ve hatırlatıcı */
-  const ay=el("div","card");ay.append(el("h3",null,"⚙️ Hedef ve hatırlatıcı"));
+  /* Hedef ve hatırlatıcı (hatırlatıcı yalnız burada) */
+  const ay=el("div","card");ay.append(el("h3",null,"⏰ Hatırlatıcı ve hedef"));
   const hs=secim([1500,1750,2000,2250,2500,2750,3000,3500].map(v=>[String(v),litre(v)]),String(h));hs.onchange=()=>{const x=SU.v;x.hedef=Number(hs.value);SU.yaz(x);ciz()};
   const sx=ARALIK.items.su;
   const i2=el("div","iki");i2.append(alanEt("🎯 Günlük hedef",hs));
   const rs=secim([["0","Kapalı"],["30","30 dk'da bir"],["45","45 dk'da bir"],["60","Saatte bir"],["90","1,5 saatte bir"],["120","2 saatte bir"]],sx&&sx.acik?String(sx.dk):"0");
   rs.onchange=()=>{const v=Number(rs.value);if(!v){if(sx)ARALIK.koy("su",{acik:false});return}sesAc();bildirimIzni();ARALIK.koy("su",Object.assign({n:"💧 Su içme zamanı",bas:"09:00",son:"22:00",gun:[0,1,2,3,4,5,6]},ARALIK.items.su||{},{dk:v,acik:true,su:true}))};
   i2.append(alanEt("⏰ Hatırlat",rs));ay.append(i2);
-  if(sx&&sx.acik){ay.append(el("p","note","Hatırlatma "+sx.bas+"–"+sx.son+" arası. Yakın zamanda içtiysen o seferki atlanır. Alarmda \"İçtim\" deyince otomatik kaydedilir."));
-    ay.append(btn("Saat aralığını değiştir","reset",()=>aralikFormu("su")))}
+  if(sx&&sx.acik){const i3=el("div","iki"),tb=el("input"),ts=el("input");tb.type="time";ts.type="time";tb.value=sx.bas;ts.value=sx.son;
+    tb.onchange=()=>{if(tb.value&&dk(tb.value)<dk(ts.value))ARALIK.koy("su",{bas:tb.value})};ts.onchange=()=>{if(ts.value&&dk(ts.value)>dk(tb.value))ARALIK.koy("su",{son:ts.value})};
+    i3.append(alanEt("Başlangıç",tb),alanEt("Bitiş",ts));ay.append(i3);
+    const sira=aralikSaatleri(sx).find(z=>z>Date.now()&&!(susturulmus()["ara:su:"+tarihStr(new Date(z))+":"+saatOf(z)]));
+    ay.append(el("p","note",(sira?"Sıradaki: "+zamanYazi(sira)+". ":"")+"Yakın zamanda içtiysen o seferki atlanır. Alarmda \"İçtim\" deyince otomatik kaydedilir."))}
   ay.append(el("p","note","Su takibi kişiseldir, yalnız bu telefonda tutulur; grupla paylaşılmaz."));
   ana.append(ay)}
 
@@ -2368,7 +2374,8 @@ function hubOzet(k){
     return [ay==null?"Yaşı gir, hazır çanta listesi gelsin":yasYazi(ay)+(sm?" · son mama "+sure(Date.now()-sm[1].z)+" önce":" · çanta ve bakım kaydı"),false]}
   if(k==="cikis"){const C=cikisDepo(),n=listeTan(C,"ev","").length,f=x=>(x.l||"ev")==="ev";
     return [Object.keys(CIKIS_BOL).map(b=>{const l=kalemler(C,b,f);return (b==="kontrol"?"Kontrol ":"Yanına al ")+l.filter(([,x])=>x.ok).length+"/"+l.length}).join(" · ")+(n>1?" · "+n+" liste":""),false]}
-  if(k==="hatir"){const hs=hatirSiradaki(),su=suIctim(),sh=SU.v.hedef;return ["💧 "+litre(su)+"/"+litre(sh)+(hs?" · "+zamanYazi(hs.z)+" "+hs.n.split("\n")[0].slice(0,28):""),!!hs&&hs.z-Date.now()<3600e3]}
+  if(k==="hatir"){const hs=yaklasanlar().find(x=>x.z>Date.now()-864e5&&!x.su);return [hs?zamanYazi(hs.z)+" · "+hs.n.split("\n")[0].slice(0,40):"Not al, alarm kur",!!hs&&hs.z-Date.now()<3600e3]}
+  if(k==="su"){const o=SU.v,ic=suIctim(),s=suSeri(o);return [litre(ic)+" / "+litre(o.hedef)+(ic>=o.hedef?" ✓":"")+(s?" · 🔥 "+s+" gün":"")+(ARALIK.items.su&&ARALIK.items.su.acik?" · ⏰":""),false]}
   if(k==="fatura"||k==="arac"){const l=takipListe(k).filter(([,x])=>x.son&&!x.bitti);if(!l.length)return [TAKIP[k].alt,false];const [,x]=l[0],d=takipDurum(x);return [x.ad+" · "+d.t,d.s==="gecti"||d.s==="bugun"||(d.f!=null&&d.f<=3)]}
   return ["",false]}
 function hubEkrani(){
@@ -2381,10 +2388,10 @@ function hubEkrani(){
   const gk=el("div","grup-kart");ana.append(gk);if(window.grupCiz)grupCiz();
   ana.append(btn("⚙️ Menüyü düzenle · Yedek","reset orta2",ayarlarAc));
 }
-const EKRANLAR={bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
+const EKRANLAR={su:()=>suEkrani(),bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.10";window.SURUM_=SURUM;
+const SURUM="2026-11-12.11";window.SURUM_=SURUM;
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -2397,6 +2404,7 @@ LS.del("hava");
 if(!gezi()){aktif=null;const l=Object.entries(GEZI.items).filter(([,g])=>g&&g.bas);const s=l.find(([,g])=>durum(g)==="suruyor")||l.find(([,g])=>durum(g)==="yaklasan"&&gunFark(bugunStr(),g.bas)<=1);if(s){aktif=s[0];LS.set("aktif",aktif);uyg="gezi";LS.set("uyg","gezi")}}
 bugunModu();
 goster();
+(()=>{const o=LS.get("aralik")||{};let d=false;Object.entries(o).forEach(([k,x])=>{if(k!=="su"&&x&&(x.su||/(^|\s)su iç/i.test(x.n||""))){if(!o.su)o.su=Object.assign({},x,{su:true});delete o[k];d=true}});if(d)LS.set("aralik",o);LS.del("hatirSekme")})();
 hatirZamanla();setTimeout(hatirKontrol,1500);
 /* Çevrimdışı çalışma: sayfa ve simgeler telefona kaydedilir, internet yokken de açılır (sw.js) */
 if("serviceWorker" in navigator&&(location.protocol==="https:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname)))
