@@ -2269,12 +2269,24 @@ function aralikFormu(id,on){const x=id?ARALIK.items[id]:Object.assign({bas:"09:0
       sesAc();bildirimIzni();modalKapat();
       ARALIK.koy(id||(suMu&&!ARALIK.items.su?"su":"a"+yeniId()),{n:v.slice(0,60),bas:b.value,son:s.value,dk:Number(sk.value),gun:[...gs],acik:true,su:suMu});hizliBilgi="🔁 Kuruldu"}})}
 function suEkrani(){const o=SU.v;{const r=suMadalyaGuncelle(o);if(r.yeni.length||r.giden.length)SU.yaz(o)}const u=suUnvan(o);ustBar("Su takibi","💧",(u?"Unvanın: "+u:"Kişisel · şişeleri doldur, seriyi koru")+(suSeri(o)?" · 🔥 "+suSeri(o)+" gün":""),null);suPanel();setTimeout(suRaporKontrol,400)}
+/* Gün içi hatırlatıcıyı telefon takvimine ekle: her saat için ayrı, her gün (ya da seçili günler) tekrarlayan etkinlik.
+   Takvimin kendi uyarısı uygulama kapalıyken de çalar. */
+function aralikTakvim(x){const f=d=>new Date(d).toISOString().replace(/[-:]/g,"").replace(/\.\d+/,""),esc=s=>String(s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,");
+  const BY=["SU","MO","TU","WE","TH","FR","SA"],gun=x.gun&&x.gun.length&&x.gun.length<7?"FREQ=WEEKLY;BYDAY="+x.gun.map(g=>BY[g]).join(","):"FREQ=DAILY";
+  const bas=dk(x.bas||"09:00"),son=dk(x.son||"22:00"),adim=Math.max(10,Number(x.dk)||60),ev=[];let i=0;
+  for(let m=bas;m<=son;m+=adim){const z=new Date();z.setHours(Math.floor(m/60),m%60,0,0);if(z<Date.now())z.setDate(z.getDate()+1);
+    ev.push("BEGIN:VEVENT","UID:ara-"+(i++)+"-"+m+"-"+Date.now()+"@gezinti","DTSTAMP:"+f(Date.now()),"DTSTART:"+f(z),"DTEND:"+f(z.getTime()+5*60e3),"RRULE:"+gun,"SUMMARY:"+esc(x.n),"TRANSP:TRANSPARENT",
+      "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+esc(x.n),"TRIGGER:PT0M","END:VALARM","END:VEVENT")}
+  const txt=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Gezinti//Aralik//TR","CALSCALE:GREGORIAN"].concat(ev,["END:VCALENDAR"]).join("\r\n");
+  modal("📅 Takvime ekle",m=>{m.append(el("p","note",i+" ayrı tekrarlayan etkinlik olarak eklenir ("+x.bas+"–"+x.son+"). Telefonun takvimi her birinde uyarı verir; uygulama kapalı olsa da çalışır."),
+    el("p","note","Not: takvim \"az önce içtiysen atla\" yapamaz ve İçtim kaydetmez; kapatmak için takvimden silmen gerekir."),
+    btn("📱 Telefonun takvimine ekle","mbtn",()=>{dosyaVer(new Blob([txt],{type:"text/calendar;charset=utf-8"}),"hatirlatici.ics",false);modalKapat()}))})}
 function aralikKarti(id,x){const k=el("div","card hkart2");const u=el("div","hzaman");u.append(el("b",null,x.n));
   const sw=el("input");sw.type="checkbox";sw.className="anahtar";sw.checked=!!x.acik;sw.onchange=()=>{ARALIK.koy(id,{acik:sw.checked});if(sw.checked){sesAc();bildirimIzni()}};u.append(sw);k.append(u);
   const gun=(x.gun||[]).length===7?"Her gün":[1,2,3,4,5,6,0].filter(g=>(x.gun||[]).includes(g)).map(g=>GUN_K[g]).join(", ");
   const sira=x.acik?aralikSaatleri(x).find(z=>z>Date.now()):null;
   k.append(el("p","note","🔁 "+(x.dk>=60?(x.dk/60).toLocaleString("tr-TR")+" saatte bir":x.dk+" dakikada bir")+" · "+x.bas+"–"+x.son+" · "+gun+(sira?" · sıradaki "+zamanYazi(sira):"")));
-  const a=el("div","acts");a.append(btn("✎ Düzenle","reset",()=>aralikFormu(id)));k.append(a);return k}
+  const a=el("div","acts");a.append(btn("✎ Düzenle","reset",()=>aralikFormu(id)),btn("📅 Takvime ekle","reset",()=>aralikTakvim(x)));k.append(a);return k}
 
 /* ================= Su takibi (kişisel, bu telefonda): musluk, şişeler, seri, madalyalar ================= */
 /* g2:su → {hedef: ml, bardak: ml, gun:{"YYYY-AA-GG": ml}, bugun:{d, l:[{ml,z}]}, toplam: ml, madalya:{id: tarih}} */
@@ -2418,7 +2430,8 @@ function suPanel(){
     tb.onchange=()=>{if(tb.value&&dk(tb.value)<dk(ts.value))ARALIK.koy("su",{bas:tb.value})};ts.onchange=()=>{if(ts.value&&dk(ts.value)>dk(tb.value))ARALIK.koy("su",{son:ts.value})};
     i3.append(alanEt("Başlangıç",tb),alanEt("Bitiş",ts));ay.append(i3);
     const sira=aralikSaatleri(sx).find(z=>z>Date.now()&&!(susturulmus()["ara:su:"+tarihStr(new Date(z))+":"+saatOf(z)]));
-    ay.append(el("p","note",(sira?"Sıradaki: "+zamanYazi(sira)+". ":"")+"Yakın zamanda içtiysen o seferki atlanır. Alarmda \"İçtim\" deyince otomatik kaydedilir."))}
+    ay.append(el("p","note",(sira?"Sıradaki: "+zamanYazi(sira)+". ":"")+"Yakın zamanda içtiysen o seferki atlanır. Alarmda \"İçtim\" deyince otomatik kaydedilir."));
+    const uy=el("div","card bilgi");uy.append(el("p",null,"🔔 Bu alarm uygulama açıkken çalar (iPhone sessizdeyse ses çıkmaz). Uygulama kapalıyken de uyarsın istersen telefonun takvimine ekle."),btn("📅 Takvime ekle","reset",()=>aralikTakvim(ARALIK.items.su)));ay.append(uy)}
   ay.append(el("p","note","Su takibi kişiseldir, yalnız bu telefonda tutulur; grupla paylaşılmaz."));
   ana.append(ay)}
 
@@ -2471,7 +2484,7 @@ function hubEkrani(){
 const EKRANLAR={su:()=>suEkrani(),bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.12";window.SURUM_=SURUM;
+const SURUM="2026-11-12.13";window.SURUM_=SURUM;
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
