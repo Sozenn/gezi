@@ -427,7 +427,7 @@ main#ana{width:100%;max-width:none;margin:0!important}
 .card .grid{align-items:end}
 /* Örnek gezi bandı */
 .ornekbant{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:var(--r);background:linear-gradient(135deg,#fff3e6,#fde9e4);color:#5a2a12}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ornekbant{background:linear-gradient(135deg,#3a2a1a,#3a1f19);color:#ffd9c4}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ornekbant{background:linear-gradient(135deg,#2b2a3a,#1d2c48);color:#ffd9c4}}
 .ornekbant b{font-size:16px}.ornekbant small{font-size:13px;line-height:1.45;opacity:.9}
 .obtn{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .obtn button{font:600 13.5px var(--body);padding:9px 14px;border-radius:10px;border:0;background:rgba(255,255,255,.7);color:inherit;cursor:pointer}
@@ -480,12 +480,14 @@ li.stop .tinp{align-self:start}
    Renk teorisi: turuncu (ana) + karşıt (tamamlayıcı) renk lacivert-mavi + komşu sıcak tonlar (kehribar, krem).
    --ink: yanık turuncu (düğmeler, seçili sekme; beyaz yazı okunur) · --accent: canlı turuncu (öne çıkanlar)
    --navy / --mavi: tamamlayıcı renk (sıradaki durak kartı, yazı) · --sun: kehribar · --ok: yeşil (tamamlandı) */
-:root{--bg:#fbf6f0;--surface:#ffffff;--fg:#1c2a3a;--muted:#6f6760;--line:#f0e5d8;
-  --ink:#c2540a;--ink-soft:#fdeadb;--accent:#f47a20;--accent-soft:#ffecdc;--ok:#2e9a6b;--sun:#f6b43c;
+:root{--bg:#fffaf5;--surface:#ffffff;--fg:#1c2a3a;--muted:#667085;--line:#f2e8de;
+  --ink:#d9600f;--ink-soft:#ffeedf;--accent:#ff7a1a;--accent-soft:#fff0e3;--ok:#22a06b;--sun:#ffbe3d;
   --navy:#1d3a5c;--mavi:#2c6a9e;
-  --golge:0 1px 2px rgba(120,60,10,.05),0 6px 20px rgba(120,60,10,.08)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14100d;--surface:#211a15;--fg:#f4ece4;--muted:#ab9e92;--line:#35291f;
-  --ink:#ff9a4d;--ink-soft:#3a2414;--accent:#ff8a3d;--accent-soft:#3d2414;--ok:#5fd394;--sun:#f7c35a;--navy:#16304d;--mavi:#1f5582}}
+  --golge:0 1px 2px rgba(255,122,26,.06),0 6px 20px rgba(29,58,92,.07)}
+/* Karanlık mod: kahverengi değil, lacivert zemin (turuncunun tamamlayıcısı) */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1626;--surface:#172238;--fg:#f1f5fb;--muted:#9fb0c6;--line:#25334d;
+  --ink:#ff8f3a;--ink-soft:#24365a;--accent:#ff9a4a;--accent-soft:#3b2c35;--ok:#4fd69a;--sun:#ffc94d;--navy:#1d4a7a;--mavi:#2f6fae;
+  --golge:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28)}}
 .lgi{filter:saturate(1.2)}
 .yeni-gezi{background:linear-gradient(135deg,#f26a1b,#f99a3e);box-shadow:0 8px 20px rgba(242,106,27,.3)}
 .gkart::before{background:linear-gradient(180deg,var(--accent),var(--sun))}
@@ -501,7 +503,7 @@ li.stop .tinp{align-self:start}
 .kbar i{background:linear-gradient(90deg,var(--accent),var(--sun))}
 .prog i{background:linear-gradient(90deg,var(--accent),var(--sun))}
 .card.bilgi{background:#eaf1f8;color:var(--navy)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card.bilgi{background:#172636;color:#d6e4f2}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card.bilgi{background:#1b2d4a;color:#d6e4f2}}
 .vchip{border-color:var(--ok);color:var(--ok)}
 .arac.vurgu{background:var(--ink);color:#fff}
 nav.altnav button[aria-selected="true"]{color:var(--ink)!important}
@@ -521,7 +523,7 @@ li.stop.siradaki .n b{color:var(--accent)}
 .panel>.sirada{margin:2px 0}
 /* Ana ekrana ekle */
 .eklekart{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:linear-gradient(135deg,var(--ink-soft),#fff4e0);box-shadow:var(--golge)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eklekart{background:linear-gradient(135deg,#3a2414,#2e2616)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eklekart{background:linear-gradient(135deg,#2b2a3a,#1d2c48)}}
 .ekmetin{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.ekmetin b{font-size:15px}.ekmetin small{color:var(--muted);font-size:13px;line-height:1.35}
 .eklekart.kisa{margin-top:10px;padding:8px 8px 8px 14px}.eklekart.kisa .ekmetin b{font-size:14px}.eklekart.kisa .ekbtn{padding:8px 14px}
 .ekbtn{flex:none;font:600 14px var(--body);padding:10px 16px;border-radius:12px;border:0;background:var(--ink);color:#fff;cursor:pointer}
@@ -1806,7 +1808,7 @@ function hubEkrani(){
 }
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.2";
+const SURUM="2026-11-12.3";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
