@@ -660,7 +660,8 @@ function depo(id,varsayilan){
 }
 /* Ekranı topluca yeniden çiz (kısa aralıklarla gelen değişiklikleri birleştirir) */
 let cizBekliyor=false;
-function ciz(){if(cizBekliyor)return;cizBekliyor=true;requestAnimationFrame(()=>{cizBekliyor=false;goster()})}
+/* rAF bazı durumlarda (arka plandan dönüş) hiç çalışmayabiliyor; zamanlayıcı yedeği var */
+function ciz(){if(cizBekliyor)return;cizBekliyor=true;let ok=0;const f=()=>{if(ok)return;ok=1;cizBekliyor=false;goster()};requestAnimationFrame(f);setTimeout(f,150)}
 
 const GEZI=depo("geziler");
 let aktif=LS.get("aktif");
@@ -1154,10 +1155,14 @@ setInterval(()=>{if(gezi()&&!modalAcik())ciz()},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)ciz()});
 
 /* Yazarken ekran yenilenmesin: uzaktan gelen değişiklik ve dakikalık yenileme, yazma bitince uygulanır */
+let nazikZaman=null;
 function cizNazik(){
   const a=document.activeElement;
-  if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&(ana.contains(a)||modalEl.contains(a))){
+  /* Yalnız kullanıcı gerçekten bir şey yazıyorsa bekle (boş "ekle" kutusunda odak varken uzaktan gelen değişiklik bekletilmez) */
+  const yaziyor=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(checkbox|radio)$/i.test(a.type)&&(modalEl.contains(a)||(ana.contains(a)&&a.value));
+  if(yaziyor){
     if(!a.dataset.bekle){a.dataset.bekle="1";a.addEventListener("blur",()=>{delete a.dataset.bekle;setTimeout(cizNazik,50)},{once:true})}
+    clearTimeout(nazikZaman);nazikZaman=setTimeout(()=>{if(!modalAcik())ciz()},10000);
     return}
   ciz()}
 
@@ -1629,7 +1634,7 @@ function ilerlemeBas(k,baslik,ls,bitti){const ok=ls.filter(([,x])=>x.ok).length,
   const pr=el("div","prog"),pi=el("i");pi.style.width=yz+"%";pr.append(pi);k.append(pr);
   k.append(el("p","note",!ls.length?"Liste boş. Aşağıdan madde ekle.":(ok===ls.length?(bitti||"Hepsi tamam ✓"):ok+"/"+ls.length+" tamam")));esSatir(k)}
 /* Grup eşitleme durumu: son eşitleme saati ve elle yenileme */
-function esSatir(k){if(!SYNC.kod)return;const r=el("div","essat");r.append(el("small",null,SYNC.son?"👥 Grupla ortak · eşitlendi "+saatOf(SYNC.son):"👥 Gruba bağlanıyor…"));
+function esSatir(k){if(!SYNC.kod)return;const r=el("div","essat");r.append(el("small",null,SYNC.durum==="hata"&&!(SYNC.son&&Date.now()-SYNC.son<30000)?"⚠️ Gruba bağlanamadı":SYNC.son?"👥 Grupla ortak · eşitlendi "+saatOf(SYNC.son):"👥 Gruba bağlanıyor…"));
   r.append(btn("🔄 Yenile","reset",()=>{if(SYNC.tazele)SYNC.tazele();hizliBilgi="Gruptan yenilendi";setTimeout(ciz,1500)}));k.append(r)}
 function satir(L,id,x){const row=el("div","chk"+(x.ok?" done":""));const l=el("label","lbl");const cb=el("input");cb.type="checkbox";cb.checked=!!x.ok;
   cb.onchange=()=>L.koy(id,{ok:cb.checked});l.append(cb,el("span",null,x.t));
@@ -2080,7 +2085,7 @@ function hubOzet(k){
   if(k==="fatura"||k==="arac"){const l=takipListe(k).filter(([,x])=>x.son&&!x.bitti);if(!l.length)return [TAKIP[k].alt,false];const [,x]=l[0],d=takipDurum(x);return [x.ad+" · "+d.t,d.s==="gecti"||d.s==="bugun"||(d.f!=null&&d.f<=3)]}
   return ["",false]}
 function hubEkrani(){
-  const lg=el("div","logo");lg.append(el("span","lgi","🧭"),el("h1",null,"Gezinti"));ust.append(lg,el("p","sub","Gezi, ev ve aile işleri tek yerde"+(SYNC.kod?" · 👥 Grup bağlı":"")));
+  const lg=el("div","logo");lg.append(el("span","lgi","🧭"),el("h1",null,"Gezinti"));ust.append(lg,el("p","sub","Gezi, ev ve aile işleri tek yerde"+(SYNC.kod?(SYNC.durum==="hata"?" · ⚠️ Gruba bağlanamadı":SYNC.durum==="bagli"?" · 👥 Grup bağlı":" · 👥 Gruba bağlanıyor…"):"")));
   const ek=ekleKarti();if(ek)ana.append(ek);
   const hb=el("div","hub"),a=menuAyar();
   a.sira.filter(k=>!a.gizli.includes(k)).forEach(k=>{const [i,t]=BOLUMLER[k],[o,vurgu]=hubOzet(k);
@@ -2092,7 +2097,7 @@ function hubEkrani(){
 const EKRANLAR={bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.6";
+const SURUM="2026-11-12.7";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -2125,9 +2130,11 @@ const gecerli=k=>k.length===12&&[...k].every(c=>ABC.includes(c));
 const yeniKod=()=>{const a=new Uint32Array(12);crypto.getRandomValues(a);return [...a].map(x=>ABC[x%ABC.length]).join("")};
 async function firebase(){if(fb)return fb;const u=n=>`https://www.gstatic.com/firebasejs/${V}/firebase-${n}.js`;
   const [{initializeApp},fs]=await Promise.all([import(u("app")),import(u("firestore"))]);const app=initializeApp(CFG);
-  let db;try{db=fs.initializeFirestore(app,{localCache:fs.persistentLocalCache({tabManager:fs.persistentMultipleTabManager()})})}catch(e){db=fs.getFirestore(app)}
+  /* iPhone ana ekran uygulamasında canlı akış takılabiliyordu: uzun yoklama (long polling) zorunlu, tek sekmeli kalıcı önbellek */
+  let db;try{db=fs.initializeFirestore(app,{experimentalForceLongPolling:true,localCache:fs.persistentLocalCache({tabManager:fs.persistentSingleTabManager({forceOwnership:true})})})}
+  catch(e){try{db=fs.initializeFirestore(app,{experimentalForceLongPolling:true})}catch(e2){db=fs.getFirestore(app)}}
   fb={db,...fs};return fb}
-function hata(e){console.error(e);durum="hata";mesaj=e&&e.code==="permission-denied"?"Veritabanı izin vermedi.":"Bağlantı kurulamadı. İnternet gelince sayfayı yenile; veriler bu telefonda duruyor.";grupCiz()}
+function hata(e){console.error(e);durum="hata";SYNC.durum="hata";mesaj=e&&e.code==="permission-denied"?"Veritabanı izin vermedi.":"Bağlantı kurulamadı. İnternet gelince sayfayı yenile; veriler bu telefonda duruyor.";grupCiz()}
 function abone(id){
   const f=fb,kod=SYNC.kod;if(!f||!kod||abonelik[id])return;
   const ref=f.doc(f.db,"gruplar",kod,"g2",id);let ilk=true;
@@ -2138,7 +2145,7 @@ function abone(id){
     if(id==="geziler"&&ilk&&!snap.metadata.fromCache){const ek={};Object.entries(d.hepsi()).forEach(([k,v])=>{if(!uz[k])ek[k]=v});
       if(Object.keys(ek).length){uz=Object.assign({},uz,ek);f.setDoc(ref,{items:ek},{merge:true}).catch(hata)}}
     if(!snap.metadata.fromCache){ilk=false;SYNC.son=Date.now()}
-    d.uzak(uz);if(durum!=="bagli"){durum="bagli";mesaj="";grupCiz()}
+    d.uzak(uz);if(durum!=="bagli"){durum="bagli";SYNC.durum="bagli";mesaj="";grupCiz()}
   },e=>{/* Dinleyici koptu: bir süre sonra yeniden kur */const x=abonelik[id];delete abonelik[id];try{x&&x()}catch(_){}hata(e);setTimeout(()=>{if(SYNC.kod===kod)abone(id)},5000)})}
 /* Telefon uygulamayı arka plana atınca (iPhone ana ekran uygulaması) canlı bağlantı sessizce kopabiliyor.
    Öne gelince bağlantıyı yenile ve açık belgeleri sunucudan bir kez daha oku. */
@@ -2147,7 +2154,7 @@ async function tazele(yeniden){const f=fb,kod=SYNC.kod;if(!f||!kod||tazeleniyor)
   try{if(yeniden){await f.disableNetwork(f.db);await f.enableNetwork(f.db)}
     await Promise.all(Object.keys(abonelik).map(async id=>{try{const s=await f.getDocFromServer(f.doc(f.db,"gruplar",kod,"g2",id));
       if(s.exists()&&DEPO[id]&&Date.now()-(SYNC.sonYaz||0)>4000)DEPO[id].uzak(s.data().items||{});SYNC.son=Date.now()}catch(e){}}));
-    if(durum!=="bagli"){durum="bagli";mesaj="";grupCiz()}window.ciz()}catch(e){}finally{tazeleniyor=false}}
+    if(durum!=="bagli"){durum="bagli";SYNC.durum="bagli";mesaj="";grupCiz()}window.ciz()}catch(e){}finally{tazeleniyor=false}}
 SYNC.tazele=()=>{tazele(true);[...(SYNC.ekran||[])].forEach(restOku)};
 /* ===== Yedek yol: Firestore REST =====
    iPhone ana ekran uygulamasında canlı bağlantı (WebChannel) takılabiliyor: yazılan sunucuya geç gidiyor ya da
@@ -2170,23 +2177,25 @@ async function restYaz(kod,id,degisim,tam){const mask=[],items={};
   if(!mask.length)return;yaziyor[id]=(yaziyor[id]||0)+1;
   try{const q=mask.map(m=>"updateMask.fieldPaths="+encodeURIComponent(m)).join("&");
     const r=await fetch(REST+kod+"/g2/"+encodeURIComponent(id)+"?"+q,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:{items:restVal(items)}})});
-    if(r.ok){const j=await r.json();imza[id]=j.updateTime;SYNC.son=Date.now()}}catch(e){}
+    if(r.ok){const j=await r.json();imza[id]=j.updateTime;SYNC.son=Date.now();SYNC.durum="bagli"}else SYNC.durum="hata"}catch(e){}
   finally{yaziyor[id]--;SYNC.sonYazB=SYNC.sonYazB||{};SYNC.sonYazB[id]=Date.now()}}
 const sirali=v=>Array.isArray(v)?v.map(sirali):duz(v)?Object.keys(v).sort().reduce((o,k)=>(o[k]=sirali(v[k]),o),{}):v;
 async function restOku(id){const kod=SYNC.kod;if(!kod||yaziyor[id])return;
   try{const r=await fetch(REST+kod+"/g2/"+encodeURIComponent(id),{cache:"no-store"});if(!r.ok)return;const j=await r.json();
     if(SYNC.kod!==kod||yaziyor[id]||Date.now()-((SYNC.sonYazB||{})[id]||0)<2500)return;
-    SYNC.son=Date.now();if(imza[id]===j.updateTime)return;imza[id]=j.updateTime;
+    SYNC.son=Date.now();SYNC.durum="bagli";if(imza[id]===j.updateTime)return;imza[id]=j.updateTime;
     const d=DEPO[id];if(!d)return;const items=restDeger((j.fields||{}).items)||{};
     if(JSON.stringify(sirali(items))!==JSON.stringify(sirali(d.hepsi())))d.uzak(items)}catch(e){}}
 /* Uygulama açıkken: ekrandaki belgeleri 3 sn'de bir oku (ana menü gibi çok belgeli ekranlarda 15 sn'de bir) */
 let tur=0;
 setInterval(()=>{if(document.hidden||!SYNC.kod)return;tur++;const ids=[...(SYNC.ekran||[])].filter(x=>x!=="geziler"||(SYNC.ekran.size<=2));
-  if(ids.length>4&&tur%5)return;ids.slice(0,8).forEach(restOku)},3000);
+  if(ids.length>4&&tur%4)return;ids.slice(0,8).forEach(restOku)},4000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&SYNC.kod)[...(SYNC.ekran||[])].forEach(restOku)});
 
 document.addEventListener("visibilitychange",()=>{if(document.hidden){gizlendi=Date.now();return}if(SYNC.kod&&gizlendi)tazele(Date.now()-gizlendi>15000)});
 addEventListener("online",()=>tazele(true));
+addEventListener("pageshow",e=>{if(e.persisted&&SYNC.kod)tazele(true)});
+addEventListener("focus",()=>{if(SYNC.kod&&Date.now()-(SYNC.son||0)>20000)tazele(false)});
 async function baglan(kod){
   SYNC.kod=kod;durum="baglaniyor";mesaj="";grupCiz();
   try{const f=await firebase();Object.values(abonelik).forEach(x=>x());abonelik={};if(SYNC.kod!==kod)return;
