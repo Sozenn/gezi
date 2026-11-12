@@ -1629,12 +1629,13 @@ const ayEkle=(s,n)=>{const d=new Date(s+"T12:00:00"),g=d.getDate();d.setDate(1);
 
 /* ---------- Ortak liste parçaları ---------- */
 const kalemler=(L,b,f)=>Object.entries(L.items).filter(([,x])=>x&&typeof x.t==="string"&&(b==null||x.b===b)&&(!f||f(x))).sort((a,c)=>(a[1].s||0)-(c[1].s||0));
-function ilerlemeBas(k,baslik,ls,bitti){const ok=ls.filter(([,x])=>x.ok).length,yz=ls.length?Math.round(ok/ls.length*100):0;
+function ilerlemeBas(k,baslik,ls,bitti,belge){const ok=ls.filter(([,x])=>x.ok).length,yz=ls.length?Math.round(ok/ls.length*100):0;
   const h=el("div","phead");h.append(el("h3",null,baslik),el("b","pct",yz+"%"));k.append(h);
   const pr=el("div","prog"),pi=el("i");pi.style.width=yz+"%";pr.append(pi);k.append(pr);
-  k.append(el("p","note",!ls.length?"Liste boş. Aşağıdan madde ekle.":(ok===ls.length?(bitti||"Hepsi tamam ✓"):ok+"/"+ls.length+" tamam")));esSatir(k)}
+  k.append(el("p","note",!ls.length?"Liste boş. Aşağıdan madde ekle.":(ok===ls.length?(bitti||"Hepsi tamam ✓"):ok+"/"+ls.length+" tamam")));esSatir(k,belge)}
 /* Grup eşitleme durumu: son eşitleme saati ve elle yenileme */
-function esSatir(k){if(!SYNC.kod)return;const r=el("div","essat");r.append(el("small",null,SYNC.durum==="hata"&&!(SYNC.son&&Date.now()-SYNC.son<30000)?"⚠️ Gruba bağlanamadı":SYNC.son?"👥 Grupla ortak · eşitlendi "+saatOf(SYNC.son):"👥 Gruba bağlanıyor…"));
+function esSatir(k,id){if(!SYNC.kod)return;const r=el("div","essat"),son=id&&SYNC.sonB&&SYNC.sonB[id];
+  r.append(el("small",null,"👥 Grup "+SYNC.kod.slice(-4)+" · "+(SYNC.durum==="hata"&&!(son&&Date.now()-son<30000)?"⚠️ bağlanamadı":son?"eşitlendi "+saatOf(son):SYNC.son?"bağlı":"bağlanıyor…")));
   r.append(btn("🔄 Yenile","reset",()=>{if(SYNC.tazele)SYNC.tazele();hizliBilgi="Gruptan yenilendi";setTimeout(ciz,1500)}));k.append(r)}
 function satir(L,id,x){const row=el("div","chk"+(x.ok?" done":""));const l=el("label","lbl");const cb=el("input");cb.type="checkbox";cb.checked=!!x.ok;
   cb.onchange=()=>L.koy(id,{ok:cb.checked});l.append(cb,el("span",null,x.t));
@@ -1730,7 +1731,7 @@ function bebekEkrani(){
     const ub=el("div","acts");ub.append(btn("Yeni listeyi getir","ana",async ()=>{if(!await onay("Günlük çantadaki liste silinip "+BEBEK_BANT[bantOf(ay)][2]+" listesi gelsin mi?"))return;listeYenile(B,ls,Object.assign({ayar:{ay,t:Date.now(),bant:bantOf(ay)}},kalemObj(BEBEK_B,bebekListe(ay),{})))}),
       btn("Listem kalsın","reset",()=>B.koy("ayar",{ay,t:Date.now(),bant:bantOf(ay)})));u.append(ub);ana.append(u)}
   const k=el("div","card");ana.append(k);
-  ilerlemeBas(k,(tan.find(([i])=>i===cur)||[,{ad:"Çanta"}])[1].ad.replace(/^\S+\s/,""),ls,"Çanta hazır ✓ İyi gezmeler!");
+  ilerlemeBas(k,(tan.find(([i])=>i===cur)||[,{ad:"Çanta"}])[1].ad.replace(/^\S+\s/,""),ls,"Çanta hazır ✓ İyi gezmeler!","bebek");
   const bl=[...BEBEK_B];ls.forEach(([,x])=>{if(x.b&&!bl.includes(x.b))bl.push(x.b)});
   bl.forEach((b,i)=>kalemGrup(k,B,b,b,"bebek"+cur+i,cur==="ana"?{}:{l:cur},f));
   const acts=el("div","acts");acts.append(btn("İşaretleri sıfırla","reset",()=>isaretSifirla(B,ls)));k.append(acts);
@@ -1813,7 +1814,7 @@ function cikisEkrani(){
     const b=btn(t+(ls.length?" "+ok+"/"+ls.length:""),null,()=>{cikisSekme=k;LS.set("cikisSekme",k);ciz()});b.setAttribute("aria-selected",cikisSekme===k);seg.append(b)});
   ana.append(seg);
   const bol=cikisSekme,ls=kalemler(C,bol,f),k=el("div","card");ana.append(k);
-  ilerlemeBas(k,CIKIS_BOL[bol][1],ls,CIKIS_BOL[bol][2]);kalemGrup(k,C,bol,null,"cikis"+cur+bol,cur==="ev"?{}:{l:cur},f);
+  ilerlemeBas(k,CIKIS_BOL[bol][1],ls,CIKIS_BOL[bol][2],"cikis");kalemGrup(k,C,bol,null,"cikis"+cur+bol,cur==="ev"?{}:{l:cur},f);
   const acts=el("div","acts");acts.append(btn("İşaretleri sıfırla","reset",()=>isaretSifirla(C,ls)));k.append(acts);
   ana.append(el("p","note orta","Her çıkışta işaretleri sıfırlayıp yeniden kontrol edebilirsin."));
 }
@@ -1845,6 +1846,7 @@ function alisEkrani(){
   al.forEach(([id,x])=>{const r=satir(A,id,x);r.querySelector("input").onchange=()=>A.koy(id,{ok:true,ts:Date.now()});k.append(r)});
   if(sep.length){const s=el("div","card");s.append(el("h3",null,"🧺 Sepette ("+sep.length+")"));sep.forEach(([id,x])=>s.append(satir(A,id,x)));
     s.append(btn("Sepettekileri listeden kaldır","reset",()=>listeYenile(A,sep)));ana.append(s)}
+  esSatir(k,"alisveris");
   if(!SYNC.kod)ana.append(el("p","note orta","Eşinle ortak kullanmak için ana menüdeki \"Ortak kullanım\"dan grup kur."));
 }
 function alisMenu(){const A=depo("alisveris");modal("Alışveriş listesi",m=>{
@@ -2097,7 +2099,7 @@ function hubEkrani(){
 const EKRANLAR={bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.7";
+const SURUM="2026-11-12.8";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -2139,7 +2141,7 @@ function abone(id){
   const f=fb,kod=SYNC.kod;if(!f||!kod||abonelik[id])return;
   const ref=f.doc(f.db,"gruplar",kod,"g2",id);let ilk=true;
   abonelik[id]=f.onSnapshot(ref,snap=>{const d=DEPO[id];if(!d)return;
-    if(!snap.exists()){if(!snap.metadata.fromCache&&ilk){ilk=false;f.setDoc(ref,{items:d.hepsi()}).catch(hata)}return}
+    if(!snap.exists()){if(!snap.metadata.fromCache&&ilk){ilk=false;f.setDoc(ref,{items:d.hepsi()}).catch(hata);restYaz(kod,id,null,d.hepsi())}return}
     let uz=snap.data().items||{};
     /* Gezi listesi: bu telefonda olup grupta olmayan geziler kaybolmasın, gruba eklensin */
     if(id==="geziler"&&ilk&&!snap.metadata.fromCache){const ek={};Object.entries(d.hepsi()).forEach(([k,v])=>{if(!uz[k])ek[k]=v});
@@ -2181,10 +2183,14 @@ async function restYaz(kod,id,degisim,tam){const mask=[],items={};
   finally{yaziyor[id]--;SYNC.sonYazB=SYNC.sonYazB||{};SYNC.sonYazB[id]=Date.now()}}
 const sirali=v=>Array.isArray(v)?v.map(sirali):duz(v)?Object.keys(v).sort().reduce((o,k)=>(o[k]=sirali(v[k]),o),{}):v;
 async function restOku(id){const kod=SYNC.kod;if(!kod||yaziyor[id])return;
-  try{const r=await fetch(REST+kod+"/g2/"+encodeURIComponent(id),{cache:"no-store"});if(!r.ok)return;const j=await r.json();
+  try{const r=await fetch(REST+kod+"/g2/"+encodeURIComponent(id),{cache:"no-store"});
+    /* Grupta bu belge yok: bu telefondaki tam listeyle oluştur (yoksa yalnız işaretlenen madde yazılır, liste eksik kalır) */
+    if(r.status===404){if(SYNC.kod===kod&&DEPO[id]&&Object.keys(DEPO[id].hepsi()).length&&!yaziyor[id])await restYaz(kod,id,null,DEPO[id].hepsi());return}
+    if(!r.ok)return;const j=await r.json();
     if(SYNC.kod!==kod||yaziyor[id]||Date.now()-((SYNC.sonYazB||{})[id]||0)<2500)return;
-    SYNC.son=Date.now();SYNC.durum="bagli";if(imza[id]===j.updateTime)return;imza[id]=j.updateTime;
-    const d=DEPO[id];if(!d)return;const items=restDeger((j.fields||{}).items)||{};
+    SYNC.son=Date.now();(SYNC.sonB=SYNC.sonB||{})[id]=Date.now();SYNC.durum="bagli";if(imza[id]===j.updateTime)return;imza[id]=j.updateTime;
+    const d=DEPO[id];if(!d)return;const items=restDeger((j.fields||{}).items)||{},yer=d.hepsi();
+    Object.keys(items).forEach(k=>{const x=items[k];if(x&&typeof x==="object"&&!Array.isArray(x)&&yer[k]&&typeof yer[k]==="object")items[k]=Object.assign({},yer[k],x)});
     if(JSON.stringify(sirali(items))!==JSON.stringify(sirali(d.hepsi())))d.uzak(items)}catch(e){}}
 /* Uygulama açıkken: ekrandaki belgeleri 3 sn'de bir oku (ana menü gibi çok belgeli ekranlarda 15 sn'de bir) */
 let tur=0;
