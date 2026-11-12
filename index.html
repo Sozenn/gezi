@@ -580,6 +580,7 @@ h4.bolum{margin:8px 2px 0;font-size:12px;letter-spacing:.06em;text-transform:upp
 .gecmis{display:flex;flex-direction:column;gap:2px}
 .card select,.mic select,.oto select{font:400 15px var(--body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);width:100%;box-sizing:border-box}
 .add.buyuk input{border:1px solid var(--line)}
+.essat{display:flex;justify-content:space-between;align-items:center;gap:8px}.essat small{color:var(--muted);font-size:12.5px}.essat .reset{padding:5px 10px;font-size:12px}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -1623,7 +1624,10 @@ const kalemler=(L,b,f)=>Object.entries(L.items).filter(([,x])=>x&&typeof x.t==="
 function ilerlemeBas(k,baslik,ls,bitti){const ok=ls.filter(([,x])=>x.ok).length,yz=ls.length?Math.round(ok/ls.length*100):0;
   const h=el("div","phead");h.append(el("h3",null,baslik),el("b","pct",yz+"%"));k.append(h);
   const pr=el("div","prog"),pi=el("i");pi.style.width=yz+"%";pr.append(pi);k.append(pr);
-  k.append(el("p","note",!ls.length?"Liste boş. Aşağıdan madde ekle.":(ok===ls.length?(bitti||"Hepsi tamam ✓"):ok+"/"+ls.length+" tamam")+(SYNC.kod?" · 👥 Grupla ortak":"")))}
+  k.append(el("p","note",!ls.length?"Liste boş. Aşağıdan madde ekle.":(ok===ls.length?(bitti||"Hepsi tamam ✓"):ok+"/"+ls.length+" tamam")));esSatir(k)}
+/* Grup eşitleme durumu: son eşitleme saati ve elle yenileme */
+function esSatir(k){if(!SYNC.kod)return;const r=el("div","essat");r.append(el("small",null,SYNC.son?"👥 Grupla ortak · eşitlendi "+saatOf(SYNC.son):"👥 Gruba bağlanıyor…"));
+  r.append(btn("🔄 Yenile","reset",()=>{if(SYNC.tazele)SYNC.tazele();hizliBilgi="Gruptan yenilendi";setTimeout(ciz,1500)}));k.append(r)}
 function satir(L,id,x){const row=el("div","chk"+(x.ok?" done":""));const l=el("label","lbl");const cb=el("input");cb.type="checkbox";cb.checked=!!x.ok;
   cb.onchange=()=>L.koy(id,{ok:cb.checked});l.append(cb,el("span",null,x.t));
   const d=btn("✎","del duz",async ()=>{const v=await soru("Maddeyi değiştir:",x.t);if(v==null)return;const t=v.trim();if(!t)return;L.koy(id,{t:t.slice(0,80)})});d.setAttribute("aria-label","Değiştir");
@@ -2085,7 +2089,7 @@ function hubEkrani(){
 const EKRANLAR={bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.4";
+const SURUM="2026-11-12.5";
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -2130,14 +2134,25 @@ function abone(id){
     /* Gezi listesi: bu telefonda olup grupta olmayan geziler kaybolmasın, gruba eklensin */
     if(id==="geziler"&&ilk&&!snap.metadata.fromCache){const ek={};Object.entries(d.hepsi()).forEach(([k,v])=>{if(!uz[k])ek[k]=v});
       if(Object.keys(ek).length){uz=Object.assign({},uz,ek);f.setDoc(ref,{items:ek},{merge:true}).catch(hata)}}
-    if(!snap.metadata.fromCache)ilk=false;
+    if(!snap.metadata.fromCache){ilk=false;SYNC.son=Date.now()}
     d.uzak(uz);if(durum!=="bagli"){durum="bagli";mesaj="";grupCiz()}
-  },hata)}
+  },e=>{/* Dinleyici koptu: bir süre sonra yeniden kur */const x=abonelik[id];delete abonelik[id];try{x&&x()}catch(_){}hata(e);setTimeout(()=>{if(SYNC.kod===kod)abone(id)},5000)})}
+/* Telefon uygulamayı arka plana atınca (iPhone ana ekran uygulaması) canlı bağlantı sessizce kopabiliyor.
+   Öne gelince bağlantıyı yenile ve açık belgeleri sunucudan bir kez daha oku. */
+let gizlendi=0,tazeleniyor=false;
+async function tazele(yeniden){const f=fb,kod=SYNC.kod;if(!f||!kod||tazeleniyor)return;tazeleniyor=true;
+  try{if(yeniden){await f.disableNetwork(f.db);await f.enableNetwork(f.db)}
+    await Promise.all(Object.keys(abonelik).map(async id=>{try{const s=await f.getDocFromServer(f.doc(f.db,"gruplar",kod,"g2",id));
+      if(s.exists()&&DEPO[id]&&Date.now()-(SYNC.sonYaz||0)>4000)DEPO[id].uzak(s.data().items||{});SYNC.son=Date.now()}catch(e){}}));
+    if(durum!=="bagli"){durum="bagli";mesaj="";grupCiz()}window.ciz()}catch(e){}finally{tazeleniyor=false}}
+SYNC.tazele=()=>tazele(true);
+document.addEventListener("visibilitychange",()=>{if(document.hidden){gizlendi=Date.now();return}if(SYNC.kod&&gizlendi)tazele(Date.now()-gizlendi>15000)});
+addEventListener("online",()=>tazele(true));
 async function baglan(kod){
   SYNC.kod=kod;durum="baglaniyor";mesaj="";grupCiz();
   try{const f=await firebase();Object.values(abonelik).forEach(x=>x());abonelik={};if(SYNC.kod!==kod)return;
     SYNC.f=f;
-    SYNC.yaz=(id,degisim,tam)=>{const ref=f.doc(f.db,"gruplar",kod,"g2",id);if(tam)return f.setDoc(ref,{items:tam}).catch(hata);
+    SYNC.yaz=(id,degisim,tam)=>{SYNC.sonYaz=Date.now();const ref=f.doc(f.db,"gruplar",kod,"g2",id);if(tam)return f.setDoc(ref,{items:tam}).catch(hata);
       const items={};Object.entries(degisim||{}).forEach(([k,v])=>items[k]=v===null?f.deleteField():v);if(Object.keys(items).length)f.setDoc(ref,{items},{merge:true}).catch(hata)};
     SYNC.abone=abone;Object.keys(DEPO).forEach(abone);
     window.dispatchEvent(new Event("grup"));window.ciz();
