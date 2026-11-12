@@ -754,6 +754,7 @@ input.anahtar:checked{background:#34c759}input.anahtar:checked::after{transform:
 .rmad{position:absolute;top:4px;right:calc(50% - 70px);font-size:34px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
 .rbar{margin-top:4px}
 .mkutu .add select{width:auto;flex:1}.mkutu .add input[type=time]{flex:1}
+.anahsat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 0}.anahsat b{font-size:16px}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -2131,7 +2132,8 @@ function hatirEkrani(){
   if(ar.length){ana.append(el("h4","bolum","Gün içi tekrarlayan"));ar.forEach(([id,x])=>ana.append(aralikKarti(id,x)))}
   /* Su hatırlatıcısı Su takibi bölümünde yönetilir; burada yalnız kısayol */
   const sk=btn("","hkart",()=>uygAc("su"));sk.append(el("span","hik k-su","💧"));const st=el("span","htx");
-  st.append(el("b",null,"Su hatırlatıcısı"),el("small",null,sx&&sx.acik?"🔁 "+(sx.dk>=60?(sx.dk/60).toLocaleString("tr-TR")+" saatte bir":sx.dk+" dk'da bir")+" · "+sx.bas+"–"+sx.son+" · Su takibinde":"Kapalı · Su takibi bölümünden aç"));sk.append(st,el("span","hok","›"));ana.append(sk);
+  st.append(el("b",null,"Su hatırlatıcısı"),el("small",null,sx&&sx.acik?"🔁 "+(sx.dk>=60?(sx.dk/60).toLocaleString("tr-TR")+" saatte bir":sx.dk+" dk'da bir")+" · "+sx.bas+"–"+sx.son+" · Su takibinde":"Kapalı · Su takibi bölümünden aç"));sk.append(st);
+  if(sx){const sw=el("input");sw.type="checkbox";sw.className="anahtar";sw.checked=!!sx.acik;sw.onclick=e=>e.stopPropagation();sw.onchange=()=>{if(sw.checked){sesAc();bildirimIzni()}ARALIK.koy("su",{acik:sw.checked})};sk.append(sw)}else sk.append(el("span","hok","›"));ana.append(sk);
   const s=susturulmus(),oto=sanalAlarmlar().filter(x=>!x.ara&&!s[x.key]&&x.z>Date.now()-864e5&&x.z<Date.now()+14*864e5).sort((a,b)=>a.z-b.z).slice(0,12);
   const ok=el("div","card");ok.append(el("h3",null,"🤖 Otomatik hatırlatmalar"));
   oto.forEach(x=>{const r=el("div","oto");r.append(el("b",null,zamanYazi(x.z)),el("span",null,x.n),el("small","note",x.kay));ok.append(r)});
@@ -2226,6 +2228,7 @@ function hatirKontrol(){if(alarmAcik)return;const simdi=Date.now();
     else HAT.koy(x.id,{caldi:true});
     ciz();setTimeout(hatirKontrol,400)};
   if(x.su){const bd=SU.v.bardak||250;k.append(btn("💧 İçtim (+"+bd+" ml)","ana tam",()=>{kapat(0);suEkle(bd)}))}
+  if(x.ara){const aid=x.key.split(":")[1];k.append(btn("🔕 Bu hatırlatıcıyı kapat","reset",()=>{kapat(0);ARALIK.koy(aid,{acik:false});hizliBilgi="🔕 Kapatıldı · tekrar açmak için "+(x.su?"Su takibi":"Hatırlatmalar")}))}
   b.append(btn("10 dk ertele","hayir",()=>kapat(10)),btn(x.su?"Sonra":"Tamam","evet",()=>kapat(0)));k.append(b);d.append(k);document.body.append(d)}
 /* Sıradakinin saatinde tam zamanında kontrol et (ayrıca her 15 sn ve uygulamaya dönünce) */
 function hatirZamanla(){clearTimeout(hatirZaman);const s=yaklasanlar().find(x=>x.z>Date.now());if(!s)return;const ms=s.z-Date.now();if(ms<2147e6)hatirZaman=setTimeout(hatirKontrol,ms+200)}
@@ -2425,13 +2428,18 @@ function suPanel(){
   const i2=el("div","iki");i2.append(alanEt("🎯 Günlük hedef",hs));
   const rs=secim([["0","Kapalı"],["30","30 dk'da bir"],["45","45 dk'da bir"],["60","Saatte bir"],["90","1,5 saatte bir"],["120","2 saatte bir"]],sx&&sx.acik?String(sx.dk):"0");
   rs.onchange=()=>{const v=Number(rs.value);if(!v){if(sx)ARALIK.koy("su",{acik:false});return}sesAc();bildirimIzni();ARALIK.koy("su",Object.assign({n:"💧 Su içme zamanı",bas:"09:00",son:"22:00",gun:[0,1,2,3,4,5,6]},ARALIK.items.su||{},{dk:v,acik:true,su:true}))};
-  i2.append(alanEt("⏰ Hatırlat",rs));ay.append(i2);
+  i2.append(alanEt("⏰ Hatırlat",rs));
+  if(sx){const sat=el("div","anahsat");const sw=el("input");sw.type="checkbox";sw.className="anahtar";sw.checked=!!sx.acik;
+    sw.onchange=()=>{if(sw.checked){sesAc();bildirimIzni()}ARALIK.koy("su",{acik:sw.checked});hizliBilgi=sw.checked?"⏰ Su hatırlatıcısı açıldı":"🔕 Su hatırlatıcısı kapatıldı"};
+    sat.append(el("b",null,sx.acik?"⏰ Hatırlatıcı açık":"🔕 Hatırlatıcı kapalı"),sw);ay.append(sat)}
+  ay.append(i2);
   if(sx&&sx.acik){const i3=el("div","iki"),tb=el("input"),ts=el("input");tb.type="time";ts.type="time";tb.value=sx.bas;ts.value=sx.son;
     tb.onchange=()=>{if(tb.value&&dk(tb.value)<dk(ts.value))ARALIK.koy("su",{bas:tb.value})};ts.onchange=()=>{if(ts.value&&dk(ts.value)>dk(tb.value))ARALIK.koy("su",{son:ts.value})};
     i3.append(alanEt("Başlangıç",tb),alanEt("Bitiş",ts));ay.append(i3);
     const sira=aralikSaatleri(sx).find(z=>z>Date.now()&&!(susturulmus()["ara:su:"+tarihStr(new Date(z))+":"+saatOf(z)]));
     ay.append(el("p","note",(sira?"Sıradaki: "+zamanYazi(sira)+". ":"")+"Yakın zamanda içtiysen o seferki atlanır. Alarmda \"İçtim\" deyince otomatik kaydedilir."));
     const uy=el("div","card bilgi");uy.append(el("p",null,"🔔 Bu alarm uygulama açıkken çalar (iPhone sessizdeyse ses çıkmaz). Uygulama kapalıyken de uyarsın istersen telefonun takvimine ekle."),btn("📅 Takvime ekle","reset",()=>aralikTakvim(ARALIK.items.su)));ay.append(uy)}
+  if(sx)ay.append(btn("🗑 Su hatırlatıcısını sil","mbtn tehlike",async ()=>{if(!await onay("Su hatırlatıcısı silinsin mi? (Takvime eklediysen oradaki etkinlikleri ayrıca takvimden silmelisin.)"))return;ARALIK.sil("su");hizliBilgi="Su hatırlatıcısı silindi"}));
   ay.append(el("p","note","Su takibi kişiseldir, yalnız bu telefonda tutulur; grupla paylaşılmaz."));
   ana.append(ay)}
 
@@ -2484,7 +2492,7 @@ function hubEkrani(){
 const EKRANLAR={su:()=>suEkrani(),bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.13";window.SURUM_=SURUM;
+const SURUM="2026-11-12.14";window.SURUM_=SURUM;
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
