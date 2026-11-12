@@ -4,7 +4,6 @@
 <title>Gezinti</title>
 <meta name="description" content="Gezi planı, bütçe, bavul ve ev kontrol listeleri. Elle ya da kendi AI'ınla plan; eşinle ortak.">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap">
 <style>
 /* Layout: tek sütun, sticky sekme çubuğu; gün kartları zaman çizelgesi gibi */
 :root{
@@ -581,6 +580,115 @@ h4.bolum{margin:8px 2px 0;font-size:12px;letter-spacing:.06em;text-transform:upp
 .card select,.mic select,.oto select{font:400 15px var(--body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);width:100%;box-sizing:border-box}
 .add.buyuk input{border:1px solid var(--line)}
 .essat{display:flex;justify-content:space-between;align-items:center;gap:8px}.essat small{color:var(--muted);font-size:12.5px}.essat .reset{padding:5px 10px;font-size:12px}
+
+/* ================= iPhone tasarımı (Kasım 2026) =================
+   Sistem yazı tipi (SF), iOS gruplu arka plan, yumuşak gölgeli kartlar, hafif 3D (ışık alan üst kenar, basınca içe göçme).
+   Bu blok en sonda: önceki stilleri ezer. */
+:root{--body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;--display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,system-ui,sans-serif;
+  --bg:#f2f2f7;--surface:#ffffff;--fg:#1c1c1e;--muted:#6e6e73;--line:rgba(60,60,67,.13);--doldur:rgba(118,118,128,.12);
+  --ink:#f07a12;--ink-soft:#fff1e3;--accent:#ff8a1f;--accent-soft:#fff1e3;--ok:#34c759;--sun:#ffb340;--kirmizi:#ff3b30;
+  --r:16px;--golge:0 .5px 0 rgba(255,255,255,.9) inset,0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);
+  --kabarik:linear-gradient(180deg,#ffa043,#f27412);--kabarik-g:0 1px 0 rgba(255,255,255,.35) inset,0 -2px 0 rgba(0,0,0,.08) inset,0 6px 14px rgba(242,116,18,.32)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000000;--surface:#1c1c1e;--fg:#f5f5f7;--muted:#98989f;--line:rgba(84,84,88,.6);--doldur:rgba(118,118,128,.24);
+  --ink:#ff9f0a;--ink-soft:rgba(255,159,10,.16);--accent:#ff9f0a;--accent-soft:rgba(255,159,10,.16);--ok:#30d158;--sun:#ffd60a;--kirmizi:#ff453a;
+  --golge:0 .5px 0 rgba(255,255,255,.07) inset,0 1px 2px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.35);
+  --kabarik:linear-gradient(180deg,#ffab3d,#f27a0c);--kabarik-g:0 1px 0 rgba(255,255,255,.3) inset,0 -2px 0 rgba(0,0,0,.18) inset,0 6px 16px rgba(255,140,0,.22)}}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--body);font-size:16px;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.wrap{gap:16px}
+header{padding-top:max(12px,env(safe-area-inset-top,0px))}
+h1{font-family:var(--display);font-weight:700;font-size:32px;letter-spacing:-.02em;line-height:1.1}
+.sub{font-size:14.5px;color:var(--muted)}
+.logo{gap:12px}.lgi{font-size:30px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.15))}
+/* Üst çubuk: iOS gezinme düğmeleri */
+.ubar{margin:0 -4px 2px}
+.ubar button{border:0!important;box-shadow:none!important;background:transparent!important;color:var(--ink)!important;font:500 17px var(--body);padding:8px 4px}
+.ubar .menu{width:34px;height:34px;padding:0!important;border-radius:50%;background:var(--doldur)!important;font-size:18px;display:grid;place-items:center}
+/* Kartlar */
+.card,.grup-kart,.day,.quick,.hkart,.gkart,.tkart{background:var(--surface)!important;border:0!important;border-radius:var(--r)!important;box-shadow:var(--golge)!important}
+.card{padding:16px;gap:12px}
+.card h3,.dhead h2,.mbas h3{font-family:var(--display);font-weight:650;letter-spacing:-.015em}
+.card.bilgi{background:linear-gradient(180deg,rgba(0,122,255,.10),rgba(0,122,255,.06))!important;color:var(--fg);box-shadow:none!important}
+.note{font-size:13px}
+/* Yazı kutuları: iOS tarzı dolgu, taşma yok (tarih/saat kutuları kendi genişliğini dayatmasın) */
+input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea{font:400 17px var(--body)!important;border:0!important;border-radius:12px!important;background:var(--doldur)!important;color:var(--fg)!important;
+  padding:12px 14px!important;min-height:46px;width:100%;max-width:100%;min-width:0;box-sizing:border-box;box-shadow:0 1px 1.5px rgba(0,0,0,.06) inset}
+textarea{min-height:90px;line-height:1.4}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;text-align:left;line-height:22px}
+input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and-time-value{text-align:left;margin:0}
+select{-webkit-appearance:none;appearance:none;padding-right:34px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 1.5l3 3M3 7.5l3 3 3-3' fill='none' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 12px center!important}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px rgba(255,138,31,.35)!important}
+.iki{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px}
+.iki>*,.mform2>*,label{min-width:0}
+label{font-size:13px;font-weight:500;color:var(--muted);gap:6px}
+.mform2{gap:14px}
+/* Ana düğmeler: kabarık turuncu (hafif 3D) */
+.yeni-gezi,.ana.tam,.mform2>button.ana,.acts button.ana,.gbtn button.ana,.ekbtn,.add button,.dbtns .evet{background:var(--kabarik)!important;color:#fff!important;border:0!important;box-shadow:var(--kabarik-g)!important;font-weight:600!important;text-shadow:0 1px 1px rgba(0,0,0,.12)}
+.yeni-gezi{border-radius:14px!important;padding:15px!important;font:600 17px var(--body)!important}
+.yeni-gezi:active,.ana.tam:active,.acts button:active,.add button:active,.hkart:active,.bbtn:active,.cip:active,.mbtn:active,.reset:active,.dbtns button:active{transform:scale(.97);filter:brightness(.96)}
+button{transition:transform .12s ease,filter .12s ease}
+/* İkincil düğmeler: iOS gri dolgulu */
+.reset,.acts button:not(.ana),.gbtn button:not(.ana),.dbtns .hayir,.gpay{border:0!important;background:var(--doldur)!important;color:var(--ink)!important;border-radius:10px!important;font:600 14px var(--body)!important;padding:9px 13px!important;box-shadow:none!important}
+.mbtn{border:0!important;background:var(--surface)!important;box-shadow:var(--golge)!important;border-radius:12px!important;font:500 16px var(--body)!important;padding:14px 16px!important;color:var(--fg)!important}
+.mbtn.tehlike,.dbtns .evet.tehlike{color:var(--kirmizi)!important}
+.dbtns .evet.tehlike{background:var(--doldur)!important;text-shadow:none;box-shadow:none!important}
+/* Bölümlü seçici (segmented control) */
+.seg{background:var(--doldur)!important;box-shadow:none!important;border-radius:11px!important;padding:3px!important;gap:3px!important}
+.seg button{color:var(--fg)!important;font:600 13.5px var(--body)!important;padding:8px 6px!important;border-radius:9px!important;line-height:1.25;white-space:normal;min-width:0;overflow-wrap:anywhere}
+.seg button[aria-selected="true"]{background:var(--surface)!important;color:var(--fg)!important;box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.08)!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-selected="true"]{background:#636366!important}}
+/* Liste satırları ve yuvarlak iOS onay kutuları */
+.chk{padding:11px 0;border-top:.5px solid var(--line);gap:8px}
+.chk input[type=checkbox]{-webkit-appearance:none;appearance:none;width:24px;height:24px;margin:0;border-radius:50%;border:2px solid rgba(142,142,147,.6);background:transparent;flex:none;cursor:pointer;display:grid;place-items:center;transition:all .15s}
+.chk input[type=checkbox]:checked{border-color:transparent;background:linear-gradient(180deg,#ffa043,#f27412);box-shadow:0 2px 5px rgba(242,116,18,.4)}
+.chk input[type=checkbox]:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:translate(0,-1px) rotate(45deg)}
+.chk.done span{color:var(--muted)}
+.grp h4,h4.bolum{font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--muted)}
+.add{gap:8px}.add input{min-height:44px}.add button{border-radius:12px!important;padding:0 16px!important;min-height:44px}
+.del{color:var(--muted);width:34px;height:34px}
+.prog{height:8px;border-radius:99px;background:var(--doldur);overflow:hidden}.prog i{border-radius:99px;box-shadow:0 1px 0 rgba(255,255,255,.4) inset}
+.pct{color:var(--ink)!important;font-weight:700}
+/* Çipler */
+.cip{border:0!important;background:var(--surface)!important;box-shadow:var(--golge)!important;font:600 14px var(--body)!important;padding:8px 14px!important;color:var(--fg)!important}
+.cip.sec{background:var(--kabarik)!important;color:#fff!important;box-shadow:var(--kabarik-g)!important}
+.cip.yeni{background:var(--doldur)!important;box-shadow:none!important;color:var(--ink)!important}
+.lcip{padding:4px 2px 8px}
+/* Ana menü: iOS ayarlar tarzı renkli 3D simgeler */
+.hub{gap:10px}
+.hkart{padding:13px 14px!important;gap:13px}
+.hik{width:48px;height:48px;border-radius:12px;font-size:26px;box-shadow:0 1px 0 rgba(255,255,255,.45) inset,0 -2px 0 rgba(0,0,0,.12) inset,0 4px 10px rgba(0,0,0,.15)}
+.hik.k-gezi{background:linear-gradient(180deg,#5ac8fa,#007aff)}.hik.k-alis{background:linear-gradient(180deg,#5ee27a,#28b446)}.hik.k-bebek{background:linear-gradient(180deg,#ff8db4,#ff4f8b)}
+.hik.k-cikis{background:linear-gradient(180deg,#ffb247,#f27412)}.hik.k-hatir{background:linear-gradient(180deg,#ff7a6e,#ff3b30)}.hik.k-fatura{background:linear-gradient(180deg,#a99cff,#5856d6)}.hik.k-arac{background:linear-gradient(180deg,#6fdde0,#1fa6b0)}
+.htx b{font-family:var(--display);font-size:17px;font-weight:600}.htx small{font-size:13.5px}
+.hok{font-size:22px;color:rgba(142,142,147,.7)}
+.hkart.vurgu{box-shadow:0 0 0 2px var(--accent),var(--golge)!important}
+/* Pencereler: iOS alttan açılan sayfa */
+.modal{background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.mkutu{background:var(--bg)!important;border-radius:14px 14px 0 0!important;box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+.mkutu::before{content:"";display:block;width:38px;height:5px;border-radius:3px;background:rgba(142,142,147,.45);margin:8px auto 0}
+.mbas{background:var(--bg)!important;padding:8px 0 10px}
+.mkapat{border-radius:50%!important;width:32px!important;height:32px!important;background:var(--doldur)!important;color:var(--muted)!important;font-size:14px!important}
+.dlg{background:rgba(0,0,0,.4)}
+.dkutu{border-radius:16px;background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.dkutu p{font-size:16px}
+.dbtns button{border-radius:12px!important;padding:12px 18px!important;font:600 16px var(--body)!important}
+/* Alt sekme çubuğu: iOS buzlu cam */
+nav.altnav{background:rgba(249,249,249,.82)!important;-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--line)!important;box-shadow:none!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) nav.altnav{background:rgba(22,22,24,.82)!important}}
+nav.altnav button{font:500 10.5px var(--body)!important;color:#8e8e93!important;background:transparent!important}
+nav.altnav button[aria-selected="true"]{color:var(--ink)!important;background:transparent!important}
+nav.altnav .ni{font-size:23px}
+/* Diğer */
+.toast{border-radius:14px;background:rgba(30,30,32,.92);color:#fff;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.essat{flex-wrap:wrap}.essat small{flex:1;min-width:0}
+.bbtn{border:0!important;box-shadow:var(--golge)!important;border-radius:14px!important;font:600 12px var(--body)!important}
+.bik{filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
+.eklekart{border-radius:var(--r);box-shadow:var(--golge)}
+.tkart{border-left:0!important;position:relative;overflow:hidden}
+.tkart::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--line)}
+.tkart.yakin::before,.tkart.bugun::before{background:var(--sun)}.tkart.gecti::before{background:var(--kirmizi)}.tkart.uzak::before{background:var(--ok)}
+.tkart.gecti .hzaman small{color:var(--kirmizi)}
+.yeni-gezi{margin-top:2px}
 </style></head><body>
 <div class="wrap">
 <header id="ust"></header>
@@ -1635,7 +1743,8 @@ function ilerlemeBas(k,baslik,ls,bitti,belge){const ok=ls.filter(([,x])=>x.ok).l
   k.append(el("p","note",!ls.length?"Liste boş. Aşağıdan madde ekle.":(ok===ls.length?(bitti||"Hepsi tamam ✓"):ok+"/"+ls.length+" tamam")));esSatir(k,belge)}
 /* Grup eşitleme durumu: son eşitleme saati ve elle yenileme */
 function esSatir(k,id){if(!SYNC.kod)return;const r=el("div","essat"),son=id&&SYNC.sonB&&SYNC.sonB[id];
-  r.append(el("small",null,"👥 Grup "+SYNC.kod.slice(-4)+" · "+(SYNC.durum==="hata"&&!(son&&Date.now()-son<30000)?"⚠️ bağlanamadı":son?"eşitlendi "+saatOf(son):SYNC.son?"bağlı":"bağlanıyor…")));
+  r.append(el("small",null,"👥 Grup "+SYNC.kod.slice(-4)+" · "+(SYNC.yazHata?"⚠️ yazılamadı ("+SYNC.yazHata+")":SYNC.durum==="hata"&&!(son&&Date.now()-son<30000)?"⚠️ bağlanamadı":son?"eşitlendi "+saatOf(son):SYNC.son?"bağlı":"bağlanıyor…")));
+  if(SYNC.test)r.append(btn("🩺 Test","reset",()=>SYNC.test(id||"cikis")));
   r.append(btn("🔄 Yenile","reset",()=>{if(SYNC.tazele)SYNC.tazele();hizliBilgi="Gruptan yenilendi";setTimeout(ciz,1500)}));k.append(r)}
 function satir(L,id,x){const row=el("div","chk"+(x.ok?" done":""));const l=el("label","lbl");const cb=el("input");cb.type="checkbox";cb.checked=!!x.ok;
   cb.onchange=()=>L.koy(id,{ok:cb.checked});l.append(cb,el("span",null,x.t));
@@ -2091,7 +2200,7 @@ function hubEkrani(){
   const ek=ekleKarti();if(ek)ana.append(ek);
   const hb=el("div","hub"),a=menuAyar();
   a.sira.filter(k=>!a.gizli.includes(k)).forEach(k=>{const [i,t]=BOLUMLER[k],[o,vurgu]=hubOzet(k);
-    const b=btn("","hkart"+(vurgu?" vurgu":""),()=>uygAc(k));const ic=el("span","hik",i),tx=el("span","htx");tx.append(el("b",null,t),el("small",null,o));b.append(ic,tx,el("span","hok","›"));hb.append(b)});
+    const b=btn("","hkart"+(vurgu?" vurgu":""),()=>uygAc(k));const ic=el("span","hik k-"+k,i),tx=el("span","htx");tx.append(el("b",null,t),el("small",null,o));b.append(ic,tx,el("span","hok","›"));hb.append(b)});
   ana.append(hb);
   const gk=el("div","grup-kart");ana.append(gk);if(window.grupCiz)grupCiz();
   ana.append(btn("⚙️ Menüyü düzenle · Yedek","reset orta2",ayarlarAc));
@@ -2099,7 +2208,7 @@ function hubEkrani(){
 const EKRANLAR={bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.8";
+const SURUM="2026-11-12.9";window.SURUM_=SURUM;
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -2157,6 +2266,19 @@ async function tazele(yeniden){const f=fb,kod=SYNC.kod;if(!f||!kod||tazeleniyor)
     await Promise.all(Object.keys(abonelik).map(async id=>{try{const s=await f.getDocFromServer(f.doc(f.db,"gruplar",kod,"g2",id));
       if(s.exists()&&DEPO[id]&&Date.now()-(SYNC.sonYaz||0)>4000)DEPO[id].uzak(s.data().items||{});SYNC.son=Date.now()}catch(e){}}));
     if(durum!=="bagli"){durum="bagli";SYNC.durum="bagli";mesaj="";grupCiz()}window.ciz()}catch(e){}finally{tazeleniyor=false}}
+/* Grup testi: okuma ve yazma adım adım denenir, sonuç ekranda gösterilir (sorun bulmak için) */
+SYNC.test=async (id)=>{const kod=SYNC.kod,f=fb,s=[];if(!kod)return;const u=REST+kod+"/g2/"+encodeURIComponent(id),zaman=ms=>new Promise(ok=>setTimeout(()=>ok("zaman aşımı"),ms));
+  try{const r=await fetch(u,{cache:"no-store"});let n="";if(r.ok){const j=await r.json();const it=restDeger((j.fields||{}).items)||{};const L=Object.values(it).filter(x=>x&&typeof x.t==="string");n=" · "+L.length+" madde, "+L.filter(x=>x.ok).length+" işaretli";
+      const yer=Object.values(DEPO[id]?DEPO[id].hepsi():{}).filter(x=>x&&typeof x.t==="string");n+=" (bu telefonda "+yer.filter(x=>x.ok).length+" işaretli)"}
+    s.push("1) Doğrudan okuma: "+r.status+(r.ok?" ✓":" ✗")+n)}catch(e){s.push("1) Doğrudan okuma: ağ hatası ✗ "+e.message)}
+  try{const q="updateMask.fieldPaths="+encodeURIComponent(fp(["items","_test"]));const r=await fetch(u+"?"+q,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:{items:{mapValue:{fields:{_test:{integerValue:String(Date.now())}}}}}})});
+    let m="";if(!r.ok){try{const j=await r.json();m=" "+j.error.status+": "+j.error.message}catch(_){}}s.push("2) Doğrudan yazma: "+r.status+(r.ok?" ✓":" ✗"+m));
+    if(r.ok)await fetch(u+"?"+q,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:{items:{mapValue:{fields:{}}}}})})}catch(e){s.push("2) Doğrudan yazma: ağ hatası ✗ "+e.message)}
+  if(f){try{const ref=f.doc(f.db,"gruplar",kod,"g2",id);const a=await Promise.race([f.getDocFromServer(ref).then(()=>"✓"),zaman(8000)]);s.push("3) Canlı bağlantı okuma: "+a)}catch(e){s.push("3) Canlı bağlantı okuma: ✗ "+(e.code||e.message))}
+    try{const ref=f.doc(f.db,"gruplar",kod,"g2",id);const a=await Promise.race([f.setDoc(ref,{items:{_test2:f.deleteField()}},{merge:true}).then(()=>"✓"),zaman(8000)]);s.push("4) Canlı bağlantı yazma: "+a)}catch(e){s.push("4) Canlı bağlantı yazma: ✗ "+(e.code||e.message))}}
+  else s.push("3-4) Canlı bağlantı kurulamadı ✗");
+  s.push("Grup: …"+kod.slice(-4)+" · belge: "+id+" · sürüm "+(window.SURUM_||""));
+  window.uyar("🩺 Grup testi\n\n"+s.join("\n\n"))};
 SYNC.tazele=()=>{tazele(true);[...(SYNC.ekran||[])].forEach(restOku)};
 /* ===== Yedek yol: Firestore REST =====
    iPhone ana ekran uygulamasında canlı bağlantı (WebChannel) takılabiliyor: yazılan sunucuya geç gidiyor ya da
@@ -2179,7 +2301,8 @@ async function restYaz(kod,id,degisim,tam){const mask=[],items={};
   if(!mask.length)return;yaziyor[id]=(yaziyor[id]||0)+1;
   try{const q=mask.map(m=>"updateMask.fieldPaths="+encodeURIComponent(m)).join("&");
     const r=await fetch(REST+kod+"/g2/"+encodeURIComponent(id)+"?"+q,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:{items:restVal(items)}})});
-    if(r.ok){const j=await r.json();imza[id]=j.updateTime;SYNC.son=Date.now();SYNC.durum="bagli"}else SYNC.durum="hata"}catch(e){}
+    if(r.ok){const j=await r.json();imza[id]=j.updateTime;SYNC.son=Date.now();SYNC.durum="bagli";SYNC.yazHata=null}
+    else{let m="";try{m=(await r.json()).error.status}catch(_){}SYNC.yazHata=r.status+(m?" "+m:"");window.ciz()}}catch(e){SYNC.yazHata="ağ hatası";window.ciz()}
   finally{yaziyor[id]--;SYNC.sonYazB=SYNC.sonYazB||{};SYNC.sonYazB[id]=Date.now()}}
 const sirali=v=>Array.isArray(v)?v.map(sirali):duz(v)?Object.keys(v).sort().reduce((o,k)=>(o[k]=sirali(v[k]),o),{}):v;
 async function restOku(id){const kod=SYNC.kod;if(!kod||yaziyor[id])return;
