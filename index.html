@@ -2613,7 +2613,7 @@ function hubEkrani(){
 const EKRANLAR={su:()=>suEkrani(),bebek:bebekEkrani,cikis:cikisEkrani,hatir:hatirEkrani,alis:alisEkrani,fatura:()=>takipEkrani("fatura"),arac:()=>takipEkrani("arac")};
 
 /* ===== Güncelleme: telefon eski sayfayı önbellekten gösterirse yeni sürüm gelince bir kez yenile ===== */
-const SURUM="2026-11-12.15";window.SURUM_=SURUM;
+const SURUM="2026-11-13.1";window.SURUM_=SURUM;
 async function surumKontrol(){try{const t=await (await fetch(location.pathname+"?s="+Date.now(),{cache:"no-store"})).text();const m=t.match(/const SURUM="([^"]+)"/);
   if(m&&m[1]!==SURUM&&sessionStorage.getItem("yenilendi")!==m[1]&&!modalAcik()&&!document.querySelector(".arama,.dlg")){sessionStorage.setItem("yenilendi",m[1]);location.reload()}}catch(e){}}
 setTimeout(surumKontrol,3000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)surumKontrol()});
@@ -2623,7 +2623,10 @@ if(!Object.keys(GEZI.items).length&&!LS.get("v1Silindi"))v1Aktar(false);
 if(!Object.keys(GEZI.items).length&&!LS.get("ornekSilindi")&&!v1Var())ornekOlustur();
 idb.all("foto").then(o=>{FOTO=Object.assign(o||{},FOTO);fotoGrup();ciz()}).catch(()=>{});
 LS.del("hava");
-if(!gezi()){aktif=null;const l=Object.entries(GEZI.items).filter(([,g])=>g&&g.bas);const s=l.find(([,g])=>durum(g)==="suruyor")||l.find(([,g])=>durum(g)==="yaklasan"&&gunFark(bugunStr(),g.bas)<=1);if(s){aktif=s[0];LS.set("aktif",aktif);uyg="gezi";LS.set("uyg","gezi")}}
+/* Kodvira gibi dış bağlantılar #menu ile gelir: son açılan bölüm yerine ana menü açılır */
+const menuIle=/^#menu$/.test(location.hash);if(menuIle)history.replaceState(null,"",location.pathname+location.search);
+if(!gezi()){aktif=null;const l=Object.entries(GEZI.items).filter(([,g])=>g&&g.bas);const s=l.find(([,g])=>durum(g)==="suruyor")||l.find(([,g])=>durum(g)==="yaklasan"&&gunFark(bugunStr(),g.bas)<=1);if(s){aktif=s[0];LS.set("aktif",aktif);if(!menuIle){uyg="gezi";LS.set("uyg","gezi")}}}
+if(menuIle){uyg=null;LS.set("uyg",null)}
 bugunModu();
 goster();
 (()=>{const o=LS.get("aralik")||{};let d=false;Object.entries(o).forEach(([k,x])=>{if(k!=="su"&&x&&(x.su||/(^|\s)su iç/i.test(x.n||""))){if(!o.su)o.su=Object.assign({},x,{su:true});delete o[k];d=true}});if(d)LS.set("aralik",o);LS.del("hatirSekme")})();
